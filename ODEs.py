@@ -16,9 +16,7 @@ def dynamics(t,yy,params):
         - just one vehicle
         - yy is [position; velocity] in INERTIAL frame
     '''
-    
-
-    
+       
     
     dydt = np.empty(6)
     dydt[:] = np.NaN
@@ -47,9 +45,6 @@ def dynamics(t,yy,params):
     OMvec = np.array([0, 0, -params.p.om])
     
     vvec_S = SN @ (vvec_N + np.cross(OMvec, xvec_N))
-    # vvec_S = SN @ vvec_N
-    # om = params.p.om
-    # vvec_S = SN @ (vvec_N + np.array([-om*xvec_N[1], om*xvec_N[0], 0]))
     
     h = r - params.p.rad
     rho = getRho_from_table(params.atmdat, h)
