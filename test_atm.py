@@ -9,11 +9,28 @@ for many Monte Carlo runs.
 """
 
 import numpy as np
-from atm import getMCAtmdat, getRho_from_EarthGRAM
+import matplotlib.pyplot as plt
+from atm import getMCAtmdat, getMCdens, getRho_from_EarthGRAM
+
+plt.close('all')
 
 filename = 'data/rawOutput.txt'
 
-atmList = getMCAtmdat(filename, 3)
+# get 3 atmosphere profiles
+Nmc = 10
+densPert, densMean, h = getMCdens(filename, Nmc)
 
-hlist = np.array([125, 80.7, 100.3])
-rholist = getRho_from_EarthGRAM(atmList[0], hlist)
+
+# # test functionality of interpolating to get density at specific altitudes
+# hlist = np.array([125, 80.7, 100.3])
+# rholist = getRho_from_EarthGRAM(atmList[0], hlist)
+
+# # plot some altitude profiles, include only data above 50 km
+# fig = plt.figure(1)
+# ax = fig.add_subplot(111)
+# ax.grid()
+# for i in range(Nmc):
+#     dpert = (densMean - atmList[i]['DensPert']) / densMean
+#     ax.plot(dpert.where(atmList[i]['Hgtkm'] > 50),
+#             atmList[i].where(atmList[i]['Hgtkm'] > 50)['Hgtkm'],'b')
+#     # print('Plotted MC profile %d\n' %i)
