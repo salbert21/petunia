@@ -10,15 +10,39 @@ for many Monte Carlo runs.
 
 import numpy as np
 import matplotlib.pyplot as plt
-from atm import getMCAtmdat, getMCdens, getRho_from_EarthGRAM
+from atm import getMCdens
 
 plt.close('all')
 
 filename = 'data/rawOutput.txt'
 
-# get 3 atmosphere profiles
+# get Nmc atmosphere profiles
 Nmc = 10
 densPert, densMean, h = getMCdens(filename, Nmc)
+
+# compare with exponential model
+rho0 = 1.225
+H = 7.257 # km
+densExp = rho0 * np.exp(-h/H)
+MeanErr = (densExp - densMean) / densExp
+
+PertErr = (densExp[:,None] - densPert) / densExp[:,None]
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(densMean, h, label='GRAM Mean')
+ax.plot(densExp, h, label='Exponential')
+ax.set_xscale('log')
+ax.set_xlabel('Density, kg/m^2')
+ax.set_ylabel('Altitude, km')
+ax.legend()
+ax.grid()
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(MeanErr, h, label='GRAM mean vs. exponential')
+ax.plot(PertErr, h, label='perturbed GRAM vs exponential')
+ax.legend()
 
 
 # # test functionality of interpolating to get density at specific altitudes
