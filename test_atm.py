@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from atm import getMCdens
 
 plt.close('all')
+plt.rcParams.update({'font.size': 15})
 
 filename = 'data/rawOutput.txt'
 
@@ -41,8 +42,11 @@ ax.grid()
 fig = plt.figure()
 ax = fig.add_subplot(111)
 ax.plot(MeanErr, h, label='GRAM mean vs. exponential')
-ax.plot(PertErr, h, label='perturbed GRAM vs exponential')
-ax.legend()
+# ax.plot(PertErr, h, label='perturbed GRAM vs exponential')
+# ax.legend()
+ax.grid()
+ax.set_xlabel('Relative density error normalized by exponential model')
+ax.set_ylabel('Altitude, km')
 
 
 # # test functionality of interpolating to get density at specific altitudes

@@ -25,34 +25,36 @@ plt.close('all')
         
 
 omE = 2 * np.pi / (0.99726968 * 86400) # rad/s rotation rate of Earth
-radE = 6378.1363 * 1e3
-mu = 3.986e5 * 1e9 # m^3/s^2
+radE = 6378.1363
+mu = 3.986e5 # km^3/s^2
 
 m = 2000
 
-params1 = params(mu, m) # mu in m^3/s^2 !
+params1 = params(mu, m)
 params1.p.om = omE
 params1.p.rad = radE
 
-params1.CL = 0.6
-params1.CD = 1.3
-params1.A = 30.0
-params1.bank = np.radians(60)
+params1.CL = 0.29
+params1.CD = 1.2121
+params1.A = 15
+params1.bank = np.radians(0)
 
 params1.atmdat = getAtmdat('data/atm_earth_gram2016.csv')
 
-params1.hmin = 30 * 1e3
-params1.hmax = 125 * 1e3
+params1.dMode = 'table'
 
-tspan = np.linspace(0,120,5000) # integrate for 1 day, 5,000 time steps
+params1.hmin = 30
+params1.hmax = 125
+
+tspan = np.linspace(0,180,5000) # integrate for 1 day, 5,000 time steps
 
 
 # r0vec_N = np.array([-6402,-1809,1065]) * 1e3
 # v0vec_N = np.array([0.999,-6.471,-4.302]) * 1e3
 
-r0vec_N = np.array([6478100, 0, 0])
+r0vec_N = np.array([6478.100, 0, 0])
 # v0vec_N = np.array([-1251.45758126121, 472.3899576546, 7901.50959768473])
-v0vec_N = np.array([-0.671533934883426e3, 0.4723899576546e3, 10.9794827826405e3])
+v0vec_N = np.array([-1.25145758, 0.47238996, 7.9015096])
 
 
 y0 = np.block([r0vec_N, v0vec_N])
@@ -72,10 +74,10 @@ sol = solve_ivp(lambda t, y: ODEs.dynamics(t,y,params1),
                 # normally set tols to 1e-12
 print(sol.message)
 
-rvec_N = sol.y[0:3,:] / 1e3 # convert to km
-vvec_N = sol.y[3:6,:] / 1e3 # convert to km/s
+rvec_N = sol.y[0:3,:] #/ 1e3 # convert to km
+vvec_N = sol.y[3:6,:] #/ 1e3 # convert to km/s
 
-alt = np.linalg.norm(rvec_N, axis=0) - radE/1e3
+alt = np.linalg.norm(rvec_N, axis=0) - radE #/1e3
 vmag = np.linalg.norm(vvec_N, axis=0)
 
 fig = plt.figure(2)

@@ -16,7 +16,7 @@ def getWind(h):
     return wvec
 
 def getRho_from_table(atmdat, h):
-    rho = np.interp(h, atmdat['alt'], atmdat['density'])
+    rho = np.interp(h*1e3, atmdat['alt'], atmdat['density'])
     
     return rho
 

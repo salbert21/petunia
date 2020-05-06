@@ -47,7 +47,11 @@ def dynamics(t,yy,params):
     vvec_S = SN @ (vvec_N + np.cross(OMvec, xvec_N))
     
     h = r - params.p.rad
-    rho = getRho_from_table(params.atmdat, h)
+    
+    if params.dMode == 'fun':
+        rho = params.dFun(h)
+    else:
+        rho = getRho_from_table(params.atmdat, h)
     wvec_S = getWind(h)
     
     vInfvec_S = vvec_S + wvec_S
@@ -55,8 +59,9 @@ def dynamics(t,yy,params):
     
     vInfvec_N = NS @ vInfvec_S
     
-    Lmag = 1/2 * rho * vInf**2 * params.CL * params.A
-    Dmag = 1/2 * rho * vInf**2 * params.CD * params.A
+    Lmag = 1/2 * rho * (vInf*1e3)**2 * params.CL * params.A / 1e3
+    Dmag = 1/2 * rho * (vInf*1e3)**2 * params.CD * params.A / 1e3
+    
     
     hvec_N = np.cross(xvec_N, vInfvec_N)
     Lupvec_N = np.cross(vInfvec_N, hvec_N)
