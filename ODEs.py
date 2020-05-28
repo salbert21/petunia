@@ -7,6 +7,8 @@ Created on Thu Apr  2 14:52:56 2020
 
 import numpy as np
 from frames import DCMs
+import sys
+
 from atm import getRho_from_table, getWind
 
 def dynamics(t,yy,params):
@@ -33,7 +35,7 @@ def dynamics(t,yy,params):
     vvec_N = np.array([dx, dy, dz])
     
     r = np.linalg.norm(xvec_N)
-    mu_r3 = params.mu / r**3
+    mu_r3 = params.p.mu / r**3
     
     ## Get gravitational force
     Fgvec_N = - mu_r3 * params.m * xvec_N
@@ -50,8 +52,10 @@ def dynamics(t,yy,params):
     
     if params.dMode == 'fun':
         rho = params.dFun(h)
-    else:
+    elif params.dMode == 'table':
         rho = getRho_from_table(params.atmdat, h)
+    else:
+        sys.exit('atm mode not recognized')
     wvec_S = getWind(h)
     
     vInfvec_S = vvec_S + wvec_S

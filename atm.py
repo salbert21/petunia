@@ -16,23 +16,17 @@ def getWind(h):
     return wvec
 
 def getRho_from_table(atmdat, h):
-    rho = np.interp(h*1e3, atmdat['alt'], atmdat['density'])
+    rho = np.interp(h, atmdat[0,:], atmdat[1,:])
     
     return rho
 
-def getRho_from_EarthGRAM(atmdat, h):
-    '''
-    gets density at given altitude from Earth-GRAM2016 formatted dataframe
-    '''
-    rho = np.interp(h, atmdat['Hgtkm'], atmdat['DensPert'])
+# def getRho_from_EarthGRAM(atmdat, h):
+#     '''
+#     gets density at given altitude from Earth-GRAM2016 formatted dataframe
+#     '''
+#     rho = np.interp(h, atmdat['Hgtkm'], atmdat['DensPert'])
     
-    return rho
-
-def getAtmdat(filename):
-    atmdat = np.genfromtxt(filename, delimiter=',', names=True,
-                           encoding='utf-8-sig')
-    
-    return atmdat
+#     return rho
 
 def getMCAtmdat(filename, Nmc):
     '''
@@ -92,7 +86,7 @@ def getMCdens(filename, Nmc):
         rMC += 1
         srows.append(rMC)
         
-    # Now load requested number of profiles and return list of panda dfs
+    # Now load requested number of profiles and return numpy arrays
     Nloaded = 0
     densTot = np.empty([rMC-1, Nmc])
     densTot[:] = np.NaN
