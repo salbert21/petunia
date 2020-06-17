@@ -16,9 +16,6 @@ from atm import getMCdens
 class params:
     def __init__(self, dMode):
         self.dMode = dMode
-        
-    class p:
-        pass
     
 plt.close('all')
 

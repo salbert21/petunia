@@ -11,42 +11,43 @@ from mpl_toolkits import mplot3d
 import numpy as np
 import ODEs
 from scipy.integrate import solve_ivp
-from atm import getAtmdat
+from atm import getMCdens
+import constants
 
 class params:
-    def __init__(self, mu, m):
-        self.mu = mu
-        self.m = m
-        
-    class p:
-        pass
+    def __init__(self, dMode):
+        self.dMode = dMode
     
 plt.close('all')
         
 
-omE = 2 * np.pi / (0.99726968 * 86400) # rad/s rotation rate of Earth
-radE = 6378.1363
-mu = 3.986e5 # km^3/s^2
+dMode = 'table'
+params1 = params(dMode)
+params1.p = constants.EARTH
 
-m = 2000
-
-params1 = params(mu, m)
-params1.p.om = omE
-params1.p.rad = radE
+params1.m = 2000
 
 params1.CL = 0.29
 params1.CD = 1.2121
 params1.A = 15
 params1.bank = np.radians(0)
 
-params1.atmdat = getAtmdat('data/atm_earth_gram2016.csv')
+### GET ATM TABLE FROM BINARY EARTHGRAM DATA FILE
+filename = '../data/rawOutput.txt'
+# get Nmc atmosphere profiles
+Nmc = 1
+i_trial = 0
+densPert, densMean, h = getMCdens(filename, Nmc)
+# at some point would be good to build this as a pandas df instead of np array
+rhoTable = np.array([h,densPert[:,i_trial]])
+params.atmdat = rhoTable
 
 params1.dMode = 'table'
 
 params1.hmin = 30
 params1.hmax = 125
 
-tspan = np.linspace(0,180,5000) # integrate for 1 day, 5,000 time steps
+tspan = np.linspace(0,300,5000) # integrate, 5,000 time steps
 
 
 # r0vec_N = np.array([-6402,-1809,1065]) * 1e3
@@ -77,7 +78,7 @@ print(sol.message)
 rvec_N = sol.y[0:3,:] #/ 1e3 # convert to km
 vvec_N = sol.y[3:6,:] #/ 1e3 # convert to km/s
 
-alt = np.linalg.norm(rvec_N, axis=0) - radE #/1e3
+alt = np.linalg.norm(rvec_N, axis=0) - params1.p.rad #/1e3
 vmag = np.linalg.norm(vvec_N, axis=0)
 
 fig = plt.figure(2)

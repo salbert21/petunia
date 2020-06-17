@@ -28,9 +28,6 @@ def simRun(params, tspan, events):
         sys.exit('integration failed')
     
     if not sol.status:
-        sys.exit('no termination event reached')
+        sys.exit('no termination event reached') 
     
-    rvec_N = sol.y[0:3,:]
-    vvec_N = sol.y[3:6,:]  
-    
-    return rvec_N, vvec_N
+    return sol
