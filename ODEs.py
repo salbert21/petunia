@@ -74,8 +74,8 @@ def dynamics(t,yy,params):
     
     vInfvecU_N = vInfvec_N / np.linalg.norm(vInfvec_N)
     
-    LvecU_N = LupvecU_N * np.cos(params.bank) + \
-              np.cross(vInfvecU_N, LupvecU_N) * np.sin(params.bank)
+    LvecU_N = LupvecU_N * np.cos(np.radians(params.bank)) + \
+              np.cross(vInfvecU_N, LupvecU_N) * np.sin(np.radians(params.bank))
               
     DvecU_N = - vInfvecU_N
     

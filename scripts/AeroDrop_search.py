@@ -18,11 +18,8 @@ from sim import simRun
 from atm import getMCdens
 from conversions import LLAEHV2RV, RV2LLAEHV
 
-# TODO: remove dMode mandatory input field
 class params:
-    def __init__(self, dMode):
-        self.dMode = dMode
-        
+       
     class p:
         pass
     
@@ -94,11 +91,11 @@ def main(params, tspan, events, outs):
 tic = time.time()
 
 ### CREATE params INPUT CLASS
-dMode = 'table'
-params = params(dMode)
+params = params()
 params.p = constants.EARTH
 
 ### INPUT ATM TABLE - GET ATM TABLE FROM BINARY EARTHGRAM DATA FILE
+params.dMode = 'table'
 filename = '../data/rawOutput.txt'
 # get Nmc atmosphere profiles
 Nmc = 1
@@ -121,7 +118,7 @@ params.hda = 0
 params.vmag = 11
 
 ### CONTROL STATE
-params.bank = np.radians(0) # TODO - should update bank to take input in deg
+params.bank = 0 # deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition

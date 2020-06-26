@@ -30,7 +30,7 @@ params1.m = 2000
 params1.CL = 0.29
 params1.CD = 1.2121
 params1.A = 15
-params1.bank = np.radians(0)
+params1.bank = 0 # deg
 
 ### GET ATM TABLE FROM BINARY EARTHGRAM DATA FILE
 filename = '../data/rawOutput.txt'

@@ -68,7 +68,7 @@ params.x0 = np.array([6478.100, 0, 0]) # inertial frame and coordinates
 params.v0 = np.array([-1.25145758, 0.47238996, 7.9015096])
 
 ### CONTROL STATE
-params.bank = np.radians(0) # full-lift-up
+params.bank = 0 # full-lift-up, deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
