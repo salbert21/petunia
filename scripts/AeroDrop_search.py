@@ -51,7 +51,7 @@ def main(params, tspan, events, outs):
     vfvec_N = vvec_N[:,-1]
     tf = sol.t[-1]
     
-    # convert final state params
+    # convert final state params (these are inertial)
     lat, lon, alt, fpa, hda, vmag = RV2LLAEHV(rfvec_N, vfvec_N, params, tf)
     
     ## TODO - compute peak heat rate, add to output

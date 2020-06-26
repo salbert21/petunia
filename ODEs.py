@@ -41,6 +41,7 @@ def dynamics(t,yy,params):
     Fgvec_N = - mu_r3 * params.m * xvec_N
     
     ## Get aerodynamics forces
+    # TODO: carefully replace below with VN2Vinf function call
     SN = DCMs.getSN(t, params)
     NS = DCMs.getNS(t, params)
     

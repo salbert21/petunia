@@ -7,6 +7,7 @@ Created on Wed Jun 10 10:10:41 2020
 
 import numpy as np
 import scipy.linalg as LA
+from atm import getWind
 
 from frames import DCMs
 
@@ -96,9 +97,66 @@ def RV2LLAEHV(rvec_N, vvec_N, params, t):
     return lat, lon, alt, fpa, hda, vmag
     
     
+def VN2Vinf(rvec_N, vvec_N, params, t):
+    '''
+    converts an inertial velocity vector to a wind-relative velocity vector
+    (airspeed vector), returned in INTERTIAL FRAME COMPONENTS
+    '''
     
+    # get DCMs
+    SN = DCMs.getSN(t, params)
+    NS = DCMs.getNS(t, params)
     
+    # get rotation vector of inertial frame w.r.t. surface frame, om N/S, 
+    #  hence the negative sign on om
+    OMvec = np.array([0, 0, -params.p.om])
     
+    # transport and rotate to get groundspeed vec in surface components
+    vvec_S = SN @ (vvec_N + np.cross(OMvec, rvec_N))
+    
+    # get wind in surface frame components (dummy function currently)
+    r = np.linalg.norm(rvec_N)
+    h = r - params.p.rad
+    wvec_S = getWind(h)
+    
+    # sum to get total airspeed vector in surface frame
+    vInfvec_S = vvec_S + wvec_S
+    
+    # now rotate airspeed into inertial frame components and return
+    vInfvec_N = NS @ vInfvec_S
+    
+    return vInfvec_N
+
+def Vinf2VN(rvec_N, vInfvec_N, params, t):
+    '''
+    converts an airspeed vector in inertial frame to an inertial velocity
+    vector in inertial components
+    '''
+    
+    # get DCMs
+    SN = DCMs.getSN(t, params)
+    NS = DCMs.getNS(t, params)
+    
+    rvec_S = SN @ rvec_N
+    
+    # rotate airspeed vec to surface frame
+    vInfvec_S = SN @ vInfvec_N
+    
+    # get wind and subtract from airspeed to get groundspeed
+    r = np.linalg.norm(rvec_N)
+    h = r - params.p.rad
+    wvec_S = getWind(h)
+    
+    vvec_S = vInfvec_S - wvec_S
+    
+    # transport and rotate to get inertial velocity in inertial frame:
+        
+    # get rotation vector of surface w.r.t. inertial frame, om_S/N, 
+    OMvec = np.array([0, 0, params.p.om])
+    
+    vvec_N = NS @ (vvec_S + np.cross(OMvec, rvec_S))
+    
+    return vvec_N
     
     
     
