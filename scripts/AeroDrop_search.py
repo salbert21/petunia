@@ -84,7 +84,8 @@ def main(params, tspan, events, outs):
     SGpeak = SG.max()
     
     # calculate peak heat rate
-    qpeak = params.p.k * SGpeak / 1e5 # puts q in W/cm^2 units (I think)
+    qpeak = params.p.k * SGpeak * 1e5 # puts q in W/cm^2 units (I think)
+    q = params.p.k * SG * 1e5
     
     ## TODO - compute max g, add to output
     
@@ -105,10 +106,12 @@ def main(params, tspan, events, outs):
     outs.t = tf
     outs.SGpeak = SGpeak
     outs.qpeak = qpeak
+    outs.q = q
     
     # may not want these always on
     outs.rvec_N = rvec_N
     outs.vvec_N = vvec_N
+    outs.tvec = sol.t
     
     
     
@@ -125,7 +128,7 @@ def main(params, tspan, events, outs):
 # MAIN - GRID SEARCH
 # =============================================================================
 tic = time.time()
-# plt.close('all')
+plt.close('all')
 
 ### CREATE params INPUT CLASS
 params = params()
@@ -213,6 +216,20 @@ ax = fig.add_subplot(111)
 ax.plot(vmag, alt)
 ax.set_xlabel('Inertial velocity, km/s')
 ax.set_ylabel('Altitude, km')
+ax.grid()
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(outs.tvec, outs.q)
+ax.set_xlabel('time')
+ax.set_ylabel('heat rate')
+ax.grid()
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(outs.tvec, vmag)
+ax.set_xlabel('time')
+ax.set_ylabel('vmag')
 ax.grid()
 
 toc = time.time()
