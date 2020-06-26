@@ -40,10 +40,16 @@ alt = 300
 fpa = -5
 hda = 70
 vmag = 10
-t = 80
+t = 0
 
-rvec, vvec = LLAEHV2RV(lat, lon, alt, fpa, hda, vmag, params, t)
+# rvec, vvec = LLAEHV2RV(lat, lon, alt, fpa, hda, vmag, params, t)
+
+rvec = np.array([6478100,           0,           0]) / 1e3
+# v0vec_N = np.array([-671.533934883426,            472.3899576546,          10979.4827826405]) / 1e3
+vvec = np.array([0, 0, 1])
+
 latc, lonc, altc, fpac, hdac, vmagc = RV2LLAEHV(rvec, vvec, params, t)
+rvecc, vvecc = LLAEHV2RV(latc, lonc, altc, fpac, hdac, vmagc, params, t)
 
 # fpacheck = np.degrees(np.arcsin(np.dot(rvec,vvec) / (LA.norm(rvec)*LA.norm(vvec))))
 # print(fpacheck)

@@ -12,71 +12,67 @@ import time
 import ODEs
 from sim import simRun
 from atm import getMCdens
+import constants
 
 class params:
     def __init__(self, dMode):
         self.dMode = dMode
     
-plt.close('all')
+# plt.close('all')
 
 tic = time.time()
 
 
-### CONSTANTS
-omE = 2 * np.pi / (0.99726968 * 86400) # rad/s rotation rate of Earth
-radE = 6378.1363
-mu = 3.986e5 # km^3/s^2
-
-### ATM MODE
-# dMode = 'fun'
 dMode = 'table'
-
 params = params(dMode)
-params.p.mu = mu
-params.p.om = omE
-params.p.rad = radE
+params.p = constants.EARTH
 
-# ### GET ATM TABLE FROM OLD EARTH GRAM .CSV FILE
-# filename = '../data/atm_earth_gram2016.csv'
-# atmdata_raw = np.genfromtxt(filename, delimiter=',', names=True,
-#                             encoding='utf-8-sig')
-# # at some point would be good to build this as a pandas df instead of np array
-# rhoTable = np.array([atmdata_raw['alt']/1e3,atmdata_raw['density']])
-# params.atmdat = rhoTable
-
-
-### GET ATM TABLE FROM BINARY EARTHGRAM DATA FILE
-filename = '../data/rawOutput.txt'
-# get Nmc atmosphere profiles
-Nmc = 1
-i_trial = 0
-densPert, densMean, h = getMCdens(filename, Nmc)
+### GET ATM TABLE FROM OLD EARTH GRAM .CSV FILE
+filename = '../data/atm_earth_gram2016.csv'
+atmdata_raw = np.genfromtxt(filename, delimiter=',', names=True,
+                            encoding='utf-8-sig')
 # at some point would be good to build this as a pandas df instead of np array
-rhoTable = np.array([h,densPert[:,i_trial]])
+rhoTable = np.array([atmdata_raw['alt']/1e3,atmdata_raw['density']])
 params.atmdat = rhoTable
+
+
+# ### GET ATM TABLE FROM BINARY EARTHGRAM DATA FILE
+# filename = '../data/rawOutput.txt'
+# # get Nmc atmosphere profiles
+# Nmc = 1
+# i_trial = 0
+# densPert, densMean, h = getMCdens(filename, Nmc)
+# # at some point would be good to build this as a pandas df instead of np array
+# rhoTable = np.array([h,densPert[:,i_trial]])
+# params.atmdat = rhoTable
 
 ### VEHICLE PARAMS
 params.m = 2000 # kg 
-params.A = 15 # m^2
-params.CL = 0.1212
-params.BC = 110
+params.A = 30 # m^2
+params.CL = 0.6
+params.BC = 51.282051282051285
 # get CD from BC
-params.CD = params.m / (params.BC * params.A)
+# params.CD = params.m / (params.BC * params.A)
+params.CD = 1.3
 
 ### INITIAL STATE
-params.x0 = np.array([6478.100, 0, 0]) # inertial frame and coordinates
-params.v0 = np.array([-1.25145758, 0.47238996, 7.9015096])
+# params.x0 = np.array([6478.100, 0, 0]) # inertial frame and coordinates
+# params.v0 = np.array([-1.25145758, 0.47238996, 7.9015096])
+
+params.x0 = np.array([6478100,           0,           0]) / 1e3
+# v0vec_N = np.array([-671.533934883426,            472.3899576546,          10979.4827826405]) / 1e3
+params.v0 = np.array([-0.67153393,  0.47238996, 10.97948278])
 
 ### CONTROL STATE
-params.bank = 0 # full-lift-up, deg
+params.bank = 60 # full-lift-up, deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
-tspan = np.linspace(0,10000) # don't make too long or results get choppy!
+tspan = np.linspace(0,1800,10000) # don't make too long or results get choppy!
 
 # exit conditions:
-params.hmin = 10
-params.hmax = 125
+params.hmin = 30
+params.hmax = 100
 
 event1 = lambda t, y: ODEs.below_min_alt(t, y, params)
 event1.terminal = True
@@ -87,10 +83,12 @@ event2.terminal = True
 events = (event1, event2)
 
 ### CALL SIMRUN
-rvec_N, vvec_N = simRun(params, tspan, events)
+sol = simRun(params, tspan, events)
+rvec_N = sol.y[0:3,:]
+vvec_N = sol.y[3:6,:] 
 
 ### PLOTS
-alt = np.linalg.norm(rvec_N, axis=0) - radE #/1e3
+alt = np.linalg.norm(rvec_N, axis=0) - params.p.rad #/1e3
 vmag = np.linalg.norm(vvec_N, axis=0)
 
 fig = plt.figure(2)

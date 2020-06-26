@@ -18,6 +18,7 @@ EARTH = p('Earth')
 EARTH.rad = 6378.1363 # equatorial radius, km
 EARTH.mu = 3.986004415e5 # gravitational parameter, km^3/s^2
 EARTH.om = 2 * np.pi / (0.99726968 * 86400) # rotation rate, rad/s
+EARTH.k = 7623e-4 # S-G coefficient from asim, kg^0.5/m
 
 MARS = p('Mars')
 MARS.rad = 3397.2 # equatorial radius, km

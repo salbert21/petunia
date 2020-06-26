@@ -18,7 +18,7 @@ class params:
     def __init__(self, dMode):
         self.dMode = dMode
     
-plt.close('all')
+# plt.close('all')
         
 
 dMode = 'table'
@@ -26,36 +26,44 @@ params1 = params(dMode)
 params1.p = constants.EARTH
 
 params1.m = 2000
+params1.CL = 0.6
+params1.CD = 1.3
+params1.A = 30
+params1.bank = 60 # deg
 
-params1.CL = 0.29
-params1.CD = 1.2121
-params1.A = 15
-params1.bank = 0 # deg
+# ### GET ATM TABLE FROM BINARY EARTHGRAM DATA FILE
+# filename = '../data/rawOutput.txt'
+# # get Nmc atmosphere profiles
+# Nmc = 1
+# i_trial = 0
+# densPert, densMean, h = getMCdens(filename, Nmc)
+# # at some point would be good to build this as a pandas df instead of np array
+# rhoTable = np.array([h,densPert[:,i_trial]])
+# params.atmdat = rhoTable
 
-### GET ATM TABLE FROM BINARY EARTHGRAM DATA FILE
-filename = '../data/rawOutput.txt'
-# get Nmc atmosphere profiles
-Nmc = 1
-i_trial = 0
-densPert, densMean, h = getMCdens(filename, Nmc)
+### GET ATM TABLE FROM OLD EARTH GRAM .CSV FILE
+params.dMode = 'table'
+filename = '../data/atm_earth_gram2016.csv'
+atmdata_raw = np.genfromtxt(filename, delimiter=',', names=True,
+                            encoding='utf-8-sig')
 # at some point would be good to build this as a pandas df instead of np array
-rhoTable = np.array([h,densPert[:,i_trial]])
+rhoTable = np.array([atmdata_raw['alt']/1e3,atmdata_raw['density']])
 params.atmdat = rhoTable
 
 params1.dMode = 'table'
 
 params1.hmin = 30
-params1.hmax = 125
+params1.hmax = 100
 
-tspan = np.linspace(0,300,5000) # integrate, 5,000 time steps
+tspan = np.linspace(0,1800,10000) # integrate
 
 
 # r0vec_N = np.array([-6402,-1809,1065]) * 1e3
 # v0vec_N = np.array([0.999,-6.471,-4.302]) * 1e3
 
-r0vec_N = np.array([6478.100, 0, 0])
-# v0vec_N = np.array([-1251.45758126121, 472.3899576546, 7901.50959768473])
-v0vec_N = np.array([-1.25145758, 0.47238996, 7.9015096])
+r0vec_N = np.array([6478100,           0,           0]) / 1e3
+# v0vec_N = np.array([-671.533934883426,            472.3899576546,          10979.4827826405]) / 1e3
+v0vec_N = np.array([-0.67153393,  0.47238996, 10.97948278])
 
 
 y0 = np.block([r0vec_N, v0vec_N])

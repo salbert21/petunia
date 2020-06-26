@@ -79,13 +79,19 @@ def RV2LLAEHV(rvec_N, vvec_N, params, t):
                                / (LA.norm(rvec_S)*LA.norm(vvec_S))))
     
     # now get hda
-    ## find Down and East unit vectors in S frame:
-    M3T = DCMs.getM3(np.radians(lon)).T
-
+    # get NED unit vectors in surface frame components
+    ## first assume lon = 0:
     uD_S = -np.cos(np.radians(lat)) * np.array([1,0,0]) + \
            -np.sin(np.radians(lat)) * np.array([0,0,1])
+    uN_S = -np.sin(np.radians(lat)) * np.array([1,0,0]) + \
+            np.cos(np.radians(lat)) * np.array([0,0,1])
+    uE_S = np.array([0,1,0])
+    
+    ## now rotate by longitude:
+    M3T = DCMs.getM3(np.radians(lon)).T
+    uN_S = M3T @ uN_S
+    uE_S = M3T @ uE_S
     uD_S = M3T @ uD_S
-    uE_S = M3T @ np.array([0,1,0])
     
     ## now project vvec_S onto horizontal plane by subtracting uD_S component
     vvecH_S = vvec_S - np.dot(vvec_S,uD_S) / (LA.norm(uD_S)**2) * uD_S
@@ -93,6 +99,10 @@ def RV2LLAEHV(rvec_N, vvec_N, params, t):
     ## finally, find angle between the horizontal projection of vvec and East
     hda = np.degrees(np.arccos(np.dot(vvecH_S,uE_S)\
                                     / (LA.norm(vvecH_S) * LA.norm(uE_S))))
+        
+    # make sure hda has the right sign
+    if np.dot(uN_S, vvecH_S) > 0: # if vvec points up toward north
+        hda = -hda # flip the sign on the angle
         
     return lat, lon, alt, fpa, hda, vmag
     
