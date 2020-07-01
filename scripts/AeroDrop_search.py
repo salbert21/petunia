@@ -216,6 +216,7 @@ events = (event1, event2)
 params.efpa = -3.5
 params.BC = 51.282051282051285
 
+outs = outs()
 outs = main(params, tspan, events, outs)
 
 # ### PLOTS
