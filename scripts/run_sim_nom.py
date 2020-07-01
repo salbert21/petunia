@@ -83,7 +83,7 @@ event2.terminal = True
 events = (event1, event2)
 
 ### CALL SIMRUN
-sol = simRun(params, tspan, events)
+sol = simRun(params, tspan, events, verbose=True)
 rvec_N = sol.y[0:3,:]
 vvec_N = sol.y[3:6,:] 
 

@@ -21,12 +21,17 @@ from sim import simRun
 from atm import getMCdens, getRho_from_table
 from conversions import LLAEHV2RV, RV2LLAEHV, VN2Vinf
 
+#### TEMP DEBUGGING CODE ####
+import warnings
+# warnings.simplefilter('error')
+####
+
 class params:
        
     class p:
         pass
     
-class outs:
+class Outs:
     pass
 
 # =============================================================================
@@ -44,7 +49,7 @@ def main(params, tspan, events, outs):
     
     
     ### CALL SIMRUN
-    sol = simRun(params, tspan, events)
+    sol = simRun(params, tspan, events, verbose=True)
     rvec_N = sol.y[0:3,:]
     vvec_N = sol.y[3:6,:] 
     
@@ -125,7 +130,6 @@ def main(params, tspan, events, outs):
     
     ### ASSIGN OUTPUTS TO outs CLASS   
     # final state
-    # outs = outs()
     outs.lat = lat
     outs.lon = lon
     outs.alt = alt
@@ -134,13 +138,16 @@ def main(params, tspan, events, outs):
     outs.vmag = vmag
     outs.rfvec_N = rfvec_N
     outs.vfvec_N = vfvec_N
+    outs.raf = raf
+    outs.haf = haf
     outs.t = tf
+    
+    # peak values and total loads
     outs.SGpeak = SGpeak
     outs.qpeak = qpeak
     outs.Qload = Qload
     outs.gpeak = gpeak
-    outs.raf = raf
-    outs.haf = haf
+
     
     
     # # may not want these always on since they have values at each time step
@@ -186,9 +193,9 @@ params.A = 30
 params.CL = 0.6
 
 ### INITIAL STATE (COMPONENTS NOT CHANGED DURING GRID SEARCH)
-params.lat = 0
-params.lon = 0
-params.alt = 100.0
+params.lat = 40
+params.lon = 100
+params.alt = 100 - 1e-7
 params.hda = 0
 params.vmag = 11
 
@@ -197,7 +204,7 @@ params.bank = 60 # deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
-tspan = (0,180) # don't make too long or results get choppy!
+tspan = (0,1000) # don't make too long or results get choppy!
 
 # exit conditions:
 params.hmin = 30
@@ -211,13 +218,23 @@ event2.terminal = True
 
 events = (event1, event2)
 
-# ### GRID SEARCH
-# # currently a single value each for testing the main function
-params.efpa = -3.5
-params.BC = 51.282051282051285
+### GRID SEARCH
+efpaList = np.arange(-3, -10.5, -0.5)
+BCList = np.arange(30, 200, 10)
+outsList = []
 
-outs = outs()
-outs = main(params, tspan, events, outs)
+for params.efpa in efpaList:
+    for params.BC in BCList:
+        outs = Outs() # create new blank outs class instance
+        outsList.append(main(params, tspan, events, outs))
+
+# ### SINGLE RUN
+# params.efpa = -5
+# params.BC = 80
+# outs = Outs()
+# outs = main(params, tspan, events, outs)
+
+
 
 # ### PLOTS
 # alt = np.linalg.norm(outs.rvec_N, axis=0) - params.p.rad #/1e3

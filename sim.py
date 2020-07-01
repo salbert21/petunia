@@ -13,7 +13,7 @@ import ODEs
 import sys
 
 
-def simRun(params, tspan, events):
+def simRun(params, tspan, events, **options):
     # now do the setup and call dynamics
     y0 = np.block([params.x0, params.v0])
         
@@ -22,12 +22,18 @@ def simRun(params, tspan, events):
                     rtol=1e-9,atol=1e-9,
                     events=events) 
                     # normally set tols to 1e-12
-    print(sol.message)
+    if 'verbose' in options:
+        if options['verbose']:
+            print('BC: %.2f, EFPA: %.2f' % (params.BC, params.efpa))
+            print(sol.message)
     
     if not sol.success:
         sys.exit('integration failed')
     
     if not sol.status:
+        print('Got stuck at:')
+        print('BC: %.2f' % params.BC)
+        print('EFPA: %.2f' % params.efpa)
         sys.exit('no termination event reached') 
     
     return sol

@@ -7,8 +7,9 @@ Created on Wed Jun 10 10:10:41 2020
 
 import numpy as np
 import scipy.linalg as LA
-from atm import getWind
+import sys
 
+from atm import getWind
 from frames import DCMs
 
 def LLA2R(lat, lon, alt, rad):
@@ -97,8 +98,21 @@ def RV2LLAEHV(rvec_N, vvec_N, params, t):
     vvecH_S = vvec_S - np.dot(vvec_S,uD_S) / (LA.norm(uD_S)**2) * uD_S
     
     ## finally, find angle between the horizontal projection of vvec and East
-    hda = np.degrees(np.arccos(np.dot(vvecH_S,uE_S)\
-                                    / (LA.norm(vvecH_S) * LA.norm(uE_S))))
+    # check to make sure dot product doesn't out of range numerically
+    val = np.dot(vvecH_S,uE_S) / (LA.norm(vvecH_S) * LA.norm(uE_S))
+    ep = 1e-5
+    if val > 1:
+        if val-ep > 1:
+            sys.exit('value error, arccos of value larger than 1')
+        else:
+            val = 1
+    elif val < -1:
+        if val+ep < -1:
+            sys.exit('value error, arccos of value less than -1')
+        else:
+            val = -1
+            
+    hda = np.degrees(np.arccos(val))
         
     # make sure hda has the right sign
     if np.dot(uN_S, vvecH_S) > 0: # if vvec points up toward north
