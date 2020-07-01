@@ -24,3 +24,5 @@ MARS = p('Mars')
 MARS.rad = 3397.2 # equatorial radius, km
 MARS.mu = 4.305e4 # gravitational parameter, km^3/s^2
 MARS.om = 2 * np.pi / (1.02595675 * 86400) # rotation rate, rad/s
+
+G0 = 9.80665 # Earth standard gravity, m/s^2

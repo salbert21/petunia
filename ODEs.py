@@ -11,7 +11,7 @@ import sys
 
 from atm import getRho_from_table, getWind
 
-def dynamics(t,yy,params):
+def dynamics(t,yy,params, **options):
     '''
     ODEs for full dynamics acting on the vehicle
     assume:
@@ -89,8 +89,11 @@ def dynamics(t,yy,params):
     dydt[2] = dz
     dydt[3:6] = (Fgvec_N + FLvec_N + FDvec_N) / params.m
     
-    
-    return dydt
+    if 'returnForces' in options:
+        if options['returnForces']:
+            return Fgvec_N, FLvec_N, FDvec_N
+    else:
+        return dydt
 
 
 def below_min_alt(t, y, params):    

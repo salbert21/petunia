@@ -18,7 +18,7 @@ class params:
     def __init__(self, dMode):
         self.dMode = dMode
     
-# plt.close('all')
+plt.close('all')
         
 
 dMode = 'table'
