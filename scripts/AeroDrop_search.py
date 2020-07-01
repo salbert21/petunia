@@ -125,7 +125,6 @@ def main(params, tspan, events, outs):
     
     ### ASSIGN OUTPUTS TO outs CLASS   
     # final state
-    # outs = outs()
     outs.lat = lat
     outs.lon = lon
     outs.alt = alt
@@ -212,10 +211,26 @@ event2.terminal = True
 events = (event1, event2)
 
 # ### GRID SEARCH
+# outList = []
+
+# efpaList = np.arange(-3.5,-10.5,-0.5)
+# BCList = np.arange(30,200,10)
+
+# for params.efpa in efpaList:
+#     for params.BC in BCList:
+#         outs = outs() # initialize new blank outs class instance
+#         outList.append(main(params, tspan, events))
+
+
+
+
+
+
 # # currently a single value each for testing the main function
 params.efpa = -3.5
 params.BC = 51.282051282051285
 
+outs = outs() 
 outs = main(params, tspan, events, outs)
 
 # ### PLOTS
