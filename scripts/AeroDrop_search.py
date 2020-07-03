@@ -33,7 +33,13 @@ class params:
         pass 
     
 class Outs:
-    pass
+    
+    class s0:
+        pass
+    class sf:
+        pass
+    class v:
+        pass
 
 # =============================================================================
 # MAIN FUNCTION DEFINITION
@@ -130,18 +136,40 @@ def main(params, tspan, events, outs):
     haf = raf - params.p.rad
     
     ### ASSIGN OUTPUTS TO outs CLASS   
+    # initial state
+    outs.s0.lat = params.lat
+    outs.s0.lon = params.lon
+    outs.s0.alt = params.alt
+    outs.s0.efpa = params.efpa
+    outs.s0.hda = params.hda
+    outs.s0.vmag = params.vmag
+    outs.s0.rvec_N = params.x0
+    outs.s0.vvec_N = params.v0
+    
+    outs.tspan = tspan
+    
+    # vehicle
+    outs.v.m = params.m
+    outs.v.A = params.A
+    outs.v.CL = params.CL
+    outs.v.CD = params.CD
+    outs.v.BC = params.BC
+    outs.v.Rn = params.Rn
+    outs.v.bank = params.bank
+    
+    
     # final state
-    outs.lat = lat
-    outs.lon = lon
-    outs.alt = alt
-    outs.fpa = fpa
-    outs.hda = hda
-    outs.vmag = vmag
-    outs.rfvec_N = rfvec_N
-    outs.vfvec_N = vfvec_N
-    outs.raf = raf
-    outs.haf = haf
-    outs.t = tf
+    outs.sf.lat = lat
+    outs.sf.lon = lon
+    outs.sf.alt = alt
+    outs.sf.fpa = fpa
+    outs.sf.hda = hda
+    outs.sf.vmag = vmag
+    outs.sf.rvec_N = rfvec_N
+    outs.sf.vvec_N = vfvec_N
+    outs.sf.raf = raf
+    outs.sf.haf = haf
+    outs.sf.t = tf
     
     # peak values and total loads
     outs.SGpeak = SGpeak
@@ -194,10 +222,8 @@ params.atmdat = np.array([atmdata['Hgtkm'], atmdata['DensMean']])
 ### VEHICLE PARAMS (NOT CHANGED DURING GRID SEARCH)
 params.m = 2000 # kg 
 params.Rn = 0.25 # m, effective nose radius # TODO: CHANGE THIS VALUE
-# params.A = 15 # m^2
 params.A = 30
-# params.CL = 0.1212
-params.CL = 0.6
+params.CL = 0
 
 ### INITIAL STATE (COMPONENTS NOT CHANGED DURING GRID SEARCH)
 params.lat = 40
@@ -207,7 +233,7 @@ params.hda = 0
 params.vmag = 11
 
 ### CONTROL STATE
-params.bank = 60 # deg
+params.bank = 0 # deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
@@ -236,8 +262,13 @@ for params.efpa in efpaList:
         outsList.append(main(params, tspan, events, outs))
 
 ## Save results to a file
-outname = params.p.name + '_' str(params.vmag) + '_' + str(params.CL) + '_'\
+outname = params.p.name + '_' + str(params.vmag) + '_' + str(params.CL) + '_'\
     + str(params.bank) + '_' + datetime.now().strftime('%m%d%H%M%S')
+    
+np.savez(outname,
+         params = params,
+         outsList = outsList
+         )
 
 toc = time.time()
 print('%d trajectories simulated' %(len(efpaList) * len(BCList)))

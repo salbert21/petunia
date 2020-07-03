@@ -32,7 +32,13 @@ class params:
         pass 
     
 class Outs:
-    pass
+    
+    class s0:
+        pass
+    class sf:
+        pass
+    class v:
+        pass
 
 # =============================================================================
 # MAIN FUNCTION DEFINITION
@@ -129,18 +135,40 @@ def main(params, tspan, events, outs):
     haf = raf - params.p.rad
     
     ### ASSIGN OUTPUTS TO outs CLASS   
+    # initial state
+    outs.s0.lat = params.lat
+    outs.s0.lon = params.lon
+    outs.s0.alt = params.alt
+    outs.s0.efpa = params.efpa
+    outs.s0.hda = params.hda
+    outs.s0.vmag = params.vmag
+    outs.s0.rvec_N = params.x0
+    outs.s0.vvec_N = params.v0
+    
+    outs.tspan = tspan
+    
+    # vehicle
+    outs.v.m = params.m
+    outs.v.A = params.A
+    outs.v.CL = params.CL
+    outs.v.CD = params.CD
+    outs.v.BC = params.BC
+    outs.v.Rn = params.Rn
+    outs.v.bank = params.bank
+    
+    
     # final state
-    outs.lat = lat
-    outs.lon = lon
-    outs.alt = alt
-    outs.fpa = fpa
-    outs.hda = hda
-    outs.vmag = vmag
-    outs.rfvec_N = rfvec_N
-    outs.vfvec_N = vfvec_N
-    outs.raf = raf
-    outs.haf = haf
-    outs.t = tf
+    outs.sf.lat = lat
+    outs.sf.lon = lon
+    outs.sf.alt = alt
+    outs.sf.fpa = fpa
+    outs.sf.hda = hda
+    outs.sf.vmag = vmag
+    outs.sf.rvec_N = rfvec_N
+    outs.sf.vvec_N = vfvec_N
+    outs.sf.raf = raf
+    outs.sf.haf = haf
+    outs.sf.t = tf
     
     # peak values and total loads
     outs.SGpeak = SGpeak
