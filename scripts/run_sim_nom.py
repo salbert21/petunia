@@ -27,24 +27,24 @@ dMode = 'table'
 params = params(dMode)
 params.p = constants.EARTH
 
-### GET ATM TABLE FROM OLD EARTH GRAM .CSV FILE
-filename = '../data/atm_earth_gram2016.csv'
-atmdata_raw = np.genfromtxt(filename, delimiter=',', names=True,
-                            encoding='utf-8-sig')
-# at some point would be good to build this as a pandas df instead of np array
-rhoTable = np.array([atmdata_raw['alt']/1e3,atmdata_raw['density']])
-params.atmdat = rhoTable
-
-
-# ### GET ATM TABLE FROM BINARY EARTHGRAM DATA FILE
-# filename = '../data/rawOutput.txt'
-# # get Nmc atmosphere profiles
-# Nmc = 1
-# i_trial = 0
-# densPert, densMean, h = getMCdens(filename, Nmc)
+# ### GET ATM TABLE FROM OLD EARTH GRAM .CSV FILE
+# filename = '../data/atm_earth_gram2016.csv'
+# atmdata_raw = np.genfromtxt(filename, delimiter=',', names=True,
+#                             encoding='utf-8-sig')
 # # at some point would be good to build this as a pandas df instead of np array
-# rhoTable = np.array([h,densPert[:,i_trial]])
+# rhoTable = np.array([atmdata_raw['alt']/1e3,atmdata_raw['density']])
 # params.atmdat = rhoTable
+
+
+### GET ATM TABLE FROM BINARY EARTHGRAM DATA FILE
+filename = '../data/rawOutput.txt'
+# get Nmc atmosphere profiles
+Nmc = 1
+i_trial = 0
+densPert, densMean, h = getMCdens(filename, Nmc)
+# at some point would be good to build this as a pandas df instead of np array
+rhoTable = np.array([h,densPert[:,i_trial]])
+params.atmdat = rhoTable
 
 ### VEHICLE PARAMS
 params.m = 2000 # kg 

@@ -173,16 +173,22 @@ plt.close('all')
 params = params()
 params.p = constants.EARTH
 
-### INPUT ATM TABLE - GET ATM TABLE FROM BINARY EARTHGRAM DATA FILE
+### INPUT ATM TABLE - GET ATM TABLE FROM EARTHGRAM DATA FILE
 params.dMode = 'table'
-filename = '../data/rawOutput.txt'
-# get Nmc atmosphere profiles
-Nmc = 1
-i_trial = 0
-densPert, densMean, h = getMCdens(filename, Nmc)
-# at some point would be good to build this as a pandas df instead of np array
-rhoTable = np.array([h,densPert[:,i_trial]])
-params.atmdat = rhoTable
+filename = '../data/dat_raw_Earth_nom.txt'
+atmdata = np.genfromtxt(filename, names=True)
+atmdata.sort(order='Hgtkm') # put in ascending altitude order
+params.atmdat = np.array([atmdata['Hgtkm'], atmdata['DensMean']])
+
+# ## get Nmc atmosphere profiles
+# Nmc = 1
+# i_trial = 0
+# densPert, densMean, h = getMCdens(filename, Nmc)
+# # at some point would be good to build this as a pandas df instead of np array
+# # rhoTable = np.array([h,densPert[:,i_trial]])
+# # load nominal density:
+# rhoTable = np.array([h,densPert[:,i_trial]])
+# params.atmdat = rhoTable
 
 ### VEHICLE PARAMS (NOT CHANGED DURING GRID SEARCH)
 params.m = 2000 # kg 
