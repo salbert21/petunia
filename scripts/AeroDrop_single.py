@@ -14,7 +14,6 @@ import time
 import matplotlib.pyplot as plt
 import sys
 from scipy.integrate import trapz
-from datetime import datetime
 
 import constants
 import ODEs
@@ -151,12 +150,12 @@ def main(params, tspan, events, outs):
 
     
     
-    # # may not want these always on since they have values at each time step
-    # outs.rvec_N = rvec_N
-    # outs.vvec_N = vvec_N
-    # outs.tvec = sol.t
-    # outs.q = q
-    # outs.gload = gload
+    # may not want these always on since they have values at each time step
+    outs.rvec_N = rvec_N
+    outs.vvec_N = vvec_N
+    outs.tvec = sol.t
+    outs.q = q
+    outs.gload = gload
 
     return outs
     
@@ -225,22 +224,41 @@ event2.terminal = True
 
 events = (event1, event2)
 
-### GRID SEARCH
-efpaList = np.arange(-3.5, -7, -0.05)
-BCList = np.arange(10, 200, 5)
-outsList = []
 
-for params.efpa in efpaList:
-    for params.BC in BCList:
-        outs = Outs() # create new blank outs class instance
-        outsList.append(main(params, tspan, events, outs))
+### SINGLE RUN
+params.efpa = -5
+params.BC = 80
+outs = Outs()
+outs = main(params, tspan, events, outs)
 
-## Save results to a file
-outname = params.p.name + '_' str(params.vmag) + '_' + str(params.CL) + '_'\
-    + str(params.bank) + '_' + datetime.now().strftime('%m%d%H%M%S')
+
+
+### PLOTS
+alt = np.linalg.norm(outs.rvec_N, axis=0) - params.p.rad #/1e3
+vmag = np.linalg.norm(outs.vvec_N, axis=0)
+
+fig = plt.figure(2)
+ax = fig.add_subplot(111)
+ax.plot(vmag, alt)
+ax.set_xlabel('Inertial velocity, km/s')
+ax.set_ylabel('Altitude, km')
+ax.grid()
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(outs.tvec, outs.q)
+ax.set_xlabel('time')
+ax.set_ylabel('heat rate')
+ax.grid()
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(outs.tvec, vmag)
+ax.set_xlabel('time')
+ax.set_ylabel('vmag')
+ax.grid()
 
 toc = time.time()
-print('%d trajectories simulated' %(len(efpaList) * len(BCList)))
 print('Time elapsed: %.2f s' % (toc-tic))
 
 
