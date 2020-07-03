@@ -21,15 +21,15 @@ from sim import simRun
 from atm import getMCdens, getRho_from_table
 from conversions import LLAEHV2RV, RV2LLAEHV, VN2Vinf
 
-#### TEMP DEBUGGING CODE ####
-import warnings
+# #### TEMP DEBUGGING CODE ####
+# import warnings
 # warnings.simplefilter('error')
-####
+# ####
 
 class params:
        
     class p:
-        pass
+        pass 
     
 class Outs:
     pass
@@ -219,8 +219,8 @@ event2.terminal = True
 events = (event1, event2)
 
 ### GRID SEARCH
-efpaList = np.arange(-3, -10.5, -0.5)
-BCList = np.arange(30, 200, 10)
+efpaList = np.arange(-3.5, -7, -0.05)
+BCList = np.arange(10, 200, 5)
 outsList = []
 
 for params.efpa in efpaList:
@@ -262,6 +262,7 @@ for params.efpa in efpaList:
 # ax.grid()
 
 toc = time.time()
+print('%d trajectories simulated' %(len(efpaList) * len(BCList)))
 print('Time elapsed: %.2f s' % (toc-tic))
 
 
