@@ -195,7 +195,7 @@ def main(params, tspan, events, outs):
 # MAIN - GRID SEARCH
 # =============================================================================
 tic = time.time()
-plt.close('all')
+# plt.close('all')
 
 ### CREATE params INPUT CLASS
 params = params()
@@ -224,7 +224,7 @@ params.Rn = 0.25 # m, effective nose radius # TODO: CHANGE THIS VALUE
 # params.A = 15 # m^2
 params.A = 30
 # params.CL = 0.1212
-params.CL = 0.6
+params.CL = 0.3
 
 ### INITIAL STATE (COMPONENTS NOT CHANGED DURING GRID SEARCH)
 params.lat = 40
@@ -234,7 +234,7 @@ params.hda = 0
 params.vmag = 11
 
 ### CONTROL STATE
-params.bank = 60 # deg
+params.bank = 0 # deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
@@ -254,8 +254,8 @@ events = (event1, event2)
 
 
 ### SINGLE RUN
-params.efpa = -5
-params.BC = 80
+params.efpa = -3
+params.BC = 10
 outs = Outs()
 outs = main(params, tspan, events, outs)
 
@@ -265,21 +265,21 @@ outs = main(params, tspan, events, outs)
 alt = np.linalg.norm(outs.rvec_N, axis=0) - params.p.rad #/1e3
 vmag = np.linalg.norm(outs.vvec_N, axis=0)
 
-fig = plt.figure(2)
+fig = plt.figure(1)
 ax = fig.add_subplot(111)
 ax.plot(vmag, alt)
 ax.set_xlabel('Inertial velocity, km/s')
 ax.set_ylabel('Altitude, km')
 ax.grid()
 
-fig = plt.figure()
+fig = plt.figure(2)
 ax = fig.add_subplot(111)
 ax.plot(outs.tvec, outs.q)
 ax.set_xlabel('time')
 ax.set_ylabel('heat rate')
 ax.grid()
 
-fig = plt.figure()
+fig = plt.figure(3)
 ax = fig.add_subplot(111)
 ax.plot(outs.tvec, vmag)
 ax.set_xlabel('time')

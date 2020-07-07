@@ -18,7 +18,7 @@ class params:
     def __init__(self, dMode):
         self.dMode = dMode
     
-# plt.close('all')
+plt.close('all')
 
 tic = time.time()
 
@@ -49,11 +49,11 @@ params.atmdat = rhoTable
 ### VEHICLE PARAMS
 params.m = 2000 # kg 
 params.A = 30 # m^2
-params.CL = 0.6
+params.CL = 0.3
 params.BC = 51.282051282051285
 # get CD from BC
 # params.CD = params.m / (params.BC * params.A)
-params.CD = 1.3
+params.CD = 1.25
 
 ### INITIAL STATE
 # params.x0 = np.array([6478.100, 0, 0]) # inertial frame and coordinates
@@ -64,7 +64,7 @@ params.x0 = np.array([6478100,           0,           0]) / 1e3
 params.v0 = np.array([-0.67153393,  0.47238996, 10.97948278])
 
 ### CONTROL STATE
-params.bank = 60 # full-lift-up, deg
+params.bank = 180 # full-lift-up, deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
@@ -83,7 +83,7 @@ event2.terminal = True
 events = (event1, event2)
 
 ### CALL SIMRUN
-sol = simRun(params, tspan, events, verbose=True)
+sol = simRun(params, tspan, events, verbose=False)
 rvec_N = sol.y[0:3,:]
 vvec_N = sol.y[3:6,:] 
 

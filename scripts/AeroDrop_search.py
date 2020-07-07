@@ -27,7 +27,7 @@ from conversions import LLAEHV2RV, RV2LLAEHV, VN2Vinf
 # warnings.simplefilter('error')
 # ####
 
-class params:
+class Params:
        
     class p:
         pass 
@@ -205,7 +205,7 @@ tic = time.time()
 plt.close('all')
 
 ### CREATE params INPUT CLASS
-params = params()
+params = Params()
 params.p = constants.EARTH
 
 ### INPUT ATM TABLE - GET ATM TABLE FROM EARTHGRAM DATA FILE
@@ -229,7 +229,7 @@ params.atmdat = np.array([atmdata['Hgtkm'], atmdata['DensMean']])
 params.m = 2920 # kg, roughly MSL mass
 params.CD = params.m / (115 * np.pi * (4.5/2)**2) # roughly MSL CD
 
-params.LD = 0
+params.LD = 0.25
 
 ### INITIAL STATE (COMPONENTS NOT CHANGED DURING GRID SEARCH)
 params.lat = 40
@@ -239,7 +239,7 @@ params.hda = 0
 params.vmag = 11
 
 ### CONTROL STATE
-params.bank = 0 # deg
+params.bank = 180 # deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
@@ -268,8 +268,9 @@ for params.efpa in efpaList:
         outsList.append(main(params, tspan, events, outs))
 
 ## Save results to a file
-outname = params.p.name + '_' + str(params.vmag) + '_' + str(params.CL) + '_'\
-    + str(params.bank) + '_' + datetime.now().strftime('%m%d%H%M%S')
+outname = './../data/sweeps/' + params.p.name + '_' + str(params.vmag) + '_'\
+        + str(params.CL) + '_' + str(params.bank) + '_'\
+        + datetime.now().strftime('%m%d%H%M%S')
     
 np.savez(outname,
          params = params,

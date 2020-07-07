@@ -73,6 +73,17 @@ def dynamics(t,yy,params, **options):
     
     LupvecU_N = Lupvec_N / np.linalg.norm(Lupvec_N)
     
+    # TODO - following code check is a little sketchy. can improve w/ 6 DOF
+    c1 = np.cross(xvec_N, params.v0)
+    c2 = np.cross(xvec_N, vInfvec_N)
+    # if we are "flying upside down"
+    if np.dot(c1,c2) < 0:
+        # then change the sign on the lift vector to be upside down
+        LupvecU_N = -LupvecU_N
+    
+    # print(LupvecU_N)
+    # print(t)
+    
     vInfvecU_N = vInfvec_N / np.linalg.norm(vInfvec_N)
     
     LvecU_N = LupvecU_N * np.cos(np.radians(params.bank)) + \
