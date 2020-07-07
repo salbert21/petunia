@@ -33,13 +33,7 @@ class Params:
         pass 
     
 class Outs:
-    
-    class s0:
-        pass
-    class sf:
-        pass
-    class v:
-        pass
+    pass
 
 # =============================================================================
 # MAIN FUNCTION DEFINITION
@@ -143,39 +137,39 @@ def main(params, tspan, events, outs):
     
     ### ASSIGN OUTPUTS TO outs CLASS   
     # initial state
-    outs.s0.lat = params.lat
-    outs.s0.lon = params.lon
-    outs.s0.alt = params.alt
-    outs.s0.efpa = params.efpa
-    outs.s0.hda = params.hda
-    outs.s0.vmag = params.vmag
-    outs.s0.rvec_N = params.x0
-    outs.s0.vvec_N = params.v0
+    outs.lat0 = params.lat
+    outs.lon0 = params.lon
+    outs.alt0 = params.alt
+    outs.efpa0 = params.efpa
+    outs.hda0 = params.hda
+    outs.vmag0 = params.vmag
+    outs.rvec_N0 = params.x0
+    outs.vvec_N0 = params.v0
     
     outs.tspan = tspan
     
     # vehicle
-    outs.v.m = params.m
-    outs.v.A = params.A
-    outs.v.CL = params.CL
-    outs.v.CD = params.CD
-    outs.v.BC = params.BC
-    outs.v.Rn = params.Rn
-    outs.v.bank = params.bank
+    outs.m = params.m
+    outs.A = params.A
+    outs.CL = params.CL
+    outs.CD = params.CD
+    outs.BC = params.BC
+    outs.Rn = params.Rn
+    outs.bank = params.bank
     
     
     # final state
-    outs.sf.lat = lat
-    outs.sf.lon = lon
-    outs.sf.alt = alt
-    outs.sf.fpa = fpa
-    outs.sf.hda = hda
-    outs.sf.vmag = vmag
-    outs.sf.rvec_N = rfvec_N
-    outs.sf.vvec_N = vfvec_N
-    outs.sf.raf = raf
-    outs.sf.haf = haf
-    outs.sf.t = tf
+    outs.latf = lat
+    outs.lonf = lon
+    outs.altf = alt
+    outs.fpaf = fpa
+    outs.hdaf = hda
+    outs.vmagf = vmag
+    outs.rvec_Nf = rfvec_N
+    outs.vvec_Nf = vfvec_N
+    outs.raf = raf
+    outs.haf = haf
+    outs.t = tf
     
     # peak values and total loads
     outs.SGpeak = SGpeak
@@ -229,7 +223,7 @@ params.atmdat = np.array([atmdata['Hgtkm'], atmdata['DensMean']])
 params.m = 2920 # kg, roughly MSL mass
 params.CD = params.m / (115 * np.pi * (4.5/2)**2) # roughly MSL CD
 
-params.LD = 0.25
+params.LD = 0 #0.25
 
 ### INITIAL STATE (COMPONENTS NOT CHANGED DURING GRID SEARCH)
 params.lat = 40
@@ -239,7 +233,7 @@ params.hda = 0
 params.vmag = 11
 
 ### CONTROL STATE
-params.bank = 180 # deg
+params.bank = 0 # deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
@@ -258,17 +252,19 @@ event2.terminal = True
 events = (event1, event2)
 
 ### GRID SEARCH
-efpaList = np.arange(-3, -7.5, -0.02)
-BCList = np.arange(10, 200, 5)
+efpaList = np.arange(-3, -7.5, -2) # -0.02)
+BCList = np.arange(10, 200, 100) #5)
 outsList = []
 
 for params.efpa in efpaList:
     for params.BC in BCList:
         outs = Outs() # create new blank outs class instance
+        outs.efpaList = efpaList
+        outs.BCList = BCList
         outsList.append(main(params, tspan, events, outs))
 
 ## Save results to a file
-outname = './../data/sweeps/' + params.p.name + '_' + str(params.vmag) + '_'\
+outname = './../data/sweeps/FAKE' + params.p.name + '_' + str(params.vmag) + '_'\
         + str(params.CL) + '_' + str(params.bank) + '_'\
         + datetime.now().strftime('%m%d%H%M%S')
     
