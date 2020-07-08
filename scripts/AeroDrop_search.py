@@ -169,6 +169,9 @@ def main(params, tspan, events, outs):
     outs.vvec_Nf = vfvec_N
     outs.raf = raf
     outs.haf = haf
+    outs.engf = engf
+    outs.af = af
+    outs.eccf = eccf
     outs.t = tf
     
     # peak values and total loads
@@ -223,21 +226,21 @@ params.atmdat = np.array([atmdata['Hgtkm'], atmdata['DensMean']])
 params.m = 2920 # kg, roughly MSL mass
 params.CD = params.m / (115 * np.pi * (4.5/2)**2) # roughly MSL CD
 
-params.LD = 0 #0.25
+params.LD = 0.25
 
 ### INITIAL STATE (COMPONENTS NOT CHANGED DURING GRID SEARCH)
 params.lat = 40
 params.lon = 100
 params.alt = 100 - 1e-7
 params.hda = 0
-params.vmag = 11
+params.vmag = 12
 
 ### CONTROL STATE
-params.bank = 0 # deg
+params.bank = 180 # deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
-tspan = (0,1000) # don't make too long or results get choppy!
+tspan = (0,1500) # don't make too long or results get choppy!
 
 # exit conditions:
 params.hmin = 30
@@ -252,8 +255,8 @@ event2.terminal = True
 events = (event1, event2)
 
 ### GRID SEARCH
-efpaList = np.arange(-3, -7.5, -2) # -0.02)
-BCList = np.arange(10, 200, 100) #5)
+efpaList = np.arange(-3, -7.5, -0.02)
+BCList = np.arange(10, 200, 5)
 outsList = []
 
 for params.efpa in efpaList:
@@ -264,7 +267,7 @@ for params.efpa in efpaList:
         outsList.append(main(params, tspan, events, outs))
 
 ## Save results to a file
-outname = './../data/sweeps/FAKE' + params.p.name + '_' + str(params.vmag) + '_'\
+outname = './../data/sweeps/' + params.p.name + '_' + str(params.vmag) + '_'\
         + str(params.CL) + '_' + str(params.bank) + '_'\
         + datetime.now().strftime('%m%d%H%M%S')
     

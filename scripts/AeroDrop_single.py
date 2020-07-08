@@ -45,8 +45,14 @@ class Outs:
 # =============================================================================
 
 def main(params, tspan, events, outs):
-    # get CD from BC
-    params.CD = params.m / (params.BC * params.A)
+    # get A from CD and BC
+    params.A = params.m / (params.BC * params.CD)
+    
+    # get Rn from A, assuming Rn/Rb = 1/2
+    params.Rn = np.sqrt(params.A / np.pi) / 2
+    
+    # get CL from L/D and CD
+    params.CL = params.CD * params.LD
     
     ### CONVERT TO INERTIAL INITIAL STATE
     params.x0, params.v0 = LLAEHV2RV(params.lat, params.lon, params.alt,
@@ -219,26 +225,24 @@ params.atmdat = np.array([atmdata['Hgtkm'], atmdata['DensMean']])
 # params.atmdat = rhoTable
 
 ### VEHICLE PARAMS (NOT CHANGED DURING GRID SEARCH)
-params.m = 2000 # kg 
-params.Rn = 0.25 # m, effective nose radius # TODO: CHANGE THIS VALUE
-# params.A = 15 # m^2
-params.A = 30
-# params.CL = 0.1212
-params.CL = 0.3
+params.m = 2920 # kg, roughly MSL mass
+params.CD = params.m / (115 * np.pi * (4.5/2)**2) # roughly MSL CD
+
+params.LD = 0.25
 
 ### INITIAL STATE (COMPONENTS NOT CHANGED DURING GRID SEARCH)
 params.lat = 40
 params.lon = 100
 params.alt = 100 - 1e-7
 params.hda = 0
-params.vmag = 11
+params.vmag = 12
 
 ### CONTROL STATE
-params.bank = 0 # deg
+params.bank = 180 # deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
-tspan = (0,1000) # don't make too long or results get choppy!
+tspan = (0,1500) # don't make too long or results get choppy!
 
 # exit conditions:
 params.hmin = 30
@@ -254,8 +258,8 @@ events = (event1, event2)
 
 
 ### SINGLE RUN
-params.efpa = -3
-params.BC = 10
+params.efpa = -3.64
+params.BC = 130
 outs = Outs()
 outs = main(params, tspan, events, outs)
 
