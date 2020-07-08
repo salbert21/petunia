@@ -70,6 +70,16 @@ def getMCdens(filename, Nmc):
     
     Similar to getMCAtmdat, but returns np array of just altitude, mean density,
     and each perturbed density.
+    Ex:
+        # ## get Nmc atmosphere profiles
+        # Nmc = 1
+        # i_trial = 0
+        # densPert, densMean, h = getMCdens(filename, Nmc)
+        # # at some point would be good to build this as a pandas df instead of np array
+        # # rhoTable = np.array([h,densPert[:,i_trial]])
+        # # load nominal density:
+        # rhoTable = np.array([h,densPert[:,i_trial]])
+        # params.atmdat = rhoTable
     '''
     
     # Load one line at a time to find # of lines per MC run
