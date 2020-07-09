@@ -29,9 +29,9 @@ def simRun(params, tspan, events, **options):
         
     sol = solve_ivp(lambda t, y: ODEs.dynamics(t,y,params), 
                     [tspan[0], tspan[-1]], y0.flatten(),
-                    rtol=1e-9,atol=1e-9,
+                    rtol=1e-10,atol=1e-10,
                     events=events) 
-                    # normally set tols to 1e-12
+                    # 1e-10 maintains about 5 sig figs of accuracy
     if 'verbose' in options:
         if options['verbose']:
             print('BC: %.2f, EFPA: %.2f' % (params.BC, params.efpa))
@@ -226,11 +226,11 @@ def mainAD(params, tspan, events, outs):
 
     
     
-    # # may not want these always on since they have values at each time step
-    # outs.rvec_N = rvec_N
-    # outs.vvec_N = vvec_N
-    # outs.tvec = sol.t
-    # outs.q = q
-    # outs.gload = gload
+    if params.returnTimeVectors:
+        outs.rvec_N = rvec_N
+        outs.vvec_N = vvec_N
+        outs.tvec = sol.t
+        outs.q = q
+        outs.gload = gload
 
     return outs

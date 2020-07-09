@@ -20,6 +20,8 @@ plt.close('all')
 ### CREATE params INPUT CLASS
 params = Params()
 params.p = constants.EARTH
+params.returnTimeVectors = False
+params.atmMod = 'nom'
 
 ### INPUT ATM TABLE - GET ATM TABLE FROM EARTHGRAM DATA FILE
 params.dMode = 'table'
@@ -72,8 +74,8 @@ for params.efpaWR in efpaList:
         outsList.append(mainAD(params, tspan, events, outs))
 
 ## Save results to a file
-outname = './../data/sweeps/FAKE_' + params.p.name + '_' + str(params.vmagWR) + '_'\
-        + str(params.LD) + '_' + str(params.bank) + '_'\
+outname = './../results/sweeps/' + params.p.name + '_' + str(params.vmagWR) + '_'\
+        + params.atmMod + '_' + str(params.LD) + '_' + str(params.bank) + '_'\
         + datetime.now().strftime('%m%d%H%M%S')
     
 np.savez(outname,
