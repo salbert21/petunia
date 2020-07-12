@@ -14,7 +14,7 @@ import constants
 plt.close('all')
 
 ## Load file archive and get data
-filename = './../data/sweeps/FAKE_Earth_11_0_0_0708163447.npz'
+filename = './../results/sweeps/Earth_11_nom_0_0_0709181558.npz'
 data = np.load(filename, allow_pickle=True)
 params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -33,6 +33,7 @@ hafgrid = np.reshape([out.haf for out in outsList], BCgrid.shape)
 qgrid = np.reshape([out.qpeak for out in outsList], BCgrid.shape)
 QLgrid = np.reshape([out.Qload for out in outsList], BCgrid.shape)
 fpafgrid = np.reshape([out.fpaf for out in outsList], BCgrid.shape)
+engfgrid = np.reshape([out.engf for out in outsList], BCgrid.shape)
 
 ##  Data pruning
 hafgrid[hafgrid < 0] = np.inf # set haf to inf for hyperbolic cases
@@ -42,15 +43,36 @@ hafgrid[fpafgrid < 0] = np.nan # ignore haf values for landed cases
 landline_BC = BCList
 landline_EFPA = []
 for rind in range(fpafgrid.shape[1]):
-    ind = (next(ind for ind, val in enumerate(fpafgrid[:,rind])\
-                              if val < 0))
+    ind = next(ind for ind, val in enumerate(fpafgrid[:,rind])\
+               if val < 0)
     landline_EFPA.append(efpaList[ind])
+    
+# find line between aerocapture and escape
+spaceline_BC = []
+spaceline_EFPA = []
+for rind in range(engfgrid.shape[1]):
+    ind = [ind for ind, val in enumerate(engfgrid[:,rind]) if val < 0]
+    if len(ind) == 0:
+        break
+    else:
+        spaceline_BC.append(BCList[rind])
+        spaceline_EFPA.append(efpaList[ind[0]])
+
+
 
 ## Make countour plots
 fig = plt.figure()
 ax = fig.add_subplot(111)
-haflevels = [1e3, 10e3, 30e3, 100e3]
-cp = ax.contour(EFPAgrid.T, BCgrid.T, hafgrid.T, haflevels)
-ax.clabel(cp, inline = True, fontsize = 10, fmt = '%1.0f')
+ax.grid()
+haflevels = [5e3, 10e3, 30e3, 120e3]
+cp = ax.contour(EFPAgrid.T, BCgrid.T, hafgrid.T, haflevels, colors = 'blue')
+ax.clabel(cp, inline = True, colors = 'blue', fontsize = 10, fmt = '%1.0f')
 
-ax.plot(landline_EFPA, landline_BC)
+ax.plot(landline_EFPA, landline_BC, color = 'black')
+ax.plot(spaceline_EFPA, spaceline_BC, color = 'magenta')
+ax.fill_between(landline_EFPA, landline_BC, 10,
+                facecolor = 'blue', alpha = 0.3)
+
+edgy = np.minimum(spaceline_EFPA, max(landline_EFPA))
+ax.fill_betweenx(landline_BC, landline_EFPA, edgy,
+                 facecolor = 'green', alpha = 0.3)
