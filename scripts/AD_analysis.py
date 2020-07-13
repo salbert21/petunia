@@ -14,7 +14,7 @@ import constants
 plt.close('all')
 
 ## Load file archive and get data
-filename = './../results/sweeps/Earth_11_nom_0_0_0709181558.npz'
+filename = './../results/sweeps/TEST_Mars_6_nom_0_0_0712172040.npz'
 data = np.load(filename, allow_pickle=True)
 params = data['params'][0] # array of 1
 outsList = data['outsList']

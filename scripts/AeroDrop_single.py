@@ -19,13 +19,13 @@ plt.close('all')
 
 ### CREATE params INPUT CLASS
 params = Params()
-params.p = constants.MARS
+params.p = constants.VENUS
 params.returnTimeVectors = True
-params.atmMod = '20% high'
+params.atmMod = '20% low'
 
 ### INPUT ATM TABLE - GET ATM TABLE FROM EARTHGRAM DATA FILE
 params.dMode = 'table'
-filename = '../data/dens_Mars_nom.txt'
+filename = '../data/dens_Venus_nom.txt'
 atmdata = np.genfromtxt(filename, names=True)
 atmdata.sort(order='Var_X') # put in ascending altitude order
 params.atmdat = np.array([atmdata['Var_X'], atmdata['DENSAV']])
@@ -48,21 +48,21 @@ params.LD = 0.25
 
 ### WIND-RELATIVE INITIAL STATE (COMPONENTS NOT CHANGED DURING GRID SEARCH)
 params.inputType = 'wind-relative angles'
-params.lat = 18.38
-params.lon = 77.58
+params.lat = -31.3
+params.lon = 317.0
 params.alt = params.p.halt
 params.hdaWR = 0
-params.vmagWR = 6
+params.vmagWR = 11.5
 
 ### CONTROL STATE
-params.bank = 180 # deg
+params.bank = 0 # deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
-tspan = (0,1500) # don't make too long or results get choppy!
+tspan = (0,3000) # don't make too long or results get choppy!
 
 # exit conditions:
-params.hmin = 10
+params.hmin = 75
 params.hmax = params.p.halt + 1e-7
 
 event1 = lambda t, y: ODEs.below_min_alt(t, y, params)
@@ -74,8 +74,8 @@ event2.terminal = True
 events = (event1, event2)
 
 ### SINGLE RUN
-params.efpaWR = -8.4
-params.BC = 10
+params.efpaWR = -7.3
+params.BC = 200
 outs = Outs()
 outs = mainAD(params, tspan, events, outs)
 print(outs.fpaf)

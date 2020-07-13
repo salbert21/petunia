@@ -20,13 +20,13 @@ plt.close('all')
 
 ### CREATE params INPUT CLASS
 params = Params()
-params.p = constants.MARS
+params.p = constants.VENUS
 params.returnTimeVectors = False
-params.atmMod = '20% low'
+params.atmMod = 'nom'
 
 ### INPUT ATM TABLE - GET ATM TABLE FROM EARTHGRAM DATA FILE
 params.dMode = 'table'
-filename = '../data/dens_Mars_nom.txt'
+filename = '../data/dens_Venus_nom.txt'
 atmdata = np.genfromtxt(filename, names=True)
 atmdata.sort(order='Var_X') # put in ascending altitude order
 params.atmdat = np.array([atmdata['Var_X'], atmdata['DENSAV']])
@@ -45,18 +45,18 @@ else:
 params.m = 2920 # kg, roughly MSL mass
 params.CD = params.m / (115 * np.pi * (4.5/2)**2) # roughly MSL CD
 
-params.LD = 0.25
+params.LD = 0 #0.25
 
 ### WIND-RELATIVE INITIAL STATE (COMPONENTS NOT CHANGED DURING GRID SEARCH)
 params.inputType = 'wind-relative angles'
-params.lat = 18.38
-params.lon = 77.58
+params.lat = -31.3
+params.lon = 317.0
 params.alt = params.p.halt
 params.hdaWR = 0
-params.vmagWR = 6
+params.vmagWR = 11.5
 
 ### CONTROL STATE
-params.bank = 180 # deg
+params.bank = 0 # deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
@@ -75,7 +75,7 @@ event2.terminal = True
 events = (event1, event2)
 
 ### GRID SEARCH
-efpaList = np.arange(-8.4, -12.8, -0.02)
+efpaList = np.arange(-3.5, -7.3, -0.02)
 BCList = np.arange(10, 200, 2.5)
 outsList = []
 

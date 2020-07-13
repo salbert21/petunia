@@ -63,7 +63,7 @@ params.bank = 180 # deg
 tspan = (0,3000) # don't make too long or results get choppy!
 
 # exit conditions:
-params.hmin = 30
+params.hmin = 20
 params.hmax = params.p.halt + 1e-7
 
 event1 = lambda t, y: ODEs.below_min_alt(t, y, params)
