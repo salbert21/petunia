@@ -91,7 +91,7 @@ def mainAD(params, tspan, events, outs):
         params.v0 = Vinf2VN(params.x0, params.vInfvec_N, params, tspan[0])
         _, _, _, params.efpa, params.hda, params.vmag = \
             RV2LLAEHV(params.x0, params.v0, params, tspan[0])
-        
+
     else:
         sys.exit('input type not recognized')
     

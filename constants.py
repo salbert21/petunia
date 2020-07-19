@@ -39,7 +39,15 @@ TITAN = p('Titan')
 TITAN.rad = 2574.73 # mean radius, km
 TITAN.mu = 8978.1382 # gravitational parameter, km^3/s^2
 TITAN.om = 2 * np.pi / (15.945 * 86400) # rotation rate, rad/s
-TITAN.k = 1.758E-04
-TITAN.halt = 800
+TITAN.k = 1.758E-04 # S-G coefficient (see spreadsheet), kg^0.5/m
+TITAN.halt = 800 # atmospheric interface altitude, km
+
+NEPTUNE = p('Neptune')
+NEPTUNE.rad = 24764.0 # equatorial radius, km
+NEPTUNE.mu = 6.809e6 # gravitational parameter, km^3/s^2
+NEPTUNE.om = 2 * np.pi / (0.768 * 86400) # rotation rate, rad/s
+NEPTUNE.k = 7.361E-05 # S-G coefficient (see spreadsheet), kg^0.5/m
+NEPTUNE.halt = 1000 # atmospheric interface altitude, km
+
 
 G0 = 9.80665 # Earth standard gravity, m/s^2
