@@ -117,7 +117,7 @@ plt.close('all')
 params = Params()
 params.p = constants.NEPTUNE
 params.returnTimeVectors = False
-params.atmMod = 'nom'
+params.atmMod = '20% low'
 
 ### INPUT ATM TABLE - GET ATM TABLE FROM EARTHGRAM DATA FILE
 params.dMode = 'table'
@@ -140,7 +140,7 @@ else:
 params.m = 2920 # kg, roughly MSL mass
 params.CD = params.m / (115 * np.pi * (4.5/2)**2) # roughly MSL CD
 
-params.LD = 0 #0.25
+params.LD = 0.25
 
 ### WIND-RELATIVE INITIAL STATE (COMPONENTS NOT CHANGED DURING GRID SEARCH)
 params.inputType = 'wind-relative angles'
@@ -151,7 +151,7 @@ params.hdaWR = 0
 params.vmagWR = 27
 
 ### CONTROL STATE
-params.bank = 0 # deg
+params.bank = 180 # deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
