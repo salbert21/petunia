@@ -32,7 +32,7 @@ QLstyle = 'dotted'
 
 ### Start with uncertainty bars on landline and spaceline
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_20% low_0.25_180_0716033446.npz'
+filename = './../results/sweeps/Mars_6_20% low_0.25_180_0713014708.npz'
 data = np.load(filename, allow_pickle=True)
 params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -81,7 +81,7 @@ ax1.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
         linewidth = 1, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_20% high_0.25_180_0716043107.npz'
+filename = './../results/sweeps/Mars_6_20% high_0.25_180_0713023126.npz'
 data = np.load(filename, allow_pickle=True)
 params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -130,7 +130,7 @@ ax1.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
 ### Now nominal atmosphere
 
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_nom_0.25_180_0716040650.npz'
+filename = './../results/sweeps/Mars_6_nom_0.25_180_0713020834.npz'
 data = np.load(filename, allow_pickle=True)
 params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -185,17 +185,17 @@ cp = ax1.contour(EFPAgrid.T, BCgrid.T, hafgrid.T, haflevels,
                 colors = hafcol, linestyles = hafstyle)
 ax1.clabel(cp, inline = True, colors = hafcol, fontsize = 9, fmt = '%1.0f')
 
-glevels = [1, 3, 4]
+glevels = [6, 8, 10, 12, 14, 16, 18, 20]
 cp = ax1.contour(EFPAgrid.T, BCgrid.T, ggrid.T, glevels,
                 colors = gcol, linestyles = gstyle)
 ax1.clabel(cp, inline = True, colors = gcol, fontsize = 9, fmt = '%1.0f')
 
-qlevels = [12, 24, 36]
+qlevels = [10, 30, 50, 70]
 cp = ax1.contour(EFPAgrid.T, BCgrid.T, qgrid.T, qlevels,
                 colors = qcol, linestyles = qstyle)
 ax1.clabel(cp, inline = True, colors = qcol, fontsize = 9, fmt = '%1.0f')
 
-QLlevels = [2e3, 4e3, 6e3, 8e3]
+QLlevels = [1e3, 3e3, 5e3]
 cp = ax1.contour(EFPAgrid.T, BCgrid.T, QLgrid.T, QLlevels,
                 colors = QLcol, linestyles = QLstyle)
 ax1.clabel(cp, inline = True, colors = QLcol, fontsize = 9, fmt = '%1.0f')
@@ -234,7 +234,7 @@ fig.legend(handles=[land_proxy, space_proxy, haf_proxy,
 
 ### Start with uncertainty bars on landline and spaceline
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_20% low_0_0_0716041829.npz'
+filename = './../results/sweeps/Mars_6_20% low_0_0_0713010516.npz'
 data = np.load(filename, allow_pickle=True)
 params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -277,7 +277,7 @@ ax2.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
         linewidth = 1, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_20% high_0_0_0716045438.npz'
+filename = './../results/sweeps/Mars_6_20% high_0_0_0713015055.npz'
 data = np.load(filename, allow_pickle=True)
 params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -324,7 +324,7 @@ ax2.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
                  facecolor = spacecol, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_nom_0_0_0716043817.npz'
+filename = './../results/sweeps/Mars_6_nom_0_0_0713012902.npz'
 data = np.load(filename, allow_pickle=True)
 params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -372,23 +372,23 @@ ax2.plot(landline_EFPA, landline_BC, color = landcol, linewidth = 3)
 ax2.plot(spaceline_EFPA, spaceline_BC, color = spacecol, linewidth = 3)
 
 ## Contours:
-
-haflevels = []
+    
+haflevels = [6e3]
 cp = ax2.contour(EFPAgrid.T, BCgrid.T, hafgrid.T, haflevels,
                 colors = hafcol, linestyles = hafstyle)
 ax2.clabel(cp, inline = True, colors = hafcol, fontsize = 9, fmt = '%1.0f')
 
-glevels = [1, 3, 4]
+glevels = [1, 2, 4, 6, 8, 10, 12]
 cp = ax2.contour(EFPAgrid.T, BCgrid.T, ggrid.T, glevels,
                 colors = gcol, linestyles = gstyle)
 ax2.clabel(cp, inline = True, colors = gcol, fontsize = 9, fmt = '%1.0f')
 
-qlevels = [12, 24, 36]
+qlevels = [10, 30, 50, 70]
 cp = ax2.contour(EFPAgrid.T, BCgrid.T, qgrid.T, qlevels,
                 colors = qcol, linestyles = qstyle)
 ax2.clabel(cp, inline = True, colors = qcol, fontsize = 9, fmt = '%1.0f')
 
-QLlevels = [2e3, 4e3, 6e3, 8e3]
+QLlevels = [1e3, 3e3, 5e3]
 cp = ax2.contour(EFPAgrid.T, BCgrid.T, QLgrid.T, QLlevels,
                 colors = QLcol, linestyles = QLstyle)
 ax2.clabel(cp, inline = True, colors = QLcol, fontsize = 9, fmt = '%1.0f')
@@ -400,7 +400,7 @@ ax2.clabel(cp, inline = True, colors = QLcol, fontsize = 9, fmt = '%1.0f')
 
 ### Start with uncertainty bars on landline and spaceline
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_20% low_0.25_0_0716054235.npz'
+filename = './../results/sweeps/Mars_6_20% low_0.25_0_0713020505.npz'
 data = np.load(filename, allow_pickle=True)
 params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -443,7 +443,7 @@ ax3.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
         linewidth = 1, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_20% high_0.25_0_0716062725.npz'
+filename = './../results/sweeps/Mars_6_20% high_0.25_0_0713024452.npz'
 data = np.load(filename, allow_pickle=True)
 params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -491,7 +491,7 @@ ax3.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
 
 
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_nom_0.25_0_0716060437.npz'
+filename = './../results/sweeps/Mars_6_nom_0.25_0_0713022425.npz'
 data = np.load(filename, allow_pickle=True)
 params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -538,24 +538,23 @@ ax3.plot(landline_EFPA, landline_BC, color = landcol, linewidth = 3)
 # plot spaceline
 ax3.plot(spaceline_EFPA, spaceline_BC, color = spacecol, linewidth = 3)
 
-## contours:
-    
-haflevels = [2e3, 5e3, 1e4]
+# contours:
+haflevels = [300, 1e3, 4e3, 1e4, 2e4]
 cp = ax3.contour(EFPAgrid.T, BCgrid.T, hafgrid.T, haflevels,
                 colors = hafcol, linestyles = hafstyle)
 ax3.clabel(cp, inline = True, colors = hafcol, fontsize = 9, fmt = '%1.0f')
 
-glevels = [1, 2, 4]
+glevels = [1, 3, 4, 6, 7]
 cp = ax3.contour(EFPAgrid.T, BCgrid.T, ggrid.T, glevels,
                 colors = gcol, linestyles = gstyle)
 ax3.clabel(cp, inline = True, colors = gcol, fontsize = 9, fmt = '%1.0f')
 
-qlevels = [12, 24, 36]
+qlevels = [10, 30, 50, 70]
 cp = ax3.contour(EFPAgrid.T, BCgrid.T, qgrid.T, qlevels,
                 colors = qcol, linestyles = qstyle)
 ax3.clabel(cp, inline = True, colors = qcol, fontsize = 9, fmt = '%1.0f')
 
-QLlevels = [2e3, 4e3, 6e3, 8e3]
+QLlevels = [1e3, 3e3, 5e3]
 cp = ax3.contour(EFPAgrid.T, BCgrid.T, QLgrid.T, QLlevels,
                 colors = QLcol, linestyles = QLstyle)
 ax3.clabel(cp, inline = True, colors = QLcol, fontsize = 9, fmt = '%1.0f')
