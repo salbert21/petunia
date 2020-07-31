@@ -81,14 +81,14 @@ params.returnTimeVectors = False
 # modestr = 'Lift-down, 20% low atmosphere'
 # ###
 
-# ### Ballistic, nominal atmosphere
-# params.atmMod = 'nom'
-# params.LD = 0
-# params.bank = 0
-# efpaList = np.arange(-26.4, -32.4, -0.1) #-0.02)
-# BCList = np.arange(10, 200, 2.5)
-# modestr = 'Ballistic, nominal atmosphere'
-# ###
+### Ballistic, nominal atmosphere
+params.atmMod = 'nom'
+params.LD = 0
+params.bank = 0
+efpaList = np.arange(-26.4, -32.4, -0.1) #-0.02)
+BCList = np.arange(10, 200, 2.5)
+modestr = 'Ballistic, nominal atmosphere'
+###
 
 # ### Ballistic, 20% high atmosphere
 # params.atmMod = '20% high'
@@ -99,14 +99,17 @@ params.returnTimeVectors = False
 # modestr = 'Ballistic, 20% high atmosphere'
 # ###
 
-### Ballistic, 20% low atmosphere
-params.atmMod = '20% low'
-params.LD = 0
-params.bank = 0
-efpaList = np.arange(-26.4, -32.4, -0.1) #-0.02)
-BCList = np.arange(10, 200, 2.5)
-modestr = 'Ballistic, 20% low atmosphere'
-###
+# ### Ballistic, 20% low atmosphere
+# params.atmMod = '20% low'
+# params.LD = 0
+# params.bank = 0
+# efpaList = np.arange(-26.4, -32.4, -0.1) #-0.02)
+# BCList = np.arange(10, 200, 2.5)
+# modestr = 'Ballistic, 20% low atmosphere'
+# ###
+
+#### EDIT - make all efpa ranges the same ####
+efpaList = np.arange(-24.9, -34.8, -0.1)
 
 # =============================================================================
 # =============================================================================

@@ -6,7 +6,8 @@ Simulates planetary entry spacecraft dynamics.
 
 Current capacilities/notes:
 - 3 DOF EOMs
+- analysis tools for individual and batch simulation runs
+- inertial and planet-relative vector or angluar i/o tools
 - uses tabular atmosphere
 - assumes any atmospheric rotation is captured in winds input
 - currently no winds modeled
-- currently very limited input/output types, just inertial vectors

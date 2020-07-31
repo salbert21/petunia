@@ -44,7 +44,7 @@ else:
 params.m = 2920 # kg, roughly MSL mass
 params.CD = params.m / (115 * np.pi * (4.5/2)**2) # roughly MSL CD
 
-params.LD = 0.25
+params.LD = 0
 
 ### WIND-RELATIVE INITIAL STATE (COMPONENTS NOT CHANGED DURING GRID SEARCH)
 params.inputType = 'wind-relative angles'
@@ -55,7 +55,7 @@ params.hdaWR = 0
 params.vmagWR = 27
 
 ### CONTROL STATE
-params.bank = 0 # deg
+params.bank = 30 # deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
@@ -74,8 +74,8 @@ event2.terminal = True
 events = (event1, event2)
 
 ### SINGLE RUN
-params.efpaWR = -14.5
-params.BC = 200
+params.efpaWR = -13.5
+params.BC = 100
 
 
 
