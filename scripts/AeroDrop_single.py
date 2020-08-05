@@ -19,16 +19,19 @@ plt.close('all')
 
 ### CREATE params INPUT CLASS
 params = Params()
-params.p = constants.NEPTUNE
+params.p = constants.EARTH
 params.returnTimeVectors = True
-params.atmMod = '20% low'
+params.atmMod = 'nom'
 
 ### INPUT ATM TABLE - GET ATM TABLE FROM EARTHGRAM DATA FILE
 params.dMode = 'table'
-filename = '../data/dens_Neptune_nom.txt'
+# filename = '../data/dens_Neptune_nom.txt'
+filename = '../data/dat_raw_Earth_nom.txt'
 atmdata = np.genfromtxt(filename, names=True)
-atmdata.sort(order='Var_X') # put in ascending altitude order
-params.atmdat = np.array([atmdata['Var_X'], atmdata['DENSAV']])
+# atmdata.sort(order='Var_X') # put in ascending altitude order
+# params.atmdat = np.array([atmdata['Var_X'], atmdata['DENSAV']])
+atmdata.sort(order='Hgtkm') # put in ascending altitude order
+params.atmdat = np.array([atmdata['Hgtkm'], atmdata['DensMean']])
 
 # alter altitude if requested
 if params.atmMod == 'nom':
@@ -44,25 +47,25 @@ else:
 params.m = 2920 # kg, roughly MSL mass
 params.CD = params.m / (115 * np.pi * (4.5/2)**2) # roughly MSL CD
 
-params.LD = 0
+params.LD = 0.25
 
 ### WIND-RELATIVE INITIAL STATE (COMPONENTS NOT CHANGED DURING GRID SEARCH)
 params.inputType = 'wind-relative angles'
-params.lat = 22.0
-params.lon = 48.0
+params.lat = 40
+params.lon = 100
 params.alt = params.p.halt
 params.hdaWR = 0
-params.vmagWR = 27
+params.vmagWR = 11
 
 ### CONTROL STATE
-params.bank = 30 # deg
+params.bank = 40 # deg
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
 tspan = (0,30000) # don't make too long or results get choppy!
 
 # exit conditions:
-params.hmin = 125
+params.hmin = 30
 params.hmax = params.p.halt + 1e-7 + 10
 
 event1 = lambda t, y: ODEs.below_min_alt(t, y, params)
@@ -74,8 +77,8 @@ event2.terminal = True
 events = (event1, event2)
 
 ### SINGLE RUN
-params.efpaWR = -13.5
-params.BC = 100
+params.efpaWR = -6
+params.BC = 50
 
 
 
