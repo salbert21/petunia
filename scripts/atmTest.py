@@ -15,7 +15,7 @@ from atm import getMCdens
 plt.close('all')
 plt.rcParams.update({'font.size': 15})
 
-filename = 'data/rawOutput.txt'
+filename = '../data/rawOutput.txt'
 
 # get Nmc atmosphere profiles
 Nmc = 10
