@@ -162,10 +162,12 @@ def getMarsGRAMDensTable(filename, Nmc):
         atmdat.sort_values(by=['HgtMOLA'], ascending=True, inplace=True)
         densTot[:,Nloaded] = atmdat['Denkgm3'] * atmdat['DensP']
         Nloaded += 1
-        print('loaded MC atm profile %d' %Nloaded)
+        # print('loaded MC atm profile %d' %Nloaded)
         
     densMean = atmdat['Denkgm3']
     h = atmdat['HgtMOLA']
+    
+    print('loaded {} atm profiles'.format(Nmc))
     
     return densTot, densMean, h
 

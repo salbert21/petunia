@@ -10,6 +10,7 @@ Mars_MC.py:
 
 import numpy as np
 import time
+from datetime import datetime
 import matplotlib.pyplot as plt
 from scipy.stats import norm, uniform
 
@@ -18,13 +19,25 @@ import ODEs
 from sim import Params, Outs, mainAD
 from atm import getMarsGRAMDensTable
 
+def getQoIParams(params):
+    paramsQ = Params()
+    paramsQ.CD = params.CD
+    paramsQ.BC = params.BC
+    paramsQ.m = params.m
+    paramsQ.efpaWR = params.efpaWR
+    paramsQ.vmagWR = params.vmagWR
+    paramsQ.atmdat = params.atmdat
+    
+    return paramsQ
+
 tic = time.time()
+datestring = datetime.now().strftime('%m%d%H%M%S')
 plt.close('all')
 
 # =============================================================================
 # Number of Monte Carlo trials
 # =============================================================================
-Nmc = 10
+Nmc = 100
 
 # =============================================================================
 # Create Params input class for Mars
@@ -43,11 +56,6 @@ params.dMode = 'table'
 # =============================================================================
 # Set non-dispersed params
 # =============================================================================
-BCnom = 120 # kg/m^2
-CDnom = 1.59
-mnom = 3000
-Anom = mnom / (CDnom * BCnom)
-
 params.LD = 0 # L/D = 0 --> CL= 0
 
 # wind-relative initial states
@@ -57,11 +65,25 @@ params.lon = 0
 params.alt = params.p.halt
 params.hdaWR = 0
 
-efpanom = -10.6 # deg
-vmagnom = 6 # km/s
-
 # control state
 params.bank = 0
+
+# =============================================================================
+# Define mean and variance (or bounds if uniform) for dispersed inputs
+# =============================================================================
+BCnom = 120 # kg/m^2
+CDnom = 1.59
+CD_LB = CDnom - 0.1 * CDnom
+CD_UB = CDnom + 0.1 * CDnom
+mnom = 3000
+m_LB = mnom - 0.05 * mnom
+m_UB = mnom + 0.05 * mnom
+Anom = mnom / (CDnom * BCnom)
+
+efpanom = -10.6 # deg
+efpa_sig = 0.2/3
+vmagnom = 6 # km/s
+vmag_sig = 1e-2/3
 
 
 # =============================================================================
@@ -85,13 +107,17 @@ events = (event1, event2)
 # Monte Carlo trials
 # =============================================================================
 
+paramsList = []
+outsList = []
+
 for i_trial in range(Nmc):
     # generate input realizations
-    params.efpaWR = norm.rvs(size = 1, loc = efpanom, scale = 0.2/3)
-    params.vmagWR = norm.rvs(size = 1, loc = vmagnom, scale = 1e-2/3)
+    params.efpaWR = norm.rvs(size = 1, loc = efpanom, scale = efpa_sig)[0]
+    params.vmagWR = norm.rvs(size = 1, loc = vmagnom, scale = vmag_sig)[0]
     params.CD = uniform.rvs(size = 1,
-                            loc = CDnom - 0.1*CDnom, scale = 0.2*CDnom)
-    params.m = uniform.rvs(size = 1, loc = mnom - 0.05*mnom, scale = 0.1*mnom)
+                            loc = CD_LB, scale = 2*(CD_UB - CDnom))[0]
+    params.m = uniform.rvs(size = 1,
+                           loc = m_LB, scale = 2*(m_UB - mnom))[0]
     params.BC = params.m / (params.CD * Anom)
     
     # get atmosphere table for this trial
@@ -99,15 +125,64 @@ for i_trial in range(Nmc):
     params.atmdat = params.atmdat[:,params.atmdat[0,:].argsort()]
     
     # run sim
+    print('\nTrial {}'.format(i_trial+1))
     outs = Outs()
-    outs = mainAD(params, tspan, events, outs)
+    outsList.append(mainAD(params, tspan, events, outs))
+    paramsList.append(getQoIParams(params))
     
     
-    # print status
-    print('Trial {}: fpaf = {}, engf = {}'.format(i_trial,
-                                                  outs.fpaf, outs.engf))
+    # every 50 trials, save results to a file
+    if not i_trial % 50:
+        
+        ## Save results to a file
+        outname = './results/' + params.p.name + '_' + str(Nmc)\
+                + '_' + datestring
+            
+        np.savez(outname,
+                 paramsList = paramsList,
+                 outsList = outsList,
+                 CD_LB = CD_LB,
+                 CD_UB = CD_UB,
+                 m_LB = m_LB,
+                 m_UB = m_UB,
+                 efpanom = efpanom,
+                 efpa_sig = efpa_sig,
+                 vmagnom = vmagnom,
+                 vmag_sig = vmag_sig,
+                 paramsf = params
+                 )
+    
+    
+    # # print status
+    # print('Trial {}: fpaf = {}, engf = {}'.format(i_trial,
+    #                                               outs.fpaf, outs.engf))
+    
+    
+    
+# save final values to file
+## Save results to a file
+outname = './results/' + params.p.name + '_' + str(Nmc)\
+        + datestring
+    
+np.savez(outname,
+         paramsList = paramsList,
+         outsList = outsList,
+         CD_LB = CD_LB,
+         CD_UB = CD_UB,
+         m_LB = m_LB,
+         m_UB = m_UB,
+         efpanom = efpanom,
+         efpa_sig = efpa_sig,
+         vmagnom = vmagnom,
+         vmag_sig = vmag_sig,
+         paramsf = params
+         )
 
 
+toc = time.time()
+print('\nAnalysis complete!')
+print('{} trajectories simulated'.format(Nmc))
+print('Total run time: {0:.0f} seconds'.format(toc-tic))
 
 
 
