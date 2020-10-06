@@ -148,6 +148,7 @@ def getMarsGRAMDensTable(filename, Nmc):
         hcur = atmRow['HgtMOLA'][0]
         rMC += 1
         srows.append(rMC)
+        print(rMC)
         
     # Now load requested number of profiles and return numpy arrays
     Nloaded = 0
@@ -162,7 +163,7 @@ def getMarsGRAMDensTable(filename, Nmc):
         atmdat.sort_values(by=['HgtMOLA'], ascending=True, inplace=True)
         densTot[:,Nloaded] = atmdat['Denkgm3'] * atmdat['DensP']
         Nloaded += 1
-        # print('loaded MC atm profile %d' %Nloaded)
+        print('loaded MC atm profile %d' %Nloaded)
         
     densMean = atmdat['Denkgm3']
     h = atmdat['HgtMOLA']
@@ -171,5 +172,64 @@ def getMarsGRAMDensTable(filename, Nmc):
     
     return densTot, densMean, h
 
+
+def getMarsGRAMDensTableAll(filename, Nmc):
+    '''
+    loads atmosphere table for Nmc Monte Carlo trials. Written for a specially
+    formatted output from Mars-GRAM2010. Good for large number of MC trials.
+    
+    Similar to getMarsGRAMDensTable, but returns loads entire file right away.
+    MUCH faster for nMC >~ 300
+    
+    Ex:
+        # ## get Nmc atmosphere profiles
+        # Nmc = 1
+        # i_trial = 0
+        # densPert, densMean, h = getMCdens(filename, Nmc)
+        # # at some point would be good to build this as a pandas df instead of np array
+        # # rhoTable = np.array([h,densPert[:,i_trial]])
+        # # load nominal density:
+        # rhoTable = np.array([h,densPert[:,i_trial]])
+        # params.atmdat = rhoTable
+    '''
+    
+    # Load one line at a time to find # of lines per MC run
+    hprev = -2
+    hcur = -1
+    rMC = 0
+    srows = []
+    
+    while hcur > hprev:
+        atmRow = pd.read_csv(filename, delim_whitespace=True,
+                              nrows=1, skiprows=srows)
+        hprev = hcur
+        hcur = atmRow['HgtMOLA'][0]
+        rMC += 1
+        srows.append(rMC)
+        # print(rMC)
+        
+    # Now load requested number of profiles and return numpy arrays
+    Nloaded = 0
+    densTot = np.empty([rMC-1, Nmc])
+    densTot[:] = np.NaN
+    
+    # load entire file
+    atmdat = pd.read_csv(filename, delim_whitespace=True)
+    
+    rMC -= 1
+    
+    # split rows of df into separate density columns
+    while Nloaded < Nmc:
+        densTot[:,Nloaded] = atmdat['Denkgm3'][(Nloaded*rMC):((Nloaded+1)*rMC)]\
+                           * atmdat['DensP'][(Nloaded*rMC):((Nloaded+1)*rMC)]
+        Nloaded += 1
+        # print('loaded MC atm profile %d' %Nloaded)
+        
+    densMean = np.asarray(atmdat['Denkgm3'][0:rMC])
+    h = np.asarray(atmdat['HgtMOLA'][0:rMC])
+    
+    print('loaded {} atm profiles'.format(Nmc))
+    
+    return densTot, densMean, h
 
 

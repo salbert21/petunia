@@ -17,7 +17,7 @@ from scipy.stats import norm, uniform
 import constants
 import ODEs
 from sim import Params, Outs, mainAD
-from atm import getMarsGRAMDensTable
+from atm import getMarsGRAMDensTableAll
 
 def getQoIParams(params):
     paramsQ = Params()
@@ -37,7 +37,7 @@ plt.close('all')
 # =============================================================================
 # Number of Monte Carlo trials
 # =============================================================================
-Nmc = 100
+Nmc = 5000
 
 # =============================================================================
 # Create Params input class for Mars
@@ -50,7 +50,7 @@ params.returnTimeVectors = True
 # Generate atm table for Nmc profiles
 # =============================================================================
 filename = 'data/Mars_0.1_5000.txt'
-densAll, densMean, h = getMarsGRAMDensTable(filename, Nmc)
+densAll, densMean, h = getMarsGRAMDensTableAll(filename, Nmc)
 params.dMode = 'table'
 
 # =============================================================================
@@ -109,6 +109,7 @@ events = (event1, event2)
 
 paramsList = []
 outsList = []
+outname = './results/' + params.p.name + '_' + str(Nmc) + '_' + datestring
 
 for i_trial in range(Nmc):
     # generate input realizations
@@ -134,10 +135,7 @@ for i_trial in range(Nmc):
     # every 50 trials, save results to a file
     if not i_trial % 50:
         
-        ## Save results to a file
-        outname = './results/' + params.p.name + '_' + str(Nmc)\
-                + '_' + datestring
-            
+        ## Save results to a file            
         np.savez(outname,
                  paramsList = paramsList,
                  outsList = outsList,
@@ -161,8 +159,6 @@ for i_trial in range(Nmc):
     
 # save final values to file
 ## Save results to a file
-outname = './results/' + params.p.name + '_' + str(Nmc)\
-        + datestring
     
 np.savez(outname,
          paramsList = paramsList,

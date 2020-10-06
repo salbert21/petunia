@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import constants
 import ODEs
 from sim import Params, Outs, mainAD
-from atm import getMarsGRAMDensTable
+from atm import getMarsGRAMDensTable, getMarsGRAMDensTableAll
 
 tic = time.time()
 plt.close('all')
@@ -33,6 +33,7 @@ params.returnTimeVectors = True
 filename = 'data/Mars_0.1_5000.txt'
 Nmc = 1
 densAll, densMean, h = getMarsGRAMDensTable(filename, Nmc)
+# densAll, densMean, h = getMarsGRAMDensTableAll(filename, Nmc)
 params.dMode = 'table'
 
 # =============================================================================

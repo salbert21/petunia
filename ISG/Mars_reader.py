@@ -14,7 +14,7 @@ from sim import Params, Outs
 import constants
 
 
-filename = './results/Mars_10_01005144713.npz'
+filename = './results/Mars_5000_1005170208.npz'
 
 data = np.load(filename, allow_pickle=True)
 paramsList = data['paramsList']
