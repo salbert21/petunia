@@ -91,7 +91,7 @@ events = (event1, event2)
 # =============================================================================
 # Run sim for a few values of EFPA
 # =============================================================================
-efpaList = np.around(np.arange(-10.3, -11.5, -0.05), 7)
+efpaList = np.around(np.arange(-10.3, -11.5, -0.025), 7)
 for efpai in efpaList:
     params.efpaWR = efpai
 
@@ -124,6 +124,8 @@ for efpai in efpaList:
             
         outs.engvec[ind] = np.linalg.norm(outs.vvec_N[:,ind])**2 / 2\
             - params.p.mu / np.linalg.norm(outs.rvec_N[:,ind])
+            
+    outs.engInt = np.trapz(outs.engvec, outs.tvec)
     
     outsList.append(outs)
 
@@ -132,6 +134,9 @@ for efpai in efpaList:
 # =============================================================================
 
 NUM_COLORS = len(efpaList)
+LEGENDS_ON = False
+
+yline = 5
 
 cm = plt.get_cmap('gist_rainbow')
 
@@ -163,6 +168,10 @@ fig7 = plt.figure(7)
 ax7 = fig7.add_subplot()
 ax7.set_prop_cycle(color = [cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
 
+fig8 = plt.figure(8)
+ax8 = fig8.add_subplot()
+ax8.set_prop_cycle(color = [cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
+
 for ind, outs in enumerate(outsList):
     
     ## ALT vs. VMAG
@@ -192,6 +201,10 @@ for ind, outs in enumerate(outsList):
     ## eng vs. TIME
     ax7.plot(outs.tvec, outs.engvec,
              label = 'EFPA = {}'.format(efpaList[ind]))
+    
+    ## engInt number line
+    ax8.plot(outs.engInt, yline, 'o',
+             label = 'EFPA = {}'.format(efpaList[ind]))
 
     
     
@@ -199,48 +212,61 @@ for ind, outs in enumerate(outsList):
 ax1.set_xlabel('Inertial velocity, km/s')
 ax1.set_ylabel('Altitude, km')
 ax1.grid()
-ax1.legend()
 
 ## FPA vs. TIME
 ax2.set_xlabel('Time, s')
 ax2.set_ylabel('Flight path angle, deg')
 ax2.grid()
-ax2.legend()
 
 ## ALT vs. TIME
 ax3.set_xlabel('Time, s')
 ax3.set_ylabel('Altitude, km')
 ax3.grid()
-ax3.legend()
 
 ## VMAG vs. TIME
 ax4.set_xlabel('Time, s')
 ax4.set_ylabel('Airspeed, km/s')
 ax4.grid()
-ax4.legend()
 
 ## q vs. TIME
 ax5.set_xlabel('Time, s')
 ax5.set_ylabel('Heating rate, W/cm^2')
 ax5.grid()
-ax5.legend()
 
 ## gload vs. TIME
 ax6.set_xlabel('Time, s')
 ax6.set_ylabel('G-load, Earth g\'s')
 ax6.grid()
-ax6.legend()
 
 ## eng vs. TIME
 ax7.set_xlabel('Time, s')
 ax7.set_ylabel('Specific mechanical energy, km^2/s^2')
 ax7.grid()
-ax7.legend()
+
+## engInt vs. TIME
+ax8.set_xlabel('Integral of specific mechanic energy, km^2/s')
+ax8.grid()
+
+
+if LEGENDS_ON:
+    ax1.legend()
+    ax2.legend()
+    ax3.legend()
+    ax4.legend()
+    ax5.legend()
+    ax6.legend()
+    ax7.legend()
+    ax8.legend()
 
 
 
-
-
+# fig1.savefig('alt_vs_vmag.png')
+# fig2.savefig('fpa_vs_time.png')
+# fig3.savefig('alt_vs_time.png')
+# fig4.savefig('v_vs_time.png')
+# fig5.savefig('q_vs_time.png')
+# fig6.savefig('g_vs_time.png')
+# fig7.savefig('eng_vs_time.png')
 
 
 
