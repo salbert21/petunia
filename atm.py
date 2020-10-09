@@ -148,7 +148,7 @@ def getMarsGRAMDensTable(filename, Nmc):
         hcur = atmRow['HgtMOLA'][0]
         rMC += 1
         srows.append(rMC)
-        print(rMC)
+        # print(rMC)
         
     # Now load requested number of profiles and return numpy arrays
     Nloaded = 0
@@ -163,7 +163,7 @@ def getMarsGRAMDensTable(filename, Nmc):
         atmdat.sort_values(by=['HgtMOLA'], ascending=True, inplace=True)
         densTot[:,Nloaded] = atmdat['Denkgm3'] * atmdat['DensP']
         Nloaded += 1
-        print('loaded MC atm profile %d' %Nloaded)
+        # print('loaded MC atm profile %d' %Nloaded)
         
     densMean = atmdat['Denkgm3']
     h = atmdat['HgtMOLA']

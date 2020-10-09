@@ -60,7 +60,7 @@ params.inputType = 'wind-relative angles'
 params.lat = 0
 params.lon = 0
 params.alt = params.p.halt
-params.efpaWR = -10.6
+params.efpaWR = -10.5
 params.hdaWR = 0
 params.vmagWR = 6 # km/s
 
