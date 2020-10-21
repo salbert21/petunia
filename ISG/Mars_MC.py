@@ -132,7 +132,7 @@ for i_trial in range(Nmc):
     paramsList.append(getQoIParams(params))
     
     
-    # every 50 trials, save results to a file
+    # every 50 trials, save all results to a file
     if not i_trial % 50:
         
         ## Save results to a file            

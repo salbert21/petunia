@@ -68,3 +68,40 @@ def getEproblem(filename, alpha, pfact):
         rat = np.sum(evals[0:d]) / np.sum(evals)
         
     return evals, evecs, densSampMean, d, h
+
+
+
+def getKLEdensfun(evals, evecs, mean, d, hvec):
+    
+    # # make sure h and mean are in ascending order for the interpolation
+    # hvec = hvec[np.argsort(hvec)]
+    # mean = mean[np.argsort(hvec)]
+    
+    # # first define function that evaluates mean at any h
+    # def evalMean(h):
+    #     return np.interp(h, hvec, mean)
+        
+    
+    # generate d i.i.d. standard normal variables
+    Ys = norm.rvs(size = d)
+    rhovec = []
+    
+    # get density at each given altitude step
+    for i in range(hvec.size):
+        rhovec.append(mean[i] + np.sum(np.sqrt(evals[0:d]) * evecs[i,0:d] * Ys))
+        
+    rhovec = np.asarray(rhovec)
+        
+    # sort everything into ascending altitude order for interpolation
+    rhovec = rhovec[np.argsort(hvec)]
+    hvec = hvec[np.argsort(hvec)]
+    
+        
+    # now define a function that simply interpolates rhovec for a given h
+    def getKLErho(h):
+        '''
+        function for a single instance of the density KLE
+        '''
+        return np.interp(h, hvec, rhovec)
+
+    return getKLErho, Ys
