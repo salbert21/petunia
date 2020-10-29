@@ -5,3 +5,4 @@
 /ISG/data
 /ISG/results
 /UQ/results
+/UQ/*.npz

@@ -13,14 +13,14 @@ import numpy as np
 
 from atm import getMarsGRAMDensTableAll
 
-filename = '../data/Mars_0.1_5000.txt'
+filename = '../data/Mars_0.1_50000.txt'
 
 # get density from GRAM output file
 Nmc = 5000
 densTot, densMean, h = getMarsGRAMDensTableAll(filename, Nmc)
 
 # save in binary to .npz file
-outname = '../data/Mars_0.1_5000.npz'
+outname = '../data/Mars_0.1_50000.npz'
 
 np.savez(outname,
          densTot = densTot,

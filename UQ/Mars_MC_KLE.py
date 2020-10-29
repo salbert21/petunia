@@ -43,7 +43,7 @@ plt.close('all')
 # =============================================================================
 # Number of Monte Carlo trials
 # =============================================================================
-Nmc = 5000
+Nmc = 60000
 
 # =============================================================================
 # Create Params input class for Mars
@@ -57,7 +57,7 @@ params.returnTimeVectors = True
 # =============================================================================
 params.dMode = 'fun'
 
-filename = '../data/Mars_0.1_5000.npz'
+filename = '../data/Mars_0.1_50000.npz'
 alpha = 0.99
 pfact = 1 # use GRAM dispersions directly
 
