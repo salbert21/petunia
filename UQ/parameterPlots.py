@@ -125,7 +125,15 @@ for efpai in efpaList:
         outs.engvec[ind] = np.linalg.norm(outs.vvec_N[:,ind])**2 / 2\
             - params.p.mu / np.linalg.norm(outs.rvec_N[:,ind])
             
+            
     outs.engInt = np.trapz(outs.engvec, outs.tvec)
+    
+    # get final slope of vmagWR
+    outs.slf = (outs.vmagWRvec[-1] - outs.vmagWRvec[-6])\
+        / (outs.tvec[-1] - outs.tvec[-6])
+    
+
+        
     
     outsList.append(outs)
 
@@ -172,6 +180,10 @@ fig8 = plt.figure(8)
 ax8 = fig8.add_subplot()
 ax8.set_prop_cycle(color = [cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
 
+fig9 = plt.figure(9)
+ax9 = fig9.add_subplot()
+ax9.set_prop_cycle(color = [cm(1.*i/NUM_COLORS) for i in range(NUM_COLORS)])
+
 for ind, outs in enumerate(outsList):
     
     ## ALT vs. VMAG
@@ -205,6 +217,8 @@ for ind, outs in enumerate(outsList):
     ## engInt number line
     ax8.plot(outs.engInt, yline, 'o',
              label = 'EFPA = {}'.format(efpaList[ind]))
+    
+    ax9.plot(outs.slf, '.')
 
     
     
@@ -246,6 +260,11 @@ ax7.grid()
 ## engInt vs. TIME
 ax8.set_xlabel('Integral of specific mechanic energy, km^2/s')
 ax8.grid()
+
+## final vmag slope vs. time
+ax9.set_ylabel('final airspeed slope')
+ax9.grid()
+
 
 
 if LEGENDS_ON:

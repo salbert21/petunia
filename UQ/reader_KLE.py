@@ -18,7 +18,8 @@ import constants
 # Import raw data
 # =============================================================================
 
-filename = './results/Mars_5000_1021122652.npz'
+# filename = './results/Mars_5000_1021122652.npz'
+filename = './results/Mars_60000_1022201133.npz'
 
 data = np.load(filename, allow_pickle=True)
 paramsList = data['paramsList']

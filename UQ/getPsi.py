@@ -16,14 +16,12 @@ from UQ import nD_poly_array, piset
 # Build Psi and save into binary file
 # =============================================================================
 
-# note: currently do not trim-out impact cases, include all data
-
 MCfilename = './results/Mars_60000_1022201133.npz'
 
 # set order p
-p = 3
+p = 2
 
-Psifilename = 'Psi_p' + str(p) + '_' + 'Mars_60000_1022201133.npz'
+Psifilename = 'Psi_p' + str(p) + '_FILT_' + 'Mars_60000_1022201133.npz'
 
 # load MC data
 data = np.load(MCfilename, allow_pickle = True)
@@ -43,6 +41,21 @@ atm_YsList = data['atm_YsList']
 # efpastd = data['efpastd'].item()
 # vmagmean = data['vmagmean'].item()
 # vmagstd = data['vmagstd'].item()
+
+# =============================================================================
+# Optional: filter-out impact cases
+# =============================================================================
+outsList = data['outsList']
+fpafList = np.asarray([out.fpaf for out in outsList])
+
+m_YList = m_YList[fpafList >= 0]
+CD_YList = CD_YList[fpafList >= 0]
+vmag_YList = vmag_YList[fpafList >= 0]
+efpa_YList = efpa_YList[fpafList >= 0]
+atm_YsList = atm_YsList[fpafList >= 0]
+# =============================================================================
+# =============================================================================
+
 
 y_samps = np.block([m_YList[:,None], CD_YList[:,None], vmag_YList[:,None],
                     efpa_YList[:,None], atm_YsList])
