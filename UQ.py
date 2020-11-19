@@ -13,6 +13,7 @@ import numpy as np
 from numpy import linalg as LA
 from scipy.stats import norm
 from scipy.special import factorial as fact
+import sys
 
 
 def getEproblem(filename, alpha, pfact):
@@ -230,7 +231,7 @@ def hermite_1d(p,x):
     return Her
     
 
-def piset(xi, index_pc):
+def piset(xi, index_pc, **options):
     '''
     evaluates a multi-D PCE basis at a given point (xi_1, ..., xi_d)
     Ported directly from MATLAB code written by Dr. A. Doostan.
@@ -242,19 +243,43 @@ def piset(xi, index_pc):
     '''
     
     pc_xi = np.ones(index_pc.shape[0])
-    
     p = np.sum(index_pc[index_pc.shape[0]-1,:])
     
-    Legendre = legendre_1d(int(p), xi)
-    # Hermite = hermite_1d(int(p), xi)
     
-    for id in range(1,index_pc.shape[1]+1):
-        nnz_index = np.where(index_pc[:,id-1] > 0)
-        # nnz_index = nnz_index[0]
-        if np.sum(nnz_index): # if at least one nonzero index
-            index_pc_nnz = index_pc[nnz_index, id-1].flatten().astype(int)
-            pc_xi[nnz_index] = pc_xi[nnz_index]\
-                * Legendre[index_pc_nnz, id-1]
-                # * Hermite[index_pc_nnz, id-1]
+    if 'distribution' in options:
+        if options['distribution'].lower() == 'uniform':
+            Legendre = legendre_1d(int(p), xi)
+            for id in range(1,index_pc.shape[1]+1):
+                nnz_index = np.where(index_pc[:,id-1] > 0)
+                # nnz_index = nnz_index[0]
+                if np.sum(nnz_index): # if at least one nonzero index      
+                    index_pc_nnz = index_pc[nnz_index, id-1]\
+                        .flatten().astype(int)
+                    pc_xi[nnz_index] = pc_xi[nnz_index]\
+                        * Legendre[index_pc_nnz, id-1]
+                        
+        elif options['distribution'].lower() == 'gaussian':
+            Hermite = hermite_1d(int(p), xi)
+            for id in range(1,index_pc.shape[1]+1):
+                nnz_index = np.where(index_pc[:,id-1] > 0)
+                # nnz_index = nnz_index[0]
+                if np.sum(nnz_index): # if at least one nonzero index      
+                    index_pc_nnz = index_pc[nnz_index, id-1]\
+                        .flatten().astype(int)
+                    pc_xi[nnz_index] = pc_xi[nnz_index]\
+                        * Hermite[index_pc_nnz, id-1]
+        else:
+            sys.exit('distribution name not recognized')
+    else:
+        # assume Gaussian inputs if not specified
+        Hermite = hermite_1d(int(p), xi)
+        for id in range(1,index_pc.shape[1]+1):
+            nnz_index = np.where(index_pc[:,id-1] > 0)
+            # nnz_index = nnz_index[0]
+            if np.sum(nnz_index): # if at least one nonzero index      
+                index_pc_nnz = index_pc[nnz_index, id-1]\
+                    .flatten().astype(int)
+                pc_xi[nnz_index] = pc_xi[nnz_index]\
+                    * Hermite[index_pc_nnz, id-1]
     
     return pc_xi

@@ -43,7 +43,7 @@ plt.close('all')
 # =============================================================================
 # Number of Monte Carlo trials
 # =============================================================================
-Nmc = 60000
+Nmc = 10000
 
 # =============================================================================
 # Create Params input class for Mars
@@ -58,7 +58,7 @@ params.returnTimeVectors = True
 params.dMode = 'fun'
 
 filename = '../data/Mars_0.1_50000.npz'
-alpha = 0.99
+alpha = 0.95
 pfact = 1 # use GRAM dispersions directly
 
 evals, evecs, densSampMean, d, h = getEproblem(filename, alpha, pfact)
@@ -108,6 +108,26 @@ efpastd = 0.2/3
 
 vmagmean = 6 # km/s
 vmagstd = 1e-2/3
+
+# #### super high dispersions
+# # change to U[CD_LB, CD_UB] later
+# CDmean = 1.59
+# CD_LB = CDmean - 0.3 * CDmean
+# CD_UB = CDmean + 0.3 * CDmean
+# CDstd = (CD_UB - CD_LB) / np.sqrt(12)
+
+# mmean = 3000 # kg
+# m_LB = mmean - 0.15 * mmean
+# m_UB = mmean + 0.15 * mmean
+# mstd = (m_UB - m_LB) / np.sqrt(12)
+
+# Anom = mmean / (CDmean * BCmean)
+
+# efpamean = -10.6 # deg
+# efpastd = 0.2
+
+# vmagmean = 6 # km/s
+# vmagstd = 1e-2
 
 # =============================================================================
 # Time vector and exit conditions
