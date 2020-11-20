@@ -71,7 +71,7 @@ u_samps = np.asarray([out.fpaf for out in outsList])
 # # load Psi matrix
 # # Psifilename = 'Psi_p3_Mars_60000_1022201133.npz'
 # # Psifilename = 'Psi_p2_Mars_10000_highvar_1116164345.npz'
-# Psifilename = './psifiles/Psi_p3_Mars_70000_1118142637.npz'
+# Psifilename = './psifiles/Psi_p2_Mars_70000_1118142637.npz'
 
 # Psidata = np.load(Psifilename)
 # Psi = Psidata['Psi']
@@ -85,7 +85,7 @@ u_samps = np.asarray([out.fpaf for out in outsList])
 # load Psi matrix
 # Psifilename = 'Psi_p2_FILT_Mars_60000_1022201133.npz'
 # Psifilename = 'Psi_p2_FILT_Mars_10000_highvar_1116164345.npz'
-Psifilename = './psifiles/Psi_p3_FILT_Mars_70000_1118142637.npz'
+Psifilename = './psifiles/Psi_p2_FILT_Mars_70000_1118142637.npz'
 
 Psidata = np.load(Psifilename)
 Psi = Psidata['Psi']
@@ -114,7 +114,7 @@ u_samps = u_samps[fpafList >= 0]
 # =============================================================================
 # SPGL1 Solve
 # =============================================================================
-N_SPG = int(0.2*P)
+N_SPG = int(0.5*P)
 if N_SPG > len(u_samps):
     N_SPG = len(u_samps)
 sigma = 0.0001
