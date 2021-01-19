@@ -24,9 +24,9 @@ plt.close('all')
 # Load data
 # =============================================================================
 
-# MCfilename = './results/Mars_60000_1022201133.npz'
+MCfilename = './results/Mars_60000_1022201133.npz'
 # MCfilename = 'results/Mars_10000_highvar_1116164345.npz'
-MCfilename = './results/Mars_70000_1118142637.npz'
+# MCfilename = './results/Mars_70000_1118142637.npz'
 data = np.load(MCfilename, allow_pickle = True)
 
 outsList = data['outsList']
@@ -51,9 +51,12 @@ engf_var = ss[3]
 # =============================================================================
 # Get nt trendlines of mean and variance at different sample sizes
 # =============================================================================
-nt = 15 # number of trendlines to compute
-# N values for P = 2:
+nt = 10 # number of trendlines to compute
+# N values for p = 2:
 NList = np.array([ 38.,  95., 171., 209., 760., 1000])
+
+# # N values for p = 3:
+# NList = np.array([ 266.,  665., 1197., 1463., 5320.])
 
 fpafMeanErrListList = []
 fpafVarErrListList = []
@@ -90,6 +93,7 @@ fig1, ax1 = plt.subplots(1,1)
 for i, y in enumerate(fpafMeanErrListList.T):
     ax1.plot(NList, y, '.--', label = 'i = {}'.format(i))
 
+ax1.set_yscale('log')
 ax1.grid()
 ax1.legend()
 ax1.set_title('FPAF MEAN')
@@ -98,6 +102,7 @@ fig2, ax2 = plt.subplots(1,1)
 for i, y in enumerate(fpafVarErrListList.T):
     ax2.plot(NList, y, '.--', label = 'i = {}'.format(i))
 
+ax2.set_yscale('log')
 ax2.grid()
 ax2.legend()
 ax2.set_title('FPAF VARIANCE')
@@ -106,17 +111,19 @@ fig3, ax3 = plt.subplots(1,1)
 for i, y in enumerate(engfMeanErrListList.T):
     ax3.plot(NList, y, '.--', label = 'i = {}'.format(i))
 
+ax3.set_yscale('log')
 ax3.grid()
 ax3.legend()
-ax3.set_title('FPAF MEAN')
+ax3.set_title('ENGF MEAN')
 
 fig4, ax4 = plt.subplots(1,1)
 for i, y in enumerate(engfVarErrListList.T):
     ax4.plot(NList, y, '.--', label = 'i = {}'.format(i))
 
+ax4.set_yscale('log')
 ax4.grid()
 ax4.legend()
-ax4.set_title('FPAF VARIANCE')
+ax4.set_title('ENGF VARIANCE')
 
 np.savez('convergenceData.npz',
          fpafMeanErrListList = fpafMeanErrListList,

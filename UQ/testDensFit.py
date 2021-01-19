@@ -18,6 +18,8 @@ import time
 from functools import partial
 from statsmodels.graphics.gofplots import qqplot
 
+from UQ import getEproblem, getKLEdensfun
+
 # Define narrower bandwidth for kernel density estimation using function
 #   straight from scipy.stats reference
 def my_kde_bandwidth(obj, fac=1./5):
@@ -46,7 +48,8 @@ densCentered = densTot - densMean[:,None]
 # =============================================================================
 # for i in range(10):
 # for i in np.linspace(-1,-500,10).astype(int):
-for i in range(0,1430,130):
+# for i in range(0,1430,130):
+for i in range(0,1430, 500):
     if i == 1300:
         i = 1299
 
@@ -84,9 +87,30 @@ for i in range(0,1430,130):
     qqplot(densCentered[i,:], line='s')
     plt.grid()
     plt.title('{} km altitude'.format(h[i]))
+    
+    
+# =============================================================================
+# Plot eigenvalues of KLE decomposition
+# =============================================================================
+alpha = 0.95
+pfact = 1 # use GRAM dispersions directly
 
+evals, evecs, densSampMean, d95, h = getEproblem(filename, alpha, pfact)
 
+alpha = 0.99
+evals, evecs, densSampMean, d99, h = getEproblem(filename, alpha, pfact)
 
+fig, ax = plt.subplots(1,1)
+ax.plot(evals, '.', alpha = 0.75)
+ax.plot(range(evals.shape[0]), np.ones(evals.shape[0]) * evals[d95], '--',
+        linewidth = 2, label = r'$\alpha$ = 0.95 cutoff')
+ax.plot(range(evals.shape[0]), np.ones(evals.shape[0]) * evals[d99], '-.',
+        linewidth = 2, label = r'$\alpha$ = 0.99 cutoff')
+ax.set_yscale('log')
+ax.grid()
+ax.set_xlabel('index i')
+ax.set_ylabel('eigenvalues')
+ax.legend()
 
 
 

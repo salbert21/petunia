@@ -11,6 +11,7 @@ parameterPlots.py:
 import numpy as np
 import time
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 import constants
 import ODEs
@@ -20,6 +21,8 @@ from conversions import RV2LLAEHV, VN2Vinf
 
 tic = time.time()
 plt.close('all')
+mpl.rcParams["figure.autolayout"] = True
+mpl.rcParams.update({'font.size': 16})
 
 outsList = []
 
@@ -254,7 +257,7 @@ ax6.grid()
 
 ## eng vs. TIME
 ax7.set_xlabel('Time, s')
-ax7.set_ylabel('Specific mechanical energy, km^2/s^2')
+ax7.set_ylabel(r'Specific orbital energy, $km^2 s^{-2}$')
 ax7.grid()
 
 ## engInt vs. TIME

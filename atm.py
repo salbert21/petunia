@@ -223,7 +223,7 @@ def getMarsGRAMDensTableAll(filename, Nmc):
         densTot[:,Nloaded] = atmdat['Denkgm3'][(Nloaded*rMC):((Nloaded+1)*rMC)]\
                            * atmdat['DensP'][(Nloaded*rMC):((Nloaded+1)*rMC)]
         Nloaded += 1
-        # print('loaded MC atm profile %d' %Nloaded)
+        print('loaded MC atm profile %d' %Nloaded)
         
     densMean = np.asarray(atmdat['Denkgm3'][0:rMC])
     h = np.asarray(atmdat['HgtMOLA'][0:rMC])

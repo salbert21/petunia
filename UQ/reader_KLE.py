@@ -9,17 +9,24 @@ Created on Wed Oct 21 12:13:13 2020
 
 
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 # from sim import Params, Outs
 import constants
 ###
+
+plt.close('all')
+mpl.rcParams["figure.autolayout"] = True
+mpl.rcParams.update({'font.size': 16})
 
 # =============================================================================
 # Import raw data
 # =============================================================================
 
 # filename = './results/Mars_5000_1021122652.npz'
-filename = './results/Mars_60000_1022201133.npz'
+# filename = './results/Mars_60000_1022201133.npz'
+filename = './results/Mars_70000_1118142637.npz'
 
 data = np.load(filename, allow_pickle=True)
 paramsList = data['paramsList']
@@ -82,6 +89,48 @@ NCapture = sum(engf < 0 and fpaf > 0 for engf, fpaf in zip(engfList, fpafList))
 
 print('{} cases crashed, {} cases escaped, and {} cases aerocaptured'\
       .format(NCrash, NEscape, NCapture))
+    
+# =============================================================================
+# Plot to show bifurcation of data
+# =============================================================================
+fpafList = np.asarray(fpafList)
+engfList = np.asarray(engfList)
+
+fpafCaptured = fpafList[np.logical_and(engfList < 0, fpafList > 0)]
+fpafEscaped = fpafList[engfList > 0]
+fpafImpacted = fpafList[fpafList < 0]
+
+engfCaptured = engfList[np.logical_and(engfList < 0, fpafList > 0)]
+engfEscaped = engfList[engfList > 0]
+engfImpacted = engfList[fpafList < 0]
+
+fig, ax = plt.subplots(1,1)
+ax.plot(engfCaptured, fpafCaptured, '.', label = 'Captured')
+ax.plot(engfEscaped, fpafEscaped, 'C2.', label = 'Escaped')
+ax.plot(engfImpacted, fpafImpacted, 'C1.', label = 'Impacted')
+
+ax.grid()
+ax.legend()
+ax.set_xlabel(r'Final specific orbital energy, $km^2s^{-2}$')
+ax.set_ylabel('Final flight path angle, deg')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

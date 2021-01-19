@@ -16,7 +16,7 @@ from atm import getMarsGRAMDensTableAll
 filename = '../data/Mars_0.1_50000.txt'
 
 # get density from GRAM output file
-Nmc = 5000
+Nmc = 10657 # note: there are actually only this many profiles in the 50,000 case GRAM data file...
 densTot, densMean, h = getMarsGRAMDensTableAll(filename, Nmc)
 
 # save in binary to .npz file
