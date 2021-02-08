@@ -181,6 +181,27 @@ def Vinf2VN(rvec_N, vInfvec_N, params, t):
     vvec_N = NS @ (vvec_S + np.cross(OMvec, rvec_S))
     
     return vvec_N
+
+
+def getEngApo(rvec_N, vvec_N, params):
+    '''
+    converts inertial cartesian vectors to orbital energy and apoapsis altitude
+    '''
+    
+    r = np.linalg.norm(rvec_N)
+    v = np.linalg.norm(vvec_N)
+    
+    eng = v**2/2 - params.p.mu / r
+    
+    hvec_N = np.cross(rvec_N, vvec_N)
+    h = np.linalg.norm(hvec_N)
+    
+    a = - params.p.mu / (2 * eng)
+    e = np.sqrt(1 + 2 * eng * h**2 / params.p.mu**2)
+    
+    ra = a * (1 + e)
+    
+    return eng, ra
     
     
     

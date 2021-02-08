@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jun 17 15:25:31 2020
+Created on Mon Feb 8 14:00:00 2021
+
+AeroDrop_nominal.py:
+    Script to simulate both orbiter and probe for nominal AeroDrop at Mars.
+    These define nominal trajectories for later guidance implementation.
 
 @author: Samuel Albert
 """
