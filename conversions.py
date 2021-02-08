@@ -183,7 +183,7 @@ def Vinf2VN(rvec_N, vInfvec_N, params, t):
     return vvec_N
 
 
-def getEngApo(rvec_N, vvec_N, params):
+def getApses(rvec_N, vvec_N, params):
     '''
     converts inertial cartesian vectors to orbital energy and apoapsis altitude
     '''
@@ -200,8 +200,9 @@ def getEngApo(rvec_N, vvec_N, params):
     e = np.sqrt(1 + 2 * eng * h**2 / params.p.mu**2)
     
     ra = a * (1 + e)
+    rp = a * (1 - e)
     
-    return eng, ra
+    return ra, rp
     
     
     

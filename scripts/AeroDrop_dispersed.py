@@ -15,7 +15,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 import constants
-from conversions import LLAEHV2RV, RV2LLAEHV, VN2Vinf, Vinf2VN, getEngApo
+from conversions import LLAEHV2RV, RV2LLAEHV, VN2Vinf, Vinf2VN, getApses
 from sim import Params
 from guidance import dynFNPAGPhase1, dynFNPAGPhase2
 
@@ -75,7 +75,7 @@ params.tf = 3000
 xxvec = dynFNPAGPhase1(np.block([params.x0, params.v0]),
                        t, ts, sig0, sigd, params)
 
-engf, raf = getEngApo(xxvec[:3,-1], xxvec[3:,-1], params)
+raf, rpf = getApses(xxvec[:3,-1], xxvec[3:,-1], params)
 print(raf - params.p.rad)
 
 h = np.linalg.norm(xxvec[:3,:], axis = 0)
