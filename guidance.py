@@ -104,7 +104,8 @@ def updateFNPAG(xxvec, t, ts, sig0, sigd, ts1, ts2, phase, mode, params):
         sys.exit('Mode not recognized for FNPAG')
     
     if phase == 1:
-        getErr = lambda ts: getError(xxvec, t, ts, sig0, sigd, phase, errFun)
+        getErr = lambda ts: getError(xxvec, t, ts, sig0, sigd,
+                                     phase, errFun, params)
         
         # if error already below tolerance, don't update control parameter
         if mode == 1 and abs(getErr(ts)) < params.errtol1:
@@ -151,7 +152,8 @@ def updateFNPAG(xxvec, t, ts, sig0, sigd, ts1, ts2, phase, mode, params):
         return tsi
     
     elif phase == 2:
-        getErr = lambda sigd: getError(xxvec, t, ts, sig0, sigd, phase, errFun)
+        getErr = lambda sigd: getError(xxvec, t, ts, sig0, sigd,
+                                       phase, errFun, params)
         
         # if error already below tolerance, don't update control parameter
         if mode == 1 and abs(getErr(sigd)) < params.errtol2:

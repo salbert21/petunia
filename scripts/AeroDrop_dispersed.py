@@ -16,15 +16,19 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 import constants
-from conversions import LLAEHV2RV, RV2LLAEHV, VN2Vinf, Vinf2VN, getApses
+from conversions import LLAEHV2RV, RV2LLAEHV, Vinf2VN, getApses
 from sim import Params
 from guidance import updateFNPAG
 import ODEs
 
+plt.close('all')
+mpl.rcParams["figure.autolayout"] = True
+mpl.rcParams.update({'font.size': 15})
+
 # =============================================================================
 # Main FNPAG Function
 # =============================================================================
-def doFNPAG(mode, paramsTrue, paramsNom, t0, tf, xx0vec, sig0, sigd, ts, ts1,
+def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts, ts1,
             ts2, verbose = True, plotsOn = True, updatesOn = True):
     '''
     main function for FNPAG with variable mode (supports modes 1 and 2).
@@ -51,11 +55,11 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, tf, xx0vec, sig0, sigd, ts, ts1,
     paramsNom.bank = sig0
     
     # initialize
-    tvec = np.arange(t0, tf + paramsTrue.dtGdn, paramsTrue.dtGdn)
+    tvec = np.arange(t0, paramsNom.tf + paramsTrue.dtGdn, paramsTrue.dtGdn)
     tvecEval = np.empty(1)
     tvecEval[0] = t0
     
-    xxvec = np.empty(len(xx0vec), 1)
+    xxvec = np.empty((len(xx0vec), 1))
     xxvec[:] = np.NaN
     xxvec[:,0] = xx0vec
     
@@ -73,7 +77,7 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, tf, xx0vec, sig0, sigd, ts, ts1,
     for ind, t in enumerate(tvec):
         # update guidance
         if updatesOn:
-            ts = updateFNPAG(xxvec[:,-1], t, ts, sig0, ts1, ts2,
+            ts = updateFNPAG(xxvec[:,-1], t, ts, sig0, sigd, ts1, ts2,
                              phase, mode, paramsNom)
             # update event with new ts value
             event3 = lambda t, y: ODEs.switchEvent(t, y, ts)
@@ -111,7 +115,7 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, tf, xx0vec, sig0, sigd, ts, ts1,
     tvecP1 = tvecEval * 1
     
     ## create new tvec for phase 2
-    tvec = np.arange(tvecEval[-1], tf + paramsTrue.dtGdn, paramsTrue.dtGdn)
+    tvec = np.arange(tvecEval[-1], paramsNom.tf + paramsTrue.dtGdn, paramsTrue.dtGdn)
     
     ## PHASE 2 ##
     phase = 2
@@ -122,7 +126,7 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, tf, xx0vec, sig0, sigd, ts, ts1,
     for ind, t in enumerate(tvec):
         # update guidance
         if updatesOn:
-            sigd = updateFNPAG(xxvec[:,-1], t, ts, sig0, ts1, ts2,
+            sigd = updateFNPAG(xxvec[:,-1], t, ts, sig0, sigd, ts1, ts2,
                                phase, mode, paramsNom)
             paramsTrue.bank = sigd
             paramsNom.bank = sigd
@@ -186,71 +190,84 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, tf, xx0vec, sig0, sigd, ts, ts1,
     return xxvec, tvecEval, raf, rpf, raErr, DV,\
         tsList, sigdList, tvecP1, tvecP2
     
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # =============================================================================
 # Script
 # =============================================================================
-
-
-plt.close('all')
-mpl.rcParams["figure.autolayout"] = True
-mpl.rcParams.update({'font.size': 15})
-
-### CREATE params INPUT CLASS
-params = Params()
-params.p = constants.MARS
-params.returnTimeVectors = True
+### CREATE params INPUT CLASS FOR NOMINAL VALUES
+paramsNom = Params()
+paramsNom.p = constants.MARS
+paramsNom.returnTimeVectors = True
 
 ### INPUT ATM TABLE - GET ATM TABLE FROM GRAM DATA FILE
-params.dMode = 'table'
+paramsNom.dMode = 'table'
 filename = '../data/dens_Mars_nom.txt'
 atmdata = np.genfromtxt(filename, names=True)
-params.atmdat = np.array([atmdata['Var_X'], atmdata['DENSAV']])
+paramsNom.atmdat = np.array([atmdata['Var_X'], atmdata['DENSAV']])
     
 ### VEHICLE PARAMS
-params.m = 2920 # kg, roughly MSL mass
-params.CD = 1.6 # roughly MSL CD
-params.LD = 0.25
-params.BC = 130
+paramsNom.m = 2920 # kg, roughly MSL mass
+paramsNom.CD = 1.6 # roughly MSL CD
+paramsNom.LD = 0.25
+paramsNom.BC = 130
 
-params.A = params.m / (params.BC * params.CD)
-params.CL = params.CD * params.LD
-params.Rn = np.sqrt(params.A / np.pi) / 2
+paramsNom.A = paramsNom.m / (paramsNom.BC * paramsNom.CD)
+paramsNom.CL = paramsNom.CD * paramsNom.LD
+paramsNom.Rn = np.sqrt(paramsNom.A / np.pi) / 2
 
 ### WIND-RELATIVE INITIAL STATE
-params.lat = 18.38
-params.lon = -77.58
-params.alt = params.p.halt
-params.efpaWR = -12
-params.hdaWR = 0
-params.vmagWR = 6
+paramsNom.lat = 18.38
+paramsNom.lon = -77.58
+paramsNom.alt = paramsNom.p.halt
+paramsNom.efpaWR = -12
+paramsNom.hdaWR = 0
+paramsNom.vmagWR = 6
 
 ### GET OTHER STATE TYPES (and assume t0 = 0)
-params.x0, params.vInfvec_N = LLAEHV2RV(params.lat, params.lon,
-                                        params.alt, params.efpaWR,
-                                        params.hdaWR, params.vmagWR,
-                                        params, 0)
-params.v0 = Vinf2VN(params.x0, params.vInfvec_N, params, 0)
-_, _, _, params.efpa, params.hda, params.vmag = \
-    RV2LLAEHV(params.x0, params.v0, params, 0)
+paramsNom.x0, paramsNom.vInfvec_N = LLAEHV2RV(paramsNom.lat, paramsNom.lon,
+                                        paramsNom.alt, paramsNom.efpaWR,
+                                        paramsNom.hdaWR, paramsNom.vmagWR,
+                                        paramsNom, 0)
+paramsNom.v0 = Vinf2VN(paramsNom.x0, paramsNom.vInfvec_N, paramsNom, 0)
+_, _, _, paramsNom.efpa, paramsNom.hda, paramsNom.vmag = \
+    RV2LLAEHV(paramsNom.x0, paramsNom.v0, paramsNom, 0)
+    
+### NOMINAL SIMULATION PARAMS ###
+t0 = 0
+xx0vec = np.block([paramsNom.x0, paramsNom.v0])
+sig0 = 15
+sigd = 150
+ts = 155
+ts1 = 150
+ts2 = 170
+
+paramsNom.rtol = 1e-10
+paramsNom.atol = 1e-10
+paramsNom.errtol1 = 0
+paramsNom.errtol2 = 0
+paramsNom.dtGdn = 1 # s
+paramsNom.hmin = 10
+paramsNom.hmax = paramsNom.p.halt + 10
+paramsNom.tf = 3000
+paramsNom.raStar = 250
+paramsNom.rpStar = 250
+
+### SET TRUE MC SIMULATION PARAMS ###
+paramsTrue = paramsNom
+
+# add dispersions here as desired
+
+# =============================================================================
+# Call FNPAG
+# =============================================================================
+mode = 1
+xxvec, tvecEval, raf, rpf, raErr, DV,\
+        tsList, sigdList, tvecP1, tvecP2 = doFNPAG(mode, paramsTrue, paramsNom,
+                                                   t0, xx0vec, sig0, sigd,
+                                                   ts, ts1, ts2)
+
+
+
     
 
     
