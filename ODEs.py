@@ -116,3 +116,6 @@ def above_max_alt(t, y, params):
     r = np.sqrt(y[0]**2 + y[1]**2 + y[2]**2)
     h = r - params.p.rad
     return h - params.hmax
+
+def switchEvent(t, y, ts):
+    return t - ts
