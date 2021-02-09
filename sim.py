@@ -12,7 +12,7 @@ import sys
 import ODEs
 from atm import getRho_from_table
 from conversions import LLAEHV2RV, RV2LLAEHV, VN2Vinf, Vinf2VN
-import constants
+import planetaryconstants as constants
 
 class Params:
        

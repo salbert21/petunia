@@ -8,18 +8,17 @@ AeroDrop_dispersed.py:
 @author: Samuel Albert
 """
 
+from conversions import LLAEHV2RV, RV2LLAEHV, Vinf2VN, getApses
+from sim import Params
+from guidance import updateFNPAG, dynFNPAGPhase1
+import ODEs
+import planetaryconstants as constants
 
 import numpy as np
 from scipy.integrate import solve_ivp
 import sys
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-
-import constants
-from conversions import LLAEHV2RV, RV2LLAEHV, Vinf2VN, getApses
-from sim import Params
-from guidance import updateFNPAG
-import ODEs
 
 plt.close('all')
 mpl.rcParams["figure.autolayout"] = True
@@ -82,6 +81,8 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts, ts1,
             # update event with new ts value
             event3 = lambda t, y: ODEs.switchEvent(t, y, ts)
             event3.terminal = True
+            
+            sys.exit('stopped execution for debugging purposes')
             
         if verbose:
             print('PHASE 1: updating guidance at time {0:.3f}    ts = {1:.3f}'\
@@ -237,9 +238,9 @@ t0 = 0
 xx0vec = np.block([paramsNom.x0, paramsNom.v0])
 sig0 = 15
 sigd = 150
-ts = 155
-ts1 = 150
-ts2 = 170
+ts = 157
+ts1 = 155
+ts2 = 160
 
 paramsNom.rtol = 1e-10
 paramsNom.atol = 1e-10
@@ -249,8 +250,8 @@ paramsNom.dtGdn = 1 # s
 paramsNom.hmin = 10
 paramsNom.hmax = paramsNom.p.halt + 10
 paramsNom.tf = 3000
-paramsNom.raStar = 250
-paramsNom.rpStar = 250
+paramsNom.raStar = 250 + paramsNom.p.rad
+paramsNom.rpStar = 250 + paramsNom.p.rad
 
 ### SET TRUE MC SIMULATION PARAMS ###
 paramsTrue = paramsNom
@@ -258,13 +259,28 @@ paramsTrue = paramsNom
 # add dispersions here as desired
 
 # =============================================================================
+# Demonstrate dynamics
+# =============================================================================
+xxvecs1 = dynFNPAGPhase1(xx0vec, 0, ts, sig0, sigd, paramsNom)
+raf, rpf = getApses(xxvecs1[:3,-1], xxvecs1[3:,-1], paramsNom)
+print(raf - paramsNom.p.rad)
+
+h = np.linalg.norm(xxvecs1[:3,:], axis = 0)
+vmag = np.linalg.norm(xxvecs1[3:,:], axis = 0)
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(vmag, h)
+ax.grid()
+
+# =============================================================================
 # Call FNPAG
 # =============================================================================
 mode = 1
 xxvec, tvecEval, raf, rpf, raErr, DV,\
         tsList, sigdList, tvecP1, tvecP2 = doFNPAG(mode, paramsTrue, paramsNom,
-                                                   t0, xx0vec, sig0, sigd,
-                                                   ts, ts1, ts2)
+                                                    t0, xx0vec, sig0, sigd,
+                                                    ts, ts1, ts2)
 
 
 
