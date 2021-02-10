@@ -199,14 +199,61 @@ def updateFNPAG(xxvec, t, ts, sig0, sigd, ts1, ts2, phase, mode, params):
     
     
     
+def dynFNPAGPhase1Sph(xx0vec, t, ts, sig0, sigd, params, returnTime = False):
+    '''
+    Dynamics function for Phase 1 of FNPAG.
+    Propagages from given state to atm exit. Switches bank angle from sig0 to
+        sigd instantaneously at time ts.
+    INPUTS:
+        xx0vec: initial spherical planet-relative state, m, m/s, rad
+        t: initial (current) time, s
+        ts: switching time, s
+        sig0: initial bank angle, deg
+        sigd: final bank angle, deg
+        params: various constants
+    OUTPUTS:
+        xxvec: cartesian inertial state vector over time, km, km/s
+    '''
     
+    event1 = lambda t, y: ODEs.above_max_alt_sph(t, y, params)
+    event1.terminal = True
+    event1.direction = 1
+    event2 = lambda t, y: ODEs.below_min_alt_sph(t, y, params)
+    event2.terminal = True
+    
+    # propagate lift-up until ts
+    tspan = (t, ts)
+    params.bank = sig0
+    sol1 = solve_ivp(lambda t, y: ODEs.sphericalEntryEOMs(t, y, params),
+                     tspan, xx0vec, rtol = params.rtol, atol = params.atol,
+                     events = (event1, event2))
+    if sol1.status != 0:
+        sys.exit('switching time never reached during phase 1 of FNPAG')
+    
+    # propagate lift-down until atm exit or surface impact
+    tspan = (ts, params.tf)
+    params.bank = sigd
+    sol2 = solve_ivp(lambda t, y: ODEs.sphericalEntryEOMs(t, y, params),
+                     tspan, sol1.y[:,-1], rtol = params.rtol, atol = params.atol,
+                     events = (event1, event2))
+    
+    if sol2.status != 1:
+        sys.exit('never reached a terminal condition during phase 1 of FNPAG')
+    
+    xxvec = np.hstack([sol1.y, sol2.y])
+    tvec = np.hstack([sol1.t, sol2.t])
+    
+    if returnTime:
+        return xxvec, tvec
+    else:
+        return xxvec
     
     
     
     
 
 
-def dynFNPAGPhase1(xx0vec, t, ts, sig0, sigd, params):
+def dynFNPAGPhase1(xx0vec, t, ts, sig0, sigd, params, returnTime = False):
     '''
     Dynamics function for Phase 1 of FNPAG.
     Propagages from given state to atm exit. Switches bank angle from sig0 to
@@ -248,8 +295,12 @@ def dynFNPAGPhase1(xx0vec, t, ts, sig0, sigd, params):
         sys.exit('never reached a terminal condition during phase 1 of FNPAG')
     
     xxvec = np.hstack([sol1.y, sol2.y])
+    tvec = np.hstack([sol1.t, sol2.t])
     
-    return xxvec
+    if returnTime:
+        return xxvec, tvec
+    else:
+        return xxvec
 
 def dynFNPAGPhase2(xx0vec, t, sigd, params):
     '''

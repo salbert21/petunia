@@ -203,6 +203,141 @@ def getApses(rvec_N, vvec_N, params):
     rp = a * (1 - e)
     
     return ra, rp
+
+def getApsesSphPR(xxvec, params):
+    '''
+    returns radius of periapsis and apoapsis for given spherical state.
+    ASSUMES given state is PLANET-RELATIVE
+    INPUTS:
+        xxvec: planet-relative spherical state, m, m/s, rad
+        mu: planet gravitational parameter, m^3/s^2
+    OUTPUTS:
+        ra: radius of apoapsis, m
+        rp: radius of periapsis, m
+    '''
+    
+    mu = params.p.mu * 1e9
+    
+    # get inertial cartesian state
+    rvec, vrvec = sph2cart(xxvec)
+    vivec = vr2viCart(rvec, vrvec, params)
+    r = np.linalg.norm(rvec)
+    v = np.linalg.norm(vivec)
+    
+    # get Keplerian parameters
+    hvec = np.cross(rvec, vivec)
+    h = np.linalg.norm(hvec)
+    ENG = v**2/2 - mu/r
+    SMA = - mu / (2 * ENG)
+    arg = 1 + 2 * ENG * h**2 / mu**2
+    if abs(arg) < 1e-12:
+        ECC = 0 # circular orbit case
+    else:
+        ECC = np.sqrt(arg)
+    
+    # get apses radii
+    ra = SMA * (1 + ECC)
+    rp = SMA * (1 - ECC)
+    
+    return ra, rp
+
+def sph2cart(xsphvec):
+    '''
+    converts spherical to cartesian coordinates for EDL.
+    Uses ASEN 6015 derivations.
+    INPUTS:
+        xphvec:
+            r: radius
+            lon: longitude, rad
+            lat: latitude, rad
+            v: velocity magnitude
+            gam: flight path angle, negative-down, rad
+            hda: heading angle, 0-North clockwise, rad
+    OUTPUTS:
+        rvec: position vector
+        vvec: velocity vector
+    '''
+    
+    # extract state variables
+    r = xsphvec[0]
+    lon = xsphvec[1]
+    lat = xsphvec[2]
+    v = xsphvec[3]
+    gam = xsphvec[4]
+    hda = xsphvec[5]
+    
+    # get radius vector
+    rX = r * np.cos(lat) * np.cos(lon)
+    rY = r * np.cos(lat) * np.sin(lon)
+    rZ = r * np.sin(lat)
+    rvec = np.array([rX, rY, rZ])
+    
+    # get velocity vector
+    vE = v * np.cos(gam) * np.sin(hda)
+    vN = v * np.cos(gam) * np.cos(hda)
+    vR = v * np.sin(gam)
+    
+    vX = -vE * np.sin(lon)\
+          - vN * np.sin(lat) * np.cos(lon)\
+          + vR * np.cos(lat) * np.cos(lon)
+    vY = vE * np.cos(lon)\
+          - vN * np.sin(lat) * np.sin(lon)\
+          + vR * np.cos(lat) * np.sin(lon)
+    vZ = vN * np.cos(lat) + vR * np.sin(lat)
+    
+    vvec = np.array([vX, vY, vZ])
+    
+    return rvec, vvec
+
+def cart2sph(rvec, vvec):
+    '''
+    converts cartesian to spherical coordinates for EDL.
+    Uses ASEN 6015 derivations.
+    INPUTS:
+        rvec: position vector
+        vvec: velocity vector
+    OUTPUTS:
+        xsphvec:
+            r: radius
+            lon: longitude, rad
+            lat: latitude, rad
+            v: velocity magnitude
+            gam: flight path angle, negative-down, rad
+            hda: heading angle, 0-North clockwise, rad
+    '''
+    
+    r = np.linalg.norm(rvec)
+    v = np.linalg.norm(vvec)
+    
+    lon = np.arctan2(rvec[1], rvec[0])
+    lat = np.arcsin(rvec[2]/r)
+    
+    vE = -vvec[0] * np.sin(lon) + vvec[1] * np.cos(lon)
+    vN = -vvec[0] * np.sin(lat) * np.cos(lon)\
+        - vvec[1] * np.sin(lat) * np.sin(lon) + vvec[2] * np.cos(lat)
+    hda = np.arctan2(vE, vN)
+    
+    vR = vvec[0] * np.cos(lat) * np.cos(lon)\
+        + vvec[1] * np.cos(lat) * np.sin(lon) + vvec[2] * np.sin(lat)
+    gam = np.arcsin(vR / v)
+    
+    return np.array([r, lon, lat, v, gam, hda])
+    
+
+def vr2viCart(rvec, vrvec, params):
+    '''
+    converts planet-relative velocity to inertial velocity assuming no wind.
+    INPUTS:
+        rvec: position vector, m
+        vvec: planet-relative velocity vector, m/s
+        OmP: planet self-rotation rate (in positive z direction), rad/s
+    OUTPUTS:
+        vivec: inertial velocity vector, m/s
+    '''
+    
+    Omvec = np.array([0, 0, params.p.om])
+    vivec = vrvec + np.cross(Omvec, rvec)
+    return vivec
     
     
     
