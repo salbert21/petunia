@@ -26,8 +26,7 @@ mpl.rcParams.update({'font.size': 15})
 ### CREATE params INPUT CLASS FOR NOMINAL VALUES
 paramsNom = Params()
 paramsNom.p = constants.MARS
-paramsNom.p.J2 = 0 # OVERRIDE - assume spherical planet
-# paramsNom.p.om = 0
+paramsNom.p.J2 = 0 # OVERRIDE - assume spherical planet for apples-to-apples comparison
 paramsNom.returnTimeVectors = True
 
 ### INPUT ATM TABLE - GET ATM TABLE FROM GRAM DATA FILE
