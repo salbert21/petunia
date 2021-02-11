@@ -27,7 +27,7 @@ mpl.rcParams.update({'font.size': 15})
 ### CREATE params INPUT CLASS FOR NOMINAL VALUES
 paramsNom = Params()
 paramsNom.p = constants.MARS
-paramsNom.p.J2 = 0 # OVERRIDE - assume spherical planet for apples-to-apples comparison
+# paramsNom.p.J2 = 0 # OVERRIDE - assume spherical planet for apples-to-apples comparison
 paramsNom.returnTimeVectors = True
 
 ### INPUT ATM TABLE - GET ATM TABLE FROM GRAM DATA FILE
@@ -50,7 +50,7 @@ paramsNom.Rn = np.sqrt(paramsNom.A / np.pi) / 2
 paramsNom.lat = 18.38
 paramsNom.lon = -77.58
 paramsNom.alt = paramsNom.p.halt
-paramsNom.efpaWR = -11
+paramsNom.efpaWR = -12
 paramsNom.hdaWR = 0
 paramsNom.vmagWR = 6
 
@@ -78,7 +78,7 @@ xx0vec1 = np.block([paramsNom.x0, paramsNom.v0])
 # xx0vec1 = np.block([paramsNom.x0, paramsNom.vInfvec_N])
 sig0 = 15
 sigd = 150
-ts = 138
+ts = 160
 ts1 = 137.9
 ts2 = 140
 
@@ -88,7 +88,7 @@ paramsNom.errtol1 = 0
 paramsNom.errtol2 = 0
 paramsNom.dtGdn = 1 # s
 paramsNom.hmin = 10
-paramsNom.hmax = paramsNom.p.halt + 10
+paramsNom.hmax = paramsNom.p.halt + 1e-7
 paramsNom.tf = 5000
 paramsNom.raStar = 250 + paramsNom.p.rad
 paramsNom.rpStar = 250 + paramsNom.p.rad

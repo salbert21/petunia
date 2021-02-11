@@ -27,7 +27,7 @@ def simRun(params, tspan, events, **options):
     # now do the setup and call dynamics
     y0 = np.block([params.x0, params.v0])
         
-    sol = solve_ivp(lambda t, y: ODEs.dynamics(t,y,params), 
+    sol = solve_ivp(lambda t, y: ODEs.dynamics(t,y,params.bank,params), 
                     [tspan[0], tspan[-1]], y0.flatten(),
                     rtol=1e-10,atol=1e-10,
                     events=events) 
@@ -155,7 +155,8 @@ def mainAD(params, tspan, events, outs):
     for i, (ti, xi, vi) in enumerate(zip(sol.t, rvec_N.T, vvec_N.T)):
         yyi = np.block([xi, vi])
         Fgvec_N[:,i], FLvec_N[:,i], FDvec_N[:,i] = ODEs.dynamics(ti, yyi,
-                                                  params, returnForces=True)
+                                                  params.bank, params,
+                                                  returnForces=True)
     # compute g-load at each time
     gload = (np.linalg.norm(FLvec_N + FDvec_N - Fgvec_N, axis=0) / params.m)\
         / (constants.G0 / 1e3) # divide g0 by 1000 to get it in km/s^2 units

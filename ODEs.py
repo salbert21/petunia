@@ -125,7 +125,7 @@ def sphericalEntryEOMs(t, yy, sig, params):
     
     return dydt
 
-def dynamics(t,yy, sig, params, **options):
+def dynamics(t, yy, sig, params, **options):
     '''
     ODEs for full dynamics acting on the vehicle
     assume:

@@ -14,7 +14,7 @@ import time
 import matplotlib.pyplot as plt
 import sys
 
-import constants
+import planetaryconstants as constants
 import ODEs
 from sim import Params, Outs, mainAD
 
@@ -70,7 +70,7 @@ tspan = (0,30000)
 
 # exit conditions:
 params.hmin = 10
-params.hmax = params.p.halt + 1e-7 + 10
+params.hmax = params.p.halt + 1e-7
 
 event1 = lambda t, y: ODEs.below_min_alt(t, y, params)
 event1.terminal = True

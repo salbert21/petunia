@@ -8,21 +8,25 @@ AeroDrop_dispersed.py:
 @author: Samuel Albert
 """
 
-from conversions import LLAEHV2RV, RV2LLAEHV, Vinf2VN, getApsesSphPR
+from conversions import getApsesSphPR
 from sim import Params
-from guidance import updateFNPAG, dynFNPAGPhase1Sph
+from guidance import updateFNPAG
 import ODEs
 import planetaryconstants as constants
+from atm import getMarsGRAMDensTableAll
 
 import numpy as np
 from scipy.integrate import solve_ivp
+from scipy.stats import norm, uniform
+from datetime import datetime
 import sys
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import time
+import copy
 
 tic = time.time()
-
+datestring = datetime.now().strftime('%m%d%H%M%S')
 plt.close('all')
 mpl.rcParams["figure.autolayout"] = True
 mpl.rcParams.update({'font.size': 15})
@@ -53,9 +57,6 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts,
     # =========================================================================
     # Main integration loop
     # =========================================================================
-    # # make sure correct bank angles are set
-    # paramsTrue.bank = sig0
-    # paramsNom.bank = sig0
     
     # initialize
     tvec = np.arange(t0, paramsNom.tf + paramsTrue.dtGdn, paramsTrue.dtGdn)
@@ -91,10 +92,6 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts,
                   .format(t, ts))
         tsList.append(ts)
         
-        ### TROUBLESHOOTING: stop for profiler
-        if t > 2:
-            sys.exit('stopped execution for profiler')
-        
         # propagate until next guidance update or switching time
         tspan = (t, t + paramsTrue.dtGdn)
         soli = solve_ivp(lambda t, y: ODEs.sphericalEntryEOMs(t, y,
@@ -120,6 +117,8 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts,
         else:
             sys.exit('propagator never reached next guidance update or'\
                      ' switching time in phase 1')
+                
+    xswitchvec = xxvec[:,-1] # save state at switching time
         
     tvecP1 = tvecEval * 1
     
@@ -174,134 +173,260 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts,
     tvecP2 = tvecEval * 1
     
     if plotsOn:
-        # fig = plt.figure()
-        # ax = fig.add_subplot(111)
-        ax.plot(xxvec[3,:], xxvec[0,:], '--', label = 'true trajectory')
-        ax.legend()
+        # uses global variable ax for plotting!
+        ax.plot(xxvec[3,:]/1e3, xxvec[0,:]/1e3 - paramsNom.p.rad)
+        ax.plot(xswitchvec[3]/1e3, xswitchvec[0]/1e3 - paramsNom.p.rad, 'o',
+                markersize = 6, color=plt.gca().lines[-1].get_color())
     
     # =========================================================================
     # Compute apoapsis error and DV magnitudes
     # =========================================================================
-    raf, rpf = getApsesSphPR(xxvec[:,-1], paramsTrue)
+    raf, rpf, engf = getApsesSphPR(xxvec[:,-1], paramsTrue, returnEng = True)
     raErr = raf - paramsTrue.raStar
     
     mu = paramsTrue.p.mu * 1e9
     
-    DV1 = np.sqrt(2 * mu)\
-        * abs((np.sqrt(1/paramsTrue.raStar - 1\
-                       / (paramsTrue.raStar + paramsTrue.rpStar))\
-               - np.sqrt(1/paramsTrue.raStar - 1 / (raf + rpf))))
-    DV2 = np.sqrt(2 * mu)\
-        * abs((np.sqrt(1/paramsTrue.rpStar - 1\
-                       / (paramsTrue.raStar + paramsTrue.rpStar))\
-               - np.sqrt(1/paramsTrue.rpStar - 1 / (raf + paramsTrue.rpStar))))
-    DV = DV1 + DV2
+    # if rpf or raf are invalid values, assign NaN to both DV values
+    if rpf/1e3 - paramsTrue.p.rad < 0 or raf < 0:
+        DV1 = np.NaN
+        DV2 = np.NaN
+    else:
+        DV1 = np.sqrt(2 * mu)\
+            * abs((np.sqrt(1/paramsTrue.raStar - 1\
+                           / (paramsTrue.raStar + paramsTrue.rpStar))\
+                   - np.sqrt(1/paramsTrue.raStar - 1 / (raf + rpf))))
+        DV2 = np.sqrt(2 * mu)\
+            * abs((np.sqrt(1/paramsTrue.rpStar - 1\
+                           / (paramsTrue.raStar + paramsTrue.rpStar))\
+                   - np.sqrt(1/paramsTrue.rpStar - 1\
+                             / (raf + paramsTrue.rpStar))))
+                
+    DV = DV1 + DV2 # m/s
     
     print('\n\nfinal apoapsis error: {0:.3e} m'.format(raErr))
     print('delta-V for periapsis raise: {0:.3f} m/s'.format(DV1))
     print('delta-V for apoapsis correction: {0:.3f} m/s'.format(DV2))
     print('total delta-V: {0:.3f} m/s'.format(DV))
     
-    return xxvec, tvecEval, raf, rpf, raErr, DV,\
-        tsList, sigdList, tvecP1, tvecP2
+    return xxvec, tvecEval, raf, rpf, engf, raErr, DV,\
+        tsList, sigdList, tvecP1, tvecP2, xswitchvec
     
 
 # =============================================================================
-# Script
+# Orbiter Setup
 # =============================================================================
 ### CREATE params INPUT CLASS FOR NOMINAL VALUES
-paramsNom = Params()
-paramsNom.p = constants.MARS
-paramsNom.returnTimeVectors = True
+paramsNom_O = Params()
+paramsNom_O.p = constants.MARS
+paramsNom_O.returnTimeVectors = True
 
 ### INPUT ATM TABLE - GET ATM TABLE FROM GRAM DATA FILE
-paramsNom.dMode = 'table'
+paramsNom_O.dMode = 'table'
 filename = '../data/dens_Mars_nom.txt'
 atmdata = np.genfromtxt(filename, names=True)
-paramsNom.atmdat = np.array([atmdata['Var_X'], atmdata['DENSAV']])
+paramsNom_O.atmdat = np.array([atmdata['Var_X'], atmdata['DENSAV']])
     
 ### VEHICLE PARAMS
-paramsNom.m = 2920 # kg, roughly MSL mass
-paramsNom.CD = 1.6 # roughly MSL CD
-paramsNom.LD = 0.25
-paramsNom.BC = 130
+paramsNom_O.m = 2920 # kg, roughly MSL mass
+paramsNom_O.CD = 1.6 # roughly MSL CD
+paramsNom_O.LD = 0.25
+paramsNom_O.BC = 130
 
-paramsNom.A = paramsNom.m / (paramsNom.BC * paramsNom.CD)
-paramsNom.CL = paramsNom.CD * paramsNom.LD
-paramsNom.Rn = np.sqrt(paramsNom.A / np.pi) / 2
+paramsNom_O.A = paramsNom_O.m / (paramsNom_O.BC * paramsNom_O.CD)
+paramsNom_O.CL = paramsNom_O.CD * paramsNom_O.LD
+paramsNom_O.Rn = np.sqrt(paramsNom_O.A / np.pi) / 2
 
 ### WIND-RELATIVE INITIAL STATE
-paramsNom.lat = 18.38
-paramsNom.lon = -77.58
-paramsNom.alt = paramsNom.p.halt
-paramsNom.efpaWR = -12
-# paramsNom.efpaWR = -11
-paramsNom.hdaWR = 0
-paramsNom.vmagWR = 6
+paramsNom_O.lat = 18.38
+paramsNom_O.lon = -77.58
+paramsNom_O.alt = paramsNom_O.p.halt
+paramsNom_O.efpaWR = -12
+# paramsNom_O.efpaWR = -11
+paramsNom_O.hdaWR = 0
+paramsNom_O.vmagWR = 6
 
-xx0vec = np.array([(paramsNom.alt + paramsNom.p.rad) * 1e3,
-                   np.radians(paramsNom.lon),
-                   np.radians(paramsNom.lat),
-                   paramsNom.vmagWR * 1e3,
-                   np.radians(paramsNom.efpaWR),
-                   np.radians(paramsNom.hdaWR + 90)])
+xx0vec = np.array([(paramsNom_O.alt + paramsNom_O.p.rad) * 1e3,
+                   np.radians(paramsNom_O.lon),
+                   np.radians(paramsNom_O.lat),
+                   paramsNom_O.vmagWR * 1e3,
+                   np.radians(paramsNom_O.efpaWR),
+                   np.radians(paramsNom_O.hdaWR + 90)])
     
 ### NOMINAL SIMULATION PARAMS ###
 t0 = 0
-# xx0vec = np.block([paramsNom.x0, paramsNom.v0])
 sig0 = 15
 sigd = 150
-ts = 157
+ts = 160
 
 # search brackets for Brent's Method
-paramsNom.sig1 = 15
-paramsNom.sig2 = 180
-paramsNom.ts1 = 100
-paramsNom.ts2 = 200
+paramsNom_O.sig1 = 15
+paramsNom_O.sig2 = 180
+paramsNom_O.ts1 = 100
+paramsNom_O.ts2 = 200
 
 # other settings and constants
-paramsNom.rtol = 1e-10
-paramsNom.atol = 1e-10
-paramsNom.errtol1 = 0
-paramsNom.errtol2 = 0
-paramsNom.dtGdn = 1 # s
-paramsNom.hmin = 10
-paramsNom.hmax = paramsNom.p.halt + 1e7
-paramsNom.tf = 6000
-paramsNom.raStar = (250 + paramsNom.p.rad) * 1e3
-paramsNom.rpStar = (250 + paramsNom.p.rad) * 1e3
-
-### SET TRUE MC SIMULATION PARAMS ###
-paramsTrue = paramsNom
-
-# add dispersions here as desired
+paramsNom_O.rtol = 1e-10
+paramsNom_O.atol = 1e-10
+paramsNom_O.errtol1 = 0
+paramsNom_O.errtol2 = 0
+paramsNom_O.dtGdn = 1 # s
+paramsNom_O.hmin = 10
+paramsNom_O.hmax = paramsNom_O.p.halt + 1e-7
+paramsNom_O.tf = 6000
+paramsNom_O.raStar = (250 + paramsNom_O.p.rad) * 1e3
+paramsNom_O.rpStar = (250 + paramsNom_O.p.rad) * 1e3
 
 # =============================================================================
-# Demonstrate dynamics
+# Demonstrate dynamics for nominal scenario
 # =============================================================================
-xxvecs1 = dynFNPAGPhase1Sph(xx0vec, 0, ts, sig0, sigd, paramsNom)
-raf, rpf = getApsesSphPR(xxvecs1[:,-1], paramsNom)
-print(raf/1e3 - paramsNom.p.rad)
-
-h = np.linalg.norm(xxvecs1[:3,:], axis = 0)
-vmag = np.linalg.norm(xxvecs1[3:,:], axis = 0)
+mode = 1
+xxvec, tvecEval, raf, rpf, engf, raErr, DV,\
+        tsList, sigdList, tvecP1, tvecP2, xswitchvec = doFNPAG(mode,
+                                                               paramsNom_O,
+                                                               paramsNom_O, t0,
+                                                               xx0vec, sig0,
+                                                               sigd, ts,
+                                                               plotsOn = False,
+                                                               updatesOn = False)
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
-# ax.plot(vmag, h, label = 'predicted trajectory')
+ax.plot(xxvec[3,:]/1e3, xxvec[0,:]/1e3 - paramsNom_O.p.rad, 'k', linewidth = 4,
+        label = 'nominal trajectory')
+ax.plot(xswitchvec[3]/1e3, xswitchvec[0]/1e3 - paramsNom_O.p.rad, 'ko',
+        markersize = 10)
 ax.grid()
+ax.legend()
+ax.set_xlabel('planet-relative velocity, km/s')
+ax.set_ylabel('spherical altitude, km')
+ax.set_title('Orbiter trajectories')
 
 # =============================================================================
-# Call FNPAG
+# Orbiter Dispersions Setup
 # =============================================================================
-mode = 1
-xxvec, tvecEval, raf, rpf, raErr, DV,\
-        tsList, sigdList, tvecP1, tvecP2 = doFNPAG(mode, paramsTrue, paramsNom,
-                                                    t0, xx0vec, sig0, sigd, ts)
+# set number of MC runs
+Nmc = 2
 
+# copy - DO NOT ASSIGN - paramsTrue_O to contain dispersions. leave paramsNom_O alone.
+paramsTrue_O = copy.deepcopy(paramsNom_O)
 
+# load full 5000-case Monte Carlo atmsophere dataset from MarsGRAM-2010
+filename = '../data/Mars_0.1_5000.txt'
+densAll, densMean, h = getMarsGRAMDensTableAll(filename, Nmc)
 
+# define dispersions for other parameters
+BCMean_O = paramsNom_O.BC
+BCLB_O = 0.9 * paramsNom_O.BC # kg/m^2
+BCRng_O = 0.2 * paramsNom_O.BC # kg/m^2
+
+L_DMean_O = paramsNom_O.LD
+L_DLB_O = 0.9 * paramsNom_O.LD
+L_DRng_O = 0.2 * paramsNom_O.LD
+
+gam0Mean = np.radians(paramsNom_O.efpaWR)
+gam0STD = np.radians(0.2) / 3
+
+v0Mean = paramsNom_O.vmagWR * 1e3
+v0STD = 10/3 # m/s
+
+# initialize lists for actual dispersed parameters and results
+xxvecList_O = []
+tvecList_O = []
+sigdvecList_O = []
+tsvecList_O = []
+
+raErrList_O = []
+DVList_O = []
+tsfList_O = []
+sigdfList_O = []
+rafList_O = []
+rpfList_O = []
+engfList_O = []
+
+BCList_O = []
+L_DList_O = []
+gam0List = []
+v0List = []
+
+# output filename
+outname = '../results/AeroDrop_dispersed_' + str(Nmc) + '_' + datestring
+
+# =============================================================================
+#  Monte Carlo loop
+# =============================================================================
+for i in range(Nmc):
+    # initialize random variables
+    BC_O = uniform.rvs(size = 1, loc = BCLB_O, scale = BCRng_O)[0]
+    L_D_O = uniform.rvs(size = 1, loc = L_DLB_O, scale = L_DRng_O)[0]
+    gam0 = norm.rvs(size = 1, loc = gam0Mean, scale = gam0STD)[0]
+    v0 = norm.rvs(size = 1, loc = v0Mean, scale = v0STD)[0]
     
+    paramsTrue_O.BC = BC_O
+    paramsTrue_O.LD = L_D_O
+    xx0vec[3] = v0
+    xx0vec[4] = gam0
+    
+    # get GRAM atm profile
+    paramsTrue_O.atmdat = np.array([h,densAll[:,i]])
+    paramsTrue_O.atmdat = paramsTrue_O.atmdat[:,paramsTrue_O.atmdat[0,:].argsort()]
+    
+    # append inputs to lists (skip GRAM profiles, can always get those later)
+    BCList_O.append(BC_O)
+    L_DList_O.append(L_D_O)
+    gam0List.append(gam0)
+    v0List.append(v0)
+    
+    # run FNPAG simulation
+    xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1,\
+        tvecP2, xswwitchvec = doFNPAG(mode, paramsTrue_O, paramsNom_O, t0,
+                              xx0vec, sig0, sigd, ts, updatesOn = False)
+    
+    # append outputs to lists
+    xxvecList_O.append(xxvec)
+    tvecList_O.append(tvecEval)
+    sigdvecList_O.append(sigdList)
+    tsvecList_O.append(tsList)
+    raErrList_O.append(raErr)
+    DVList_O.append(DV)
+    tsfList_O.append(tsList[-1])
+    sigdfList_O.append(sigdList[-1])
+    rafList_O.append(raf)
+    rpfList_O.append(rpf)
+    engfList_O.append(engf)
+    
+    # save data to file for analysis
+    xxvecArr_O = np.empty(i+1, object)
+    xxvecArr_O[:] = xxvecList_O
+    tvecArr_O = np.empty(i+1, object)
+    tvecArr_O[:] = tvecArr_O
+    sigdvecArr_O = np.empty(i+1, object)
+    sigdvecArr_O[:] = sigdvecList_O
+    tsvecArr_O = np.empty(i+1, object) 
+    tsvecArr_O[:] = tsvecList_O
+    np.savez(outname,
+             xxvecArr_O = xxvecArr_O,
+             tvecArr_O = tvecArr_O,
+             sigdvecArr_O = sigdvecArr_O,
+             tsvecArr_O = tsvecArr_O,
+             BCList_O = BCList_O,
+             L_DList_O = L_DList_O,
+             gam0List = gam0List,
+             v0List = v0List,
+             raErrList_O = raErrList_O,
+             DVList_O = DVList_O,
+             tsfList_O = tsfList_O,
+             sigdfList_O = sigdfList_O,
+             rafList_O = rafList_O,
+             rpfList_O = rpfList_O,
+             engfList_O = engfList_O)
+    
+    toc = time.time()
+    print('\nRun {0:d} complete, {1:.1f} s elapsed'.format(i, toc-tic))
+
+
+
+
+
 
 toc = time.time()
 

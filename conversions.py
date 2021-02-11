@@ -204,7 +204,7 @@ def getApses(rvec_N, vvec_N, params):
     
     return ra, rp
 
-def getApsesSphPR(xxvec, params):
+def getApsesSphPR(xxvec, params, returnEng = False):
     '''
     returns radius of periapsis and apoapsis for given spherical state.
     ASSUMES given state is PLANET-RELATIVE
@@ -214,6 +214,7 @@ def getApsesSphPR(xxvec, params):
     OUTPUTS:
         ra: radius of apoapsis, m
         rp: radius of periapsis, m
+        ENG: specific mechanical orbital energy, m^2/s^2
     '''
     
     mu = params.p.mu * 1e9
@@ -239,7 +240,10 @@ def getApsesSphPR(xxvec, params):
     ra = SMA * (1 + ECC)
     rp = SMA * (1 - ECC)
     
-    return ra, rp
+    if returnEng:
+        return ra, rp, ENG
+    else:
+        return ra, rp
 
 def sph2cart(xsphvec):
     '''
