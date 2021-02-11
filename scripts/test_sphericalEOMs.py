@@ -6,7 +6,7 @@ Created on Tue Feb  9 13:19:06 2021
 """
 from conversions import LLAEHV2RV, RV2LLAEHV, Vinf2VN, getApses, getApsesSphPR, sph2cart, cart2sph, VN2Vinf
 from sim import Params
-from guidance import updateFNPAG, dynFNPAGPhase1, dynFNPAGPhase1Sph
+from guidance import updateFNPAG, dynFNPAGPhase1, dynFNPAGPhase1Sph, dynFNPAGPhase2, dynFNPAGPhase2Sph
 import ODEs
 import planetaryconstants as constants
 
@@ -15,6 +15,7 @@ from scipy.integrate import solve_ivp
 import sys
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import time
 
 plt.close('all')
 mpl.rcParams["figure.autolayout"] = True
@@ -49,7 +50,7 @@ paramsNom.Rn = np.sqrt(paramsNom.A / np.pi) / 2
 paramsNom.lat = 18.38
 paramsNom.lon = -77.58
 paramsNom.alt = paramsNom.p.halt
-paramsNom.efpaWR = -12
+paramsNom.efpaWR = -11
 paramsNom.hdaWR = 0
 paramsNom.vmagWR = 6
 
@@ -77,9 +78,9 @@ xx0vec1 = np.block([paramsNom.x0, paramsNom.v0])
 # xx0vec1 = np.block([paramsNom.x0, paramsNom.vInfvec_N])
 sig0 = 15
 sigd = 150
-ts = 157.5
-ts1 = 157
-ts2 = 158
+ts = 138
+ts1 = 137.9
+ts2 = 140
 
 paramsNom.rtol = 1e-10
 paramsNom.atol = 1e-10
@@ -88,7 +89,7 @@ paramsNom.errtol2 = 0
 paramsNom.dtGdn = 1 # s
 paramsNom.hmin = 10
 paramsNom.hmax = paramsNom.p.halt + 10
-paramsNom.tf = 3000
+paramsNom.tf = 5000
 paramsNom.raStar = 250 + paramsNom.p.rad
 paramsNom.rpStar = 250 + paramsNom.p.rad
 
@@ -100,7 +101,10 @@ paramsTrue = paramsNom
 # Demonstrate dynamics
 # =============================================================================
 # cartesian:
+tic1 = time.time()
 xxvecs1, tvec1 = dynFNPAGPhase1(xx0vec1, 0, ts, sig0, sigd, paramsNom, returnTime = True)
+toc1 = time.time()
+# xxvecs1, tvec1 = dynFNPAGPhase2(xx0vec1, 0, sigd, paramsNom, returnTime = True)
 raf, rpf = getApses(xxvecs1[:3,-1], xxvecs1[3:,-1], paramsNom)
 print(raf - paramsNom.p.rad)
 
@@ -141,7 +145,10 @@ xx0vec2 = np.array([(paramsNom.alt + paramsNom.p.rad) * 1e3,
                     np.radians(paramsNom.lon), np.radians(paramsNom.lat),
                     paramsNom.vmagWR * 1e3, np.radians(paramsNom.efpaWR),
                     np.radians(paramsNom.hdaWR + 90)])
+tic2 = time.time()
 xxvecs2 = dynFNPAGPhase1Sph(xx0vec2, 0, ts, sig0, sigd, paramsNom)
+toc2 = time.time()
+# xxvecs2 = dynFNPAGPhase2Sph(xx0vec2, 0, sigd, paramsNom)
 raf, rpf = getApsesSphPR(xxvecs2[:,-1], paramsNom)
 print(raf/1e3 - paramsNom.p.rad)
 
@@ -152,8 +159,11 @@ ax.plot(vmag, h, label = 'spherical EOMs')
 ax.legend()
 
 
+print('cartesian EOMs took {0:.5f} s'.format(toc1-tic1))
+print('spherical EOMs took {0:.3f} s'.format(toc2-tic2))
 
-
+print('NOTE: J2 = {0:.3e}, planetary rotation rate Om = {1:.3e}'\
+      .format(paramsNom.p.J2, paramsNom.p.om))
 
 
 

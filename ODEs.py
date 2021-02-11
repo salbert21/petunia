@@ -26,7 +26,7 @@ def norm(v):
     '''
     return np.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
 
-def sphericalEntryEOMs(t, yy, params):
+def sphericalEntryEOMs(t, yy, sig, params):
     '''
     defines 3D 3DOF EOMs for lifting entry vehicle over *ellipsoidal* rotating
         planet. Defined as in FNPAG (Lu et. al).
@@ -51,6 +51,7 @@ def sphericalEntryEOMs(t, yy, params):
             v: planet-relative velocity magnitude, m/s
             gam: flight path angle, negative-down, radians
             hda: heading angle, clockwise from north, radians
+        sig: bank angle, rad
     OUTPUTS:
         dydt: time derivative of each state
     '''
@@ -61,8 +62,6 @@ def sphericalEntryEOMs(t, yy, params):
     J2 = params.p.J2
     L_D = params.LD
     BC = params.BC
-    
-    sig = np.radians(params.bank) # convert from deg to rad
     
     # extract state variables
     r = yy[0]
@@ -83,6 +82,13 @@ def sphericalEntryEOMs(t, yy, params):
         rho = getRho_from_table(params.atmdat, (r - radP)/1e3)
     else:
         sys.exit('atm mode not recognized')
+        
+    # #### TROUBLESHOOTING CODE ####
+    # rho0 = 0.0263 # kg/m^3
+    # H = 10153 # m
+    # h = r - radP
+    # rho = rho0 * np.exp(-h / H)
+    # #### TROUBLESHOOTING CODE ####
     
     # compute lift and drag accelerations
     D = rho * v**2 / (2 * BC)
@@ -119,12 +125,13 @@ def sphericalEntryEOMs(t, yy, params):
     
     return dydt
 
-def dynamics(t,yy,params, **options):
+def dynamics(t,yy, sig, params, **options):
     '''
     ODEs for full dynamics acting on the vehicle
     assume:
         - just one vehicle
         - yy is [position; velocity] in INERTIAL frame
+        - sig is bank angle in deg
     '''
        
     
@@ -194,8 +201,8 @@ def dynamics(t,yy,params, **options):
     
     vInfvecU_N = vInfvec_N / norm(vInfvec_N)
     
-    LvecU_N = LupvecU_N * np.cos(np.radians(params.bank)) + \
-              cross(vInfvecU_N, LupvecU_N) * np.sin(np.radians(params.bank))
+    LvecU_N = LupvecU_N * np.cos(np.radians(sig)) + \
+              cross(vInfvecU_N, LupvecU_N) * np.sin(np.radians(sig))
               
     DvecU_N = - vInfvecU_N
     

@@ -11,3 +11,9 @@ TODO: In the long-term, code badly needs cleanup and to have a single uniform co
 	from my state to a state for Lu's EOMs (or vice-versa) solves the problem. Check out test_conversions.py and
 	test_sphericalEOMs.py for basic comparison checks between algorithms. Delete these scripts only once code is
 	uniform and consistent.
+
+NOTE 2: also realized that some code was modifying the value of attributes of a Param instance inside a function. Like
+	lists, this user-defind class object IS MUTABLE, and thus is BEING PASSED BY REFERENCE! Therefore, short of a
+	significant refactor, this requires a new rule for Petunia: VALUES IN A PARAM INSTANCE SHOULD NOT BE CHANGED
+	DURING A SIMULATION. THIS IS ONLY FOR CONTAINING CONSTANTS (vehicle params, tolerances, initial state, etc.),
+	NOT for containing any current state information.

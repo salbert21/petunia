@@ -8,9 +8,9 @@ AeroDrop_dispersed.py:
 @author: Samuel Albert
 """
 
-from conversions import LLAEHV2RV, RV2LLAEHV, Vinf2VN, getApses
+from conversions import LLAEHV2RV, RV2LLAEHV, Vinf2VN, getApsesSphPR
 from sim import Params
-from guidance import updateFNPAG, dynFNPAGPhase1
+from guidance import updateFNPAG, dynFNPAGPhase1Sph
 import ODEs
 import planetaryconstants as constants
 
@@ -19,6 +19,9 @@ from scipy.integrate import solve_ivp
 import sys
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import time
+
+tic = time.time()
 
 plt.close('all')
 mpl.rcParams["figure.autolayout"] = True
@@ -27,21 +30,22 @@ mpl.rcParams.update({'font.size': 15})
 # =============================================================================
 # Main FNPAG Function
 # =============================================================================
-def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts, ts1,
-            ts2, verbose = True, plotsOn = True, updatesOn = True):
+def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts,
+            verbose = True, plotsOn = True, updatesOn = True):
     '''
     main function for FNPAG with variable mode (supports modes 1 and 2).
     paramsTrue holds real values used in propagation, paramsNom holds nominal
         values used in prediction for guidance updates.
+    Uses spherical planet-relative EOMs.
     '''
     
     # =========================================================================
     # Set up events
     # =========================================================================
-    event1 = lambda t, y: ODEs.above_max_alt(t, y, paramsTrue)
+    event1 = lambda t, y: ODEs.above_max_alt_sph(t, y, paramsTrue)
     event1.terminal = True
     event1.direction = 1
-    event2 = lambda t, y: ODEs.below_min_alt(t, y, paramsTrue)
+    event2 = lambda t, y: ODEs.below_min_alt_sph(t, y, paramsTrue)
     event2.terminal = True
     event3 = lambda t, y: ODEs.switchEvent(t, y, ts)
     event3.terminal = True
@@ -49,9 +53,9 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts, ts1,
     # =========================================================================
     # Main integration loop
     # =========================================================================
-    # make sure correct bank angles are set
-    paramsTrue.bank = sig0
-    paramsNom.bank = sig0
+    # # make sure correct bank angles are set
+    # paramsTrue.bank = sig0
+    # paramsNom.bank = sig0
     
     # initialize
     tvec = np.arange(t0, paramsNom.tf + paramsTrue.dtGdn, paramsTrue.dtGdn)
@@ -76,8 +80,8 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts, ts1,
     for ind, t in enumerate(tvec):
         # update guidance
         if updatesOn:
-            ts = updateFNPAG(xxvec[:,-1], t, ts, sig0, sigd, ts1, ts2,
-                             phase, mode, paramsNom)
+            ts = updateFNPAG(xx0veci, t, ts, sig0, sigd, phase, mode,
+                             paramsNom, sphericalEOMs = True)
             # update event with new ts value
             event3 = lambda t, y: ODEs.switchEvent(t, y, ts)
             event3.terminal = True
@@ -87,9 +91,15 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts, ts1,
                   .format(t, ts))
         tsList.append(ts)
         
+        ### TROUBLESHOOTING: stop for profiler
+        if t > 2:
+            sys.exit('stopped execution for profiler')
+        
         # propagate until next guidance update or switching time
         tspan = (t, t + paramsTrue.dtGdn)
-        soli = solve_ivp(lambda t, y: ODEs.dynamics(t, y, paramsTrue),
+        soli = solve_ivp(lambda t, y: ODEs.sphericalEntryEOMs(t, y,
+                                                              np.radians(sig0),
+                                                              paramsTrue),
                          tspan, xx0veci,
                          rtol = paramsTrue.rtol, atol = paramsTrue.atol,
                          events = (event1, event2, event3))
@@ -103,13 +113,13 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts, ts1,
         if soli.status == 0:
             # reached next guidance update
             continue
-        elif len(soli.t_events[0]) > 0:
+        elif len(soli.t_events[2]) > 0:
             # reached switching time
             break
         
         else:
             sys.exit('propagator never reached next guidance update or'\
-                     'switching time in phase 1')
+                     ' switching time in phase 1')
         
     tvecP1 = tvecEval * 1
     
@@ -118,17 +128,17 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts, ts1,
     
     ## PHASE 2 ##
     phase = 2
-    paramsTrue.bank = sigd
-    paramsNom.bank = sigd
+    # paramsTrue.bank = sigd
+    # paramsNom.bank = sigd
     print()
     
     for ind, t in enumerate(tvec):
         # update guidance
         if updatesOn:
-            sigd = updateFNPAG(xxvec[:,-1], t, ts, sig0, sigd, ts1, ts2,
-                               phase, mode, paramsNom)
-            paramsTrue.bank = sigd
-            paramsNom.bank = sigd
+            sigd = updateFNPAG(xxvec[:,-1], t, ts, sig0, sigd, phase, mode,
+                               paramsNom)
+            # paramsTrue.bank = sigd
+            # paramsNom.bank = sigd
             
         
         # make sure sigd is in [-180, 180] deg range
@@ -141,7 +151,9 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts, ts1,
         
         # propagate until next guidance update or final state
         tspan = (t, t + paramsTrue.dtGdn)
-        soli = solve_ivp(lambda t, y: ODEs.dynamics(t, y, paramsTrue),
+        soli = solve_ivp(lambda t, y: ODEs.sphericalEntryEOMs(t, y,
+                                                              np.radians(sigd),
+                                                              paramsTrue),
                          tspan, xx0veci,
                          rtol = paramsTrue.rtol, atol = paramsTrue.atol,
                          events = (event1, event2))
@@ -162,20 +174,24 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts, ts1,
     tvecP2 = tvecEval * 1
     
     if plotsOn:
-        print()
-        # TODO: add some plotting here
+        # fig = plt.figure()
+        # ax = fig.add_subplot(111)
+        ax.plot(xxvec[3,:], xxvec[0,:], '--', label = 'true trajectory')
+        ax.legend()
     
     # =========================================================================
     # Compute apoapsis error and DV magnitudes
     # =========================================================================
-    raf, rpf = getApses(xxvec[:3,-1], xxvec[3:,-1], paramsTrue)
+    raf, rpf = getApsesSphPR(xxvec[:,-1], paramsTrue)
     raErr = raf - paramsTrue.raStar
     
-    DV1 = np.sqrt(2 * paramsTrue.mu)\
+    mu = paramsTrue.p.mu * 1e9
+    
+    DV1 = np.sqrt(2 * mu)\
         * abs((np.sqrt(1/paramsTrue.raStar - 1\
                        / (paramsTrue.raStar + paramsTrue.rpStar))\
                - np.sqrt(1/paramsTrue.raStar - 1 / (raf + rpf))))
-    DV2 = np.sqrt(2 * paramsTrue.mu)\
+    DV2 = np.sqrt(2 * mu)\
         * abs((np.sqrt(1/paramsTrue.rpStar - 1\
                        / (paramsTrue.raStar + paramsTrue.rpStar))\
                - np.sqrt(1/paramsTrue.rpStar - 1 / (raf + paramsTrue.rpStar))))
@@ -219,37 +235,41 @@ paramsNom.lat = 18.38
 paramsNom.lon = -77.58
 paramsNom.alt = paramsNom.p.halt
 paramsNom.efpaWR = -12
+# paramsNom.efpaWR = -11
 paramsNom.hdaWR = 0
 paramsNom.vmagWR = 6
 
-### GET OTHER STATE TYPES (and assume t0 = 0)
-paramsNom.x0, paramsNom.vInfvec_N = LLAEHV2RV(paramsNom.lat, paramsNom.lon,
-                                        paramsNom.alt, paramsNom.efpaWR,
-                                        paramsNom.hdaWR, paramsNom.vmagWR,
-                                        paramsNom, 0)
-paramsNom.v0 = Vinf2VN(paramsNom.x0, paramsNom.vInfvec_N, paramsNom, 0)
-_, _, _, paramsNom.efpa, paramsNom.hda, paramsNom.vmag = \
-    RV2LLAEHV(paramsNom.x0, paramsNom.v0, paramsNom, 0)
+xx0vec = np.array([(paramsNom.alt + paramsNom.p.rad) * 1e3,
+                   np.radians(paramsNom.lon),
+                   np.radians(paramsNom.lat),
+                   paramsNom.vmagWR * 1e3,
+                   np.radians(paramsNom.efpaWR),
+                   np.radians(paramsNom.hdaWR + 90)])
     
 ### NOMINAL SIMULATION PARAMS ###
 t0 = 0
-xx0vec = np.block([paramsNom.x0, paramsNom.v0])
+# xx0vec = np.block([paramsNom.x0, paramsNom.v0])
 sig0 = 15
 sigd = 150
-ts = 157.5
-ts1 = 157
-ts2 = 158
+ts = 157
 
+# search brackets for Brent's Method
+paramsNom.sig1 = 15
+paramsNom.sig2 = 180
+paramsNom.ts1 = 100
+paramsNom.ts2 = 200
+
+# other settings and constants
 paramsNom.rtol = 1e-10
 paramsNom.atol = 1e-10
 paramsNom.errtol1 = 0
 paramsNom.errtol2 = 0
 paramsNom.dtGdn = 1 # s
 paramsNom.hmin = 10
-paramsNom.hmax = paramsNom.p.halt + 10
-paramsNom.tf = 3000
-paramsNom.raStar = 250 + paramsNom.p.rad
-paramsNom.rpStar = 250 + paramsNom.p.rad
+paramsNom.hmax = paramsNom.p.halt + 1e7
+paramsNom.tf = 6000
+paramsNom.raStar = (250 + paramsNom.p.rad) * 1e3
+paramsNom.rpStar = (250 + paramsNom.p.rad) * 1e3
 
 ### SET TRUE MC SIMULATION PARAMS ###
 paramsTrue = paramsNom
@@ -259,16 +279,16 @@ paramsTrue = paramsNom
 # =============================================================================
 # Demonstrate dynamics
 # =============================================================================
-xxvecs1 = dynFNPAGPhase1(xx0vec, 0, ts, sig0, sigd, paramsNom)
-raf, rpf = getApses(xxvecs1[:3,-1], xxvecs1[3:,-1], paramsNom)
-print(raf - paramsNom.p.rad)
+xxvecs1 = dynFNPAGPhase1Sph(xx0vec, 0, ts, sig0, sigd, paramsNom)
+raf, rpf = getApsesSphPR(xxvecs1[:,-1], paramsNom)
+print(raf/1e3 - paramsNom.p.rad)
 
 h = np.linalg.norm(xxvecs1[:3,:], axis = 0)
 vmag = np.linalg.norm(xxvecs1[3:,:], axis = 0)
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
-ax.plot(vmag, h)
+# ax.plot(vmag, h, label = 'predicted trajectory')
 ax.grid()
 
 # =============================================================================
@@ -277,38 +297,15 @@ ax.grid()
 mode = 1
 xxvec, tvecEval, raf, rpf, raErr, DV,\
         tsList, sigdList, tvecP1, tvecP2 = doFNPAG(mode, paramsTrue, paramsNom,
-                                                    t0, xx0vec, sig0, sigd,
-                                                    ts, ts1, ts2)
+                                                    t0, xx0vec, sig0, sigd, ts)
 
 
 
     
 
-    
+toc = time.time()
 
-# ### TEST FUNCTIONS
-# t = 0
-# ts = 154
-# sig0 = 0
-# sigd = 180
-# params.rtol = 1e-10
-# params.atol = 1e-10
-# params.hmin = 10
-# params.hmax = params.p.halt + 1e-7 + 10
-# params.tf = 3000
-# xxvec = dynFNPAGPhase1(np.block([params.x0, params.v0]),
-#                        t, ts, sig0, sigd, params)
-
-# raf, rpf = getApses(xxvec[:3,-1], xxvec[3:,-1], params)
-# print(raf - params.p.rad)
-
-# h = np.linalg.norm(xxvec[:3,:], axis = 0)
-# vmag = np.linalg.norm(xxvec[3:,:], axis = 0)
-
-# fig = plt.figure()
-# ax = fig.add_subplot(111)
-# ax.plot(vmag, h)
-# ax.grid()
+print('Total time elapsed: {0:.2f} s'.format(toc-tic))
 
 
 

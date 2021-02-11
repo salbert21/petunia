@@ -13,11 +13,11 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.optimize import brentq, minimize_scalar, root_scalar, minimize
 import sys
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+from sim import Params
+import planetaryconstants as constants
 
 import ODEs
-from conversions import getApses
+from conversions import getApses, getApsesSphPR
 
 
 def getApoapsisError(ra, rp, params):
@@ -67,6 +67,25 @@ def getError(xx0vec, t, ts, sig0, sigd, phase, errFun, params):
     ra, rp = getApses(xxvec[:3,-1], xxvec[3:,-1], params)
     
     return errFun(ra, rp, params)
+
+def getErrorSph(xx0vec, t, ts, sig0, sigd, phase, errFun, params):
+    '''
+    calls appropriate dynamics function and error function for FNPAG
+    '''
+    
+    # make sure switching time has not already passed
+    if phase == 1:
+        if ts <= t:
+            ts = t
+            
+    if phase == 1:
+        xxvec = dynFNPAGPhase1Sph(xx0vec, t, ts, sig0, sigd, params)
+    elif phase == 2:
+        xxvec = dynFNPAGPhase2Sph(xx0vec, t, sigd, params)
+    
+    ra, rp = getApsesSphPR(xxvec[:,-1], params)
+    
+    return errFun(ra, rp, params)
         
 
 
@@ -77,7 +96,8 @@ def getError(xx0vec, t, ts, sig0, sigd, phase, errFun, params):
 
 
 
-def updateFNPAG(xxvec, t, ts, sig0, sigd, ts1, ts2, phase, mode, params):
+def updateFNPAG(xxvec, t, ts, sig0, sigd, phase, mode, params,
+                sphericalEOMs = True):
     '''
     Guidance update for FNPAG, used in predictor-corrector.
     Computes ts for phase 1, sigd for phase 2.
@@ -104,12 +124,18 @@ def updateFNPAG(xxvec, t, ts, sig0, sigd, ts1, ts2, phase, mode, params):
         sys.exit('Mode not recognized for FNPAG')
     
     if phase == 1:
-        getErr = lambda ts: getError(xxvec, t, ts, sig0, sigd,
+        if sphericalEOMs:
+                    getErr = lambda ts: getErrorSph(xxvec, t, ts, sig0, sigd,
                                      phase, errFun, params)
+        else:     
+            getErr = lambda ts: getError(xxvec, t, ts, sig0, sigd,
+                                         phase, errFun, params)
         
-        # if error already below tolerance, don't update control parameter
-        if mode == 1 and abs(getErr(ts)) < params.errtol1:
-            return ts
+        if params.errtol1 > 0:
+            # if error already below tolerance, don't update control parameter
+            if mode == 1 and abs(getErr(ts)) < params.errtol1:
+                return ts
+        
         
         # ts1 = ts - 5
         # ts2 = ts + 5
@@ -125,7 +151,7 @@ def updateFNPAG(xxvec, t, ts, sig0, sigd, ts1, ts2, phase, mode, params):
         
         if mode == 1:
             # Brent's Method:
-            tsi, res = brentq(getErr, ts1, ts2, full_output = True)
+            tsi, res = brentq(getErr, params.ts1, params.ts2, full_output = True)
             converged = res.converged
             
             # # scipy automatic root-finding method:
@@ -135,7 +161,8 @@ def updateFNPAG(xxvec, t, ts, sig0, sigd, ts1, ts2, phase, mode, params):
             
         elif mode == 2:
             # Golden Section Method:
-            res = minimize_scalar(getErr, bracket = (ts1, ts2), method = 'Brent')
+            res = minimize_scalar(getErr, bracket = (params.ts1, params.ts2),
+                                  method = 'Brent')
             
             # # scipy minimize method:
             # res = minimize(getErr, x0 = ts)
@@ -152,19 +179,24 @@ def updateFNPAG(xxvec, t, ts, sig0, sigd, ts1, ts2, phase, mode, params):
         return tsi
     
     elif phase == 2:
-        getErr = lambda sigd: getError(xxvec, t, ts, sig0, sigd,
+        if sphericalEOMs:
+                    getErr = lambda sigd: getErrorSph(xxvec, t, ts, sig0, sigd,
                                        phase, errFun, params)
+        else:
+            getErr = lambda sigd: getError(xxvec, t, ts, sig0, sigd,
+                                           phase, errFun, params)
         
-        # if error already below tolerance, don't update control parameter
-        if mode == 1 and abs(getErr(sigd)) < params.errtol2:
-            return sigd
+        if params.errtol2 > 0:
+            # if error already below tolerance, don't update control parameter
+            if mode == 1 and abs(getErr(sigd)) < params.errtol2:
+                return sigd
         
-        sig1 = sigd - np.radians(1)
-        sig2 = min(sigd + np.radians(1), np.pi)
+        # sig1 = sigd - 1
+        # sig2 = min(sigd + 1, 180)
         
         if mode == 1:
             # Brent's Method:
-            sigdi, res = brentq(getErr, sig1, sig2, full_output = True)
+            sigdi, res = brentq(getErr, params.sig1, params.sig2, full_output = True)
             converged = res.converged
             
             # # scipy automatic root-finding method:
@@ -174,7 +206,8 @@ def updateFNPAG(xxvec, t, ts, sig0, sigd, ts1, ts2, phase, mode, params):
             
         elif mode == 2:
             # Golden Section method:
-            res = minimize_scalar(getErr, bracket = (sig1, sig2), method = 'Brent')
+            res = minimize_scalar(getErr, bracket = (params.sig1, params.sig2),
+                                  method = 'Brent')
             
             # # scipy minimize method:
             # res = minimize(getErr, x0 = sigd)
@@ -223,8 +256,9 @@ def dynFNPAGPhase1Sph(xx0vec, t, ts, sig0, sigd, params, returnTime = False):
     
     # propagate lift-up until ts
     tspan = (t, ts)
-    params.bank = sig0
-    sol1 = solve_ivp(lambda t, y: ODEs.sphericalEntryEOMs(t, y, params),
+    sol1 = solve_ivp(lambda t, y: ODEs.sphericalEntryEOMs(t, y,
+                                                          np.radians(sig0),
+                                                          params),
                      tspan, xx0vec, rtol = params.rtol, atol = params.atol,
                      events = (event1, event2))
     if sol1.status != 0:
@@ -232,8 +266,9 @@ def dynFNPAGPhase1Sph(xx0vec, t, ts, sig0, sigd, params, returnTime = False):
     
     # propagate lift-down until atm exit or surface impact
     tspan = (ts, params.tf)
-    params.bank = sigd
-    sol2 = solve_ivp(lambda t, y: ODEs.sphericalEntryEOMs(t, y, params),
+    sol2 = solve_ivp(lambda t, y: ODEs.sphericalEntryEOMs(t, y,
+                                                          np.radians(sigd),
+                                                          params),
                      tspan, sol1.y[:,-1], rtol = params.rtol, atol = params.atol,
                      events = (event1, event2))
     
@@ -247,6 +282,39 @@ def dynFNPAGPhase1Sph(xx0vec, t, ts, sig0, sigd, params, returnTime = False):
         return xxvec, tvec
     else:
         return xxvec
+    
+def dynFNPAGPhase2Sph(xx0vec, t, sigd, params, returnTime = False):
+    '''
+    Dynamics function for Phase 2 of FNPAG.
+    Propagates from given state to atm exit. Assumes constant bank angle.
+    INPUTS:
+        xx0vec: initial spherical planet-relative state, km, km/s
+        t: initial (current) time, s
+        sigd: final bank angle, deg
+    OUTPUTS:
+        xxvec: cartesian inertial state vector over time, km, km/s
+    '''
+    
+    event1 = lambda t, y: ODEs.above_max_alt_sph(t, y, params)
+    event1.terminal = True
+    event1.direction = 1
+    event2 = lambda t, y: ODEs.below_min_alt_sph(t, y, params)
+    event2.terminal = True
+    
+    # propagate until tf or terminal condition
+    tspan = (t, params.tf)
+    sol = solve_ivp(lambda t, y: ODEs.sphericalEntryEOMs(t, y,
+                                                         np.radians(sigd),
+                                                         params),
+                    tspan, xx0vec, rtol = params.rtol, atol = params.atol,
+                    events = (event1, event2))
+    if sol.status != 1:
+        sys.exit('never reached a terminal condition during phase 2 of FNPAG')
+    
+    if returnTime:
+        return sol.y, sol.t
+    else:
+        return sol.y
     
     
     
@@ -277,8 +345,7 @@ def dynFNPAGPhase1(xx0vec, t, ts, sig0, sigd, params, returnTime = False):
     
     # propagate lift-up until ts
     tspan = (t, ts)
-    params.bank = sig0
-    sol1 = solve_ivp(lambda t, y: ODEs.dynamics(t, y, params),
+    sol1 = solve_ivp(lambda t, y: ODEs.dynamics(t, y, sig0, params),
                      tspan, xx0vec, rtol = params.rtol, atol = params.atol,
                      events = (event1, event2))
     if sol1.status != 0:
@@ -286,8 +353,7 @@ def dynFNPAGPhase1(xx0vec, t, ts, sig0, sigd, params, returnTime = False):
     
     # propagate lift-down until atm exit or surface impact
     tspan = (ts, params.tf)
-    params.bank = sigd
-    sol2 = solve_ivp(lambda t, y: ODEs.dynamics(t, y, params),
+    sol2 = solve_ivp(lambda t, y: ODEs.dynamics(t, y, sigd, params),
                      tspan, sol1.y[:,-1], rtol = params.rtol, atol = params.atol,
                      events = (event1, event2))
     
@@ -302,7 +368,7 @@ def dynFNPAGPhase1(xx0vec, t, ts, sig0, sigd, params, returnTime = False):
     else:
         return xxvec
 
-def dynFNPAGPhase2(xx0vec, t, sigd, params):
+def dynFNPAGPhase2(xx0vec, t, sigd, params, returnTime = False):
     '''
     Dynamics function for Phase 2 of FNPAG.
     Propagates from given state to atm exit. Assumes constant bank angle.
@@ -322,13 +388,15 @@ def dynFNPAGPhase2(xx0vec, t, sigd, params):
     
     # propagate until tf or terminal condition
     tspan = (t, params.tf)
-    params.bank = sigd
-    sol = solve_ivp(lambda t, y: ODEs.dynamics(t, y, params),
+    sol = solve_ivp(lambda t, y: ODEs.dynamics(t, y, sigd, params),
                     tspan, xx0vec, rtol = params.rtol, atol = params.atol,
                     events = (event1, event2))
     if sol.status != 1:
         sys.exit('never reached a terminal condition during phase 2 of FNPAG')
     
-    return sol.y
+    if returnTime:
+        return sol.y, sol.t
+    else:
+        return sol.y
     
     
