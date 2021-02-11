@@ -94,6 +94,7 @@ print('Bank angle set to {:.1f} deg\n'.format(params.bank))
 
 ### SIMULATE PROBE
 params.LD = 0
+params.BC = 35
 outsProbe = Outs()
 outsProbe = mainAD(params, tspan, events, outsProbe)
 print('\nPROBE:')

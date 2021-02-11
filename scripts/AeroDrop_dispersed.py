@@ -127,8 +127,6 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts,
     
     ## PHASE 2 ##
     phase = 2
-    # paramsTrue.bank = sigd
-    # paramsNom.bank = sigd
     print()
     
     for ind, t in enumerate(tvec):
@@ -186,15 +184,15 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts,
     
     mu = paramsTrue.p.mu * 1e9
     
-    # if rpf or raf are invalid values, assign NaN to both DV values
-    if rpf/1e3 - paramsTrue.p.rad < 0 or raf < 0:
+    # if hyperbolic orbit, assign NaN to both DV values
+    if raf < 0:
         DV1 = np.NaN
         DV2 = np.NaN
     else:
         DV1 = np.sqrt(2 * mu)\
-            * abs((np.sqrt(1/paramsTrue.raStar - 1\
-                           / (paramsTrue.raStar + paramsTrue.rpStar))\
-                   - np.sqrt(1/paramsTrue.raStar - 1 / (raf + rpf))))
+            * abs((np.sqrt(1/raf - 1\
+                           / (raf + paramsTrue.rpStar))\
+                   - np.sqrt(1/raf - 1 / (raf + rpf))))
         DV2 = np.sqrt(2 * mu)\
             * abs((np.sqrt(1/paramsTrue.rpStar - 1\
                            / (paramsTrue.raStar + paramsTrue.rpStar))\
@@ -241,7 +239,6 @@ paramsNom_O.lat = 18.38
 paramsNom_O.lon = -77.58
 paramsNom_O.alt = paramsNom_O.p.halt
 paramsNom_O.efpaWR = -12
-# paramsNom_O.efpaWR = -11
 paramsNom_O.hdaWR = 0
 paramsNom_O.vmagWR = 6
 
@@ -256,7 +253,8 @@ xx0vec = np.array([(paramsNom_O.alt + paramsNom_O.p.rad) * 1e3,
 t0 = 0
 sig0 = 15
 sigd = 150
-ts = 160
+ts = 158.043
+# ts = 160
 
 # search brackets for Brent's Method
 paramsNom_O.sig1 = 15
@@ -307,7 +305,7 @@ ax.set_title('Orbiter trajectories')
 # set number of MC runs
 Nmc = 2
 
-# copy - DO NOT ASSIGN - paramsTrue_O to contain dispersions. leave paramsNom_O alone.
+# copy, DO NOT ASSIGN, paramsTrue_O for dispersions. leave paramsNom_O alone.
 paramsTrue_O = copy.deepcopy(paramsNom_O)
 
 # load full 5000-case Monte Carlo atmsophere dataset from MarsGRAM-2010
@@ -379,7 +377,7 @@ for i in range(Nmc):
     # run FNPAG simulation
     xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1,\
         tvecP2, xswwitchvec = doFNPAG(mode, paramsTrue_O, paramsNom_O, t0,
-                              xx0vec, sig0, sigd, ts, updatesOn = False)
+                              xx0vec, sig0, sigd, ts)
     
     # append outputs to lists
     xxvecList_O.append(xxvec)
@@ -395,6 +393,7 @@ for i in range(Nmc):
     engfList_O.append(engf)
     
     # save data to file for analysis
+    print('saving file...')
     xxvecArr_O = np.empty(i+1, object)
     xxvecArr_O[:] = xxvecList_O
     tvecArr_O = np.empty(i+1, object)
@@ -421,7 +420,7 @@ for i in range(Nmc):
              engfList_O = engfList_O)
     
     toc = time.time()
-    print('\nRun {0:d} complete, {1:.1f} s elapsed'.format(i, toc-tic))
+    print('\nRun {0:d} complete, {1:.2f} s elapsed'.format(i+1, toc-tic))
 
 
 
