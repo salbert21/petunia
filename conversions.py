@@ -344,6 +344,18 @@ def vr2viCart(rvec, vrvec, params):
     return vivec
     
     
+def getAzimuth(lon1, lat1, lon2, lat2):
+    '''
+    returns bearing (Azimuth angle along great circle) between two points.
+    Input angles must be in radians. output is also in radians
+    '''
+    
+    x = np.cos(lat2) * np.sin(lon2 - lon1)
+    y = np.cos(lat1) * np.sin(lat2)\
+        - np.sin(lat1) * np.cos(lat2) * np.cos(lon2 - lon1)
+    Az = np.arctan2(x,y)
+    
+    return Az
     
     
     

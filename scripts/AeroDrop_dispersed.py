@@ -284,8 +284,7 @@ xxvec, tvecEval, raf, rpf, engf, raErr, DV,\
                                                                paramsNom_O, t0,
                                                                xx0vec, sig0,
                                                                sigd, ts,
-                                                               plotsOn = False,
-                                                               updatesOn = False)
+                                                               plotsOn = False)
 
 fig = plt.figure()
 ax = fig.add_subplot(111)

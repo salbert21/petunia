@@ -26,6 +26,118 @@ def norm(v):
     '''
     return np.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
 
+def sphericalEntryEOMsAug(t, yy, sig0, e0, params):
+    '''
+    Like sphericalEntryEOMs from ASEN 6015, but dimensional and with GRAM dens.
+    Defines 3D 3DOF EOMs for lifting entry vehicle over *ellipsoidal* rotating
+        planet. Defined as in FNPAG (Lu et. al), then augmented with 7th state
+        to capture evolution of range. Uses bank angle profile as defined in
+        FNPEG.
+        ASSUMPTIONS:
+            - constant bank angle
+            - exponential atmosphere
+            - rotating planet
+            - ellipsoidal planet (J2)
+    params requirements:
+        OmP: rotation rate of planet, rad/s
+        radP: equatorial radius of planet, m
+        mu: gravitational parameter of planet, m^3/s^2
+        J2: zonal coefficient J2 of planet
+        L_D: vehicle L/D ratio
+        BC: vehicle ballistic coefficient, kg/m^2
+    INPUTS:
+        t: time (not used)
+        yy: state vector:
+            r: radial distance, m
+            lon: longitude, radians
+            lat: latitude, radians
+            v: planet-relative velocity magnitude, m/s
+            gam: flight path angle, negative-down, radians
+            hda: heading angle, clockwise from north, radians
+        sig: bank angle, rad
+    OUTPUTS:
+        dydt: time derivative of each state
+    '''
+    # extract constants from params
+    OmP = params.p.om
+    radP = params.p.rad * 1e3
+    mu = params.p.mu * 1e9 # convert from km^3/s^2 to m^3/s^2
+    J2 = params.p.J2
+    L_D = params.LD
+    BC = params.BC
+    
+    ef = params.ef
+    sigf = params.sigf
+    
+    # extract state variables
+    r = yy[0]
+    # lon = yy[1] # not used in EOMs
+    lat = yy[2]
+    v = yy[3]
+    gam = yy[4]
+    hda = yy[5]
+    
+    # get gravity terms from J2 model
+    gr = mu/r**2 * (1 + J2 * (radP/r)**2 * (1.5 - 4.5 * np.sin(lat)**2))
+    gphi = mu/r**2 * (J2 * (radP/r)**2 * (3 * np.sin(lat) * np.cos(lat)))
+    
+    # get density at this altitude
+    if params.dMode == 'fun':
+        rho = params.dFun((r - radP)/1e3)
+    elif params.dMode == 'table':
+        rho = getRho_from_table(params.atmdat, (r - radP)/1e3)
+    else:
+        sys.exit('atm mode not recognized')
+        
+    # #### TROUBLESHOOTING CODE ####
+    # rho0 = 0.0263 # kg/m^3
+    # H = 10153 # m
+    # h = r - radP
+    # rho = rho0 * np.exp(-h / H)
+    # #### TROUBLESHOOTING CODE ####
+    
+    # compute e
+    e = mu / r - v**2 / 2
+    
+    # compute current bank angle
+    sig = sig0 + (e - e0) / (ef - e0) * (sigf - sig0)
+    
+    # compute lift and drag accelerations
+    D = rho * v**2 / (2 * BC)
+    L = L_D * D
+    
+    # EOMs
+    dydt = np.empty(6)
+    dydt[:] = np.NaN
+    
+    dydt[0] = v * np.sin(gam)
+    dydt[1] = v * np.cos(gam) * np.sin(hda) / (r * np.cos(lat))
+    dydt[2] = v * np.cos(gam) * np.cos(hda) / r
+    
+    dydt[3] = -D\
+              - gr * np.sin(gam)\
+              - gphi * np.cos(gam) * np.cos(hda)\
+              + OmP**2 * r * np.cos(lat) * (np.sin(gam) * np.cos(lat)\
+                                            - np.cos(gam) * np.sin(lat)\
+                                                * np.cos(hda))
+    dydt[4] = 1/v * (L * np.cos(sig)\
+                     + (v**2/r - gr) * np.cos(gam)\
+                     + gphi * np.sin(gam) * np.cos(hda)\
+                     + 2 * OmP * v * np.cos(lat) * np.sin(hda)\
+                     + OmP**2 * r * np.cos(lat) * (np.cos(gam) * np.cos(lat)\
+                                                   + np.sin(gam) * np.cos(hda)\
+                                                       * np.sin(lat)))
+    dydt[5] = 1/v * (L * np.sin(sig) / np.cos(gam)\
+                     + v**2/r * np.cos(gam) * np.sin(hda) * np.tan(lat)\
+                     + gphi * np.sin(hda) / np.cos(gam)\
+                     - 2 * OmP * v * (np.tan(gam) * np.cos(hda) * np.cos(lat)\
+                                      - np.sin(lat))\
+                     + OmP**2 * r / np.cos(gam) * np.sin(hda)\
+                         * np.sin(lat) * np.cos(lat))
+    dydt[6] = -v * np.cos(gam) * radP / (r * np.sqrt(mu/radP))
+    
+    return dydt
+
 def sphericalEntryEOMs(t, yy, sig, params):
     '''
     defines 3D 3DOF EOMs for lifting entry vehicle over *ellipsoidal* rotating

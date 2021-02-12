@@ -20,6 +20,20 @@ import ODEs
 from conversions import getApses, getApsesSphPR
 
 
+def engEvent(t, yy, params):
+    '''
+    event, triggers when required final energy is reached
+    '''
+    # extract state variables
+    r = yy[0]
+    v = yy[3]
+    
+    # compute e
+    e = 1/r - v**2/2
+    
+    return e - params.ef
+
+
 def getApoapsisError(ra, rp, params):
     '''
     For FNPAG Mode 1. Returns current error f(ts) = ra - raStar, km
@@ -225,7 +239,32 @@ def updateFNPAG(xxvec, t, ts, sig0, sigd, phase, mode, params,
     
     
     
+def dynamicsFNPEGSph(xx0vec, t, sig0, e0, params, returnTime = False):
+    '''
+    Dynamics function for FNPEG. Propagates entry dynamics, including s, until
+        final energy is reached using FNPEG bank angle profile
+    '''
     
+    tspan = (t, params.tf)
+    
+    event1 = lambda t, y: ODEs.above_max_alt_sph(t, y, params)
+    event1.terminal = True
+    event1.direction = 1
+    event2 = lambda t, y: ODEs.below_min_alt_sph(t, y, params)
+    event2.terminal = True
+    
+    event3 = lambda t, y: engEvent(t, y, params)
+    event3.terminal = True
+    
+    sol = solve_ivp(lambda t, y: ODEs.sphericalEntryEOMsAug(t, y,
+                                                            sig0, e0, params),
+                    tspan, xx0vec, rtol = params.rtol, atol = params.atol,
+                    events = (event1, event2, event3))
+    
+    if returnTime:
+        return sol.y, sol.t
+    else:
+        return sol.y
     
     
     
