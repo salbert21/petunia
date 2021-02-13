@@ -257,10 +257,10 @@ ts = 158.043
 # ts = 160
 
 # search brackets for Brent's Method
-paramsNom_O.sig1 = 15
+paramsNom_O.sig1 = 0
 paramsNom_O.sig2 = 180
 paramsNom_O.ts1 = 100
-paramsNom_O.ts2 = 200
+paramsNom_O.ts2 = 300
 
 # other settings and constants
 paramsNom_O.rtol = 1e-10
@@ -284,7 +284,8 @@ xxvec, tvecEval, raf, rpf, engf, raErr, DV,\
                                                                paramsNom_O, t0,
                                                                xx0vec, sig0,
                                                                sigd, ts,
-                                                               plotsOn = False)
+                                                               plotsOn = False,
+                                                               updatesOn = False)
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -313,12 +314,16 @@ densAll, densMean, h = getMarsGRAMDensTableAll(filename, Nmc)
 
 # define dispersions for other parameters
 BCMean_O = paramsNom_O.BC
-BCLB_O = 0.9 * paramsNom_O.BC # kg/m^2
-BCRng_O = 0.2 * paramsNom_O.BC # kg/m^2
+# BCLB_O = 0.9 * paramsNom_O.BC # kg/m^2
+# BCRng_O = 0.2 * paramsNom_O.BC # kg/m^2
+BCLB_O = 0.95 * paramsNom_O.BC # kg/m^2
+BCRng_O = 0.1 * paramsNom_O.BC # kg/m^2
 
 L_DMean_O = paramsNom_O.LD
-L_DLB_O = 0.9 * paramsNom_O.LD
-L_DRng_O = 0.2 * paramsNom_O.LD
+# L_DLB_O = 0.9 * paramsNom_O.LD
+# L_DRng_O = 0.2 * paramsNom_O.LD
+L_DLB_O = 0.95 * paramsNom_O.LD
+L_DRng_O = 0.1 * paramsNom_O.LD
 
 gam0Mean = np.radians(paramsNom_O.efpaWR)
 gam0STD = np.radians(0.2) / 3
@@ -377,6 +382,9 @@ for i in range(Nmc):
     xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1,\
         tvecP2, xswwitchvec = doFNPAG(mode, paramsTrue_O, paramsNom_O, t0,
                               xx0vec, sig0, sigd, ts)
+    # xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1,\
+    #     tvecP2, xswwitchvec = doFNPAG(mode, paramsTrue_O, paramsTrue_O, t0,
+    #                           xx0vec, sig0, sigd, ts)
     
     # append outputs to lists
     xxvecList_O.append(xxvec)

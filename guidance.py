@@ -210,8 +210,18 @@ def updateFNPAG(xxvec, t, ts, sig0, sigd, phase, mode, params,
         
         if mode == 1:
             # Brent's Method:
-            sigdi, res = brentq(getErr, params.sig1, params.sig2, full_output = True)
-            converged = res.converged
+            # NOTE: sig1 positive, sig2 negative
+            if getErr(params.sig1) < 0:
+                sigdi = 0
+                converged = True
+                print('WARNING: hit full-lift-up condition')
+            elif getErr(params.sig2) > 0:
+                sigdi = 180
+                converged = True
+                print('WARNING: hit full-lift-down condition')
+            else:
+                sigdi, res = brentq(getErr, params.sig1, params.sig2, full_output = True)
+                converged = res.converged
             
             # # scipy automatic root-finding method:
             # sol = root_scalar(getErr, x0 = sigd, x1 = sigd+0.02)
