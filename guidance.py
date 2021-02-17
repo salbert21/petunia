@@ -138,6 +138,7 @@ def updateFNPEG(xxvec, t, sig0, e0, params):
                           method = 'Brent')
     
     sig0 = res.x
+    sig0 = (sig0 + 180) % (360) - 180
     converged = res.success
     
     if not converged:

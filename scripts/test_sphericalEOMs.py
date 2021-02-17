@@ -27,8 +27,8 @@ mpl.rcParams.update({'font.size': 15})
 ### CREATE params INPUT CLASS FOR NOMINAL VALUES
 paramsNom = Params()
 paramsNom.p = constants.MARS
-paramsNom.p.J2 = 0 # OVERRIDE - assume spherical planet for apples-to-apples comparison
-paramsNom.p.om = 0
+# paramsNom.p.J2 = 0 # OVERRIDE - assume spherical planet for apples-to-apples comparison
+# paramsNom.p.om = 0
 paramsNom.returnTimeVectors = True
 
 ### INPUT ATM TABLE - GET ATM TABLE FROM GRAM DATA FILE
@@ -40,8 +40,10 @@ paramsNom.atmdat = np.array([atmdata['Var_X'], atmdata['DENSAV']])
 ### VEHICLE PARAMS
 paramsNom.m = 2920 # kg, roughly MSL mass
 paramsNom.CD = 1.6 # roughly MSL CD
-paramsNom.LD = 0.25
-paramsNom.BC = 130
+# paramsNom.LD = 0.25
+paramsNom.LD = 0
+# paramsNom.BC = 130
+paramsNom.BC = 35
 
 paramsNom.A = paramsNom.m / (paramsNom.BC * paramsNom.CD)
 paramsNom.CL = paramsNom.CD * paramsNom.LD
@@ -167,7 +169,17 @@ tic3 = time.time()
 e0 = 0
 paramsNom.ef = 100
 paramsNom.sigf = sigd
-xxvecs3 = dynFNPEGSph(xx0vec3, 0, sigd, e0, paramsNom)
+event1 = lambda t, y: ODEs.above_max_alt_sph(t, y, paramsNom)
+event1.terminal = True
+event1.direction = 1
+event2 = lambda t, y: ODEs.below_min_alt_sph(t, y, paramsNom)
+event2.terminal = True
+tspan = (t0, paramsNom.tf)
+sol = solve_ivp(lambda t, y: ODEs.sphericalEntryEOMsAug(t, y, sig0, e0,
+                                                        paramsNom),
+                tspan, xx0vec3, rtol = paramsNom.rtol, atol = paramsNom.atol,
+                events = (event1, event2))
+xxvecs3 = sol.y
 toc3 = time.time()
 raf, rpf = getApsesSphPR(xxvecs3[:,-1], paramsNom)
 print(raf/1e3 - paramsNom.p.rad)
