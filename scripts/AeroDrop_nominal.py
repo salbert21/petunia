@@ -13,10 +13,12 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import sys
+import scipy.interpolate as interp
 
 import planetaryconstants as constants
 import ODEs
 from sim import Params, Outs, mainAD
+from atm import getRho_from_table
 
 tic = time.time()
 plt.close('all')
@@ -100,6 +102,46 @@ outsProbe = mainAD(params, tspan, events, outsProbe)
 print('\nPROBE:')
 print('Final energy: {:.3f} km^2/s^2'.format(outsProbe.engf))
 print('Apoapsis altitude: {:.3f} km'.format(outsProbe.haf))
+
+# =============================================================================
+# Compute target parameters for FNPEG from probe
+# =============================================================================
+# compute Mach number profile
+rvec = outsProbe.rvec_N
+vvec = outsProbe.vvec_N
+
+h = np.linalg.norm(rvec, axis = 0) - params.p.rad
+vmag = np.linalg.norm(vvec, axis = 0)
+
+# get density and speed of sound at each altitude step
+rho = []
+assfun = interp.interp1d(params.p.sound[0,:], params.p.sound[1,:])
+ass = assfun(h)
+for hi in h:
+    rho.append(getRho_from_table(params.atmdat, hi))
+rho = np.asarray(rho)
+    
+# compute mach number and dynamic pressure at each step
+Mvec = vmag * 1e3 / ass
+Qinc = 1/2 * rho * (vmag*1e3)**2
+
+# compute range
+lon0 = np.radians(outsProbe.lon0)
+lonf = np.radians(outsProbe.lonf)
+lat0 = np.radians(outsProbe.lat0)
+latf = np.radians(outsProbe.latf)
+dlon = abs(lonf - lon0)
+
+dsig = np.arccos(np.sin(lat0) * np.sin(latf)\
+                 + np.cos(lat0) * np.cos(latf) * np.cos(dlon))
+
+# print
+print('\nProbe final values:')
+print('Final altitude: {:.3f} km'.format(h[-1]))
+print('Final velocity {:.3f} m/s'.format(vmag[-1]*1e3))
+print('Final Mach number: {:.3f}'.format(Mvec[-1]))
+print('Final dynamic pressure: {:.3f} Pa'.format(Qinc[-1]))
+print('Range traversed: {:.3f} rad\n'.format(dsig))
 
 
 ### PLOTS

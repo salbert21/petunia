@@ -100,6 +100,7 @@ def sphericalEntryEOMsAug(t, yy, sig0, e0, params):
     e = mu / r - v**2 / 2
     
     # compute current bank angle
+    sig0 = (sig0 + 180) % (360) - 180
     sig = sig0 + (e - e0) / (ef - e0) * (sigf - sig0)
     sig = np.radians(sig)
     

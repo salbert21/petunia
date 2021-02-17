@@ -134,7 +134,7 @@ def updateFNPEG(xxvec, t, sig0, e0, params):
         if abs(getErr(sig0)) < params.errtol1:
             return sig0
         
-    res = minimize_scalar(getErr, bracket = (params.ts1, params.ts2),
+    res = minimize_scalar(getErr, bracket = (params.sig01, params.sig02),
                           method = 'Brent')
     
     sig0 = res.x

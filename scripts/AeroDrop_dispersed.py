@@ -10,7 +10,7 @@ AeroDrop_dispersed.py:
 
 from conversions import getApsesSphPR
 from sim import Params
-from guidance import updateFNPAG, updateFNPEG
+from guidance import updateFNPAG, updateFNPEG, engEvent
 import ODEs
 import planetaryconstants as constants
 from atm import getMarsGRAMDensTableAll
@@ -208,10 +208,114 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts,
     
     return xxvec, tvecEval, raf, rpf, engf, raErr, DV,\
         tsList, sigdList, tvecP1, tvecP2, xswitchvec
+
+
+def doFNPEG(paramsTrue, paramsNom, t0, xx0vec, sig0, e0, verbose = True,
+            plotsOn = True, updatesOn = True):
+    '''
+    main function for FNPEG. paramsTrue holds real values used in propagation,
+        paramsNom holds nominal values used in prediction for guidance updates.
+    Uses augmented spherical planet-relative EOMs.
+    '''
     
+    # =========================================================================
+    # Set up events
+    # =========================================================================
+    event1 = lambda t, y: ODEs.above_max_alt_sph(t, y, paramsTrue)
+    event1.terminal = True
+    event1.direction = 1
+    event2 = lambda t, y: ODEs.below_min_alt_sph(t, y, paramsTrue)
+    event2.terminal = True
+    
+    event3 = lambda t, y: engEvent(t, y, paramsTrue)
+    event3.terminal = True
+    
+    # =========================================================================
+    # Main integration loop
+    # =========================================================================
+    
+    # initialize
+    tvec = np.arange(t0, paramsNom.tf + paramsTrue.dtGdn, paramsTrue.dtGdn)
+    tvecEval = np.empty(1)
+    tvecEval[0] = t0
+    
+    xxvec = np.empty((len(xx0vec), 1))
+    xxvec[:] = np.NaN
+    xxvec[:,0] = xx0vec
+    
+    evec = np.empty(1)
+    evec[:] = np.NaN
+    sigvec = np.empty(1)
+    sigvec[:] = np.NaN
+    
+    sig0List = []
+    
+    t = t0
+    ind = 0
+    xx0veci = xx0vec * 1
+    
+    for ind, t in enumerate(tvec):
+        
+        # update guidance
+        if updatesOn:
+            sig0 = updateFNPEG(xx0veci, t, sig0, e0, paramsNom)
+            
+        if verbose:
+            print('FNPEG: updating guidance at time {0:.3f}  '\
+                  '  sig0 = {1:.3f} deg'.format(t, sig0))
+        sig0List.append(sig0)
+        
+        # propagate until next guidance update or switching time
+        tspan = (t, t + paramsTrue.dtGdn)
+        soli = solve_ivp(lambda t, y: ODEs.sphericalEntryEOMsAug(t, y,
+                                                                 sig0, e0,
+                                                                 paramsTrue),
+                         tspan, xx0veci,
+                         rtol = paramsTrue.rtol, atol = paramsTrue.atol,
+                         events = (event1, event2, event3))
+        
+        # get bank angle history
+        eveci = paramsTrue.p.mu * 1e9 / soli.y[0,:] - soli.y[3,:]**2 / 2
+        sigveci = sig0 + (eveci - e0) /\
+            (paramsTrue.ef - e0) * (paramsTrue.sigf - sig0)
+        
+        # append results
+        xxvec = np.append(xxvec, soli.y, axis = 1)
+        tvecEval = np.append(tvecEval, soli.t)
+        evec = np.append(evec, eveci)
+        sigvec = np.append(sigvec, sigveci)
+        xx0veci = xxvec[:,-1]
+        
+        if soli.status == 1:
+            break
+        
+    # trim off first array elements
+    xxvec = xxvec[:,1:]
+    tvecEval = tvecEval[1:]
+    evec = evec[1:]
+    sigvec = sigvec[1:]
+    
+    if plotsOn:
+        # uses global variable ax2 for plotting!
+        ax2.plot(xxvec[3,:]/1e3, xxvec[0,:]/1e3 - paramsNom.p.rad)
+        
+    # =========================================================================
+    # Compute target errors
+    # =========================================================================
+    xxfvec = xxvec[:,-1]
+    sfErr = np.degrees(xxfvec[6])
+    hfErr = xxfvec[0] - paramsTrue.rf
+    vfErr = xxfvec[3] - paramsTrue.vf
+    
+    print('Final range error: {0:.6e} deg'.format(sfErr))
+    print('Final altitude error: {0:.6f} m'.format(hfErr))
+    print('Final velocity error: {0:.6f} m/s'.format(vfErr))
+    
+    return xxvec, tvecEval, sfErr, hfErr, vfErr, evec, sigvec, sig0List
+        
 
 # =============================================================================
-# Orbiter Setup
+# Generic Setup
 # =============================================================================
 ### CREATE params INPUT CLASS FOR NOMINAL VALUES
 paramsNom_O = Params()
@@ -228,11 +332,7 @@ paramsNom_O.atmdat = np.array([atmdata['Var_X'], atmdata['DENSAV']])
 paramsNom_O.m = 2920 # kg, roughly MSL mass
 paramsNom_O.CD = 1.6 # roughly MSL CD
 paramsNom_O.LD = 0.25
-paramsNom_O.BC = 130
-
-paramsNom_O.A = paramsNom_O.m / (paramsNom_O.BC * paramsNom_O.CD)
-paramsNom_O.CL = paramsNom_O.CD * paramsNom_O.LD
-paramsNom_O.Rn = np.sqrt(paramsNom_O.A / np.pi) / 2
+# BC is set individually below
 
 ### WIND-RELATIVE INITIAL STATE
 paramsNom_O.lat = 18.38
@@ -249,12 +349,28 @@ xx0vec = np.array([(paramsNom_O.alt + paramsNom_O.p.rad) * 1e3,
                    np.radians(paramsNom_O.efpaWR),
                    np.radians(paramsNom_O.hdaWR + 90)])
     
-### NOMINAL SIMULATION PARAMS ###
-t0 = 0
-sig0 = 15
-sigd = 150
-ts = 158.043
-# ts = 160
+# other settings and constants
+paramsNom_O.rtol = 1e-10
+paramsNom_O.atol = 1e-10
+paramsNom_O.errtol1 = 0
+paramsNom_O.errtol2 = 0
+paramsNom_O.dtGdn = 1 # s
+paramsNom_O.hmin = 3
+paramsNom_O.hmax = paramsNom_O.p.halt + 1e-7
+paramsNom_O.tf = 6000
+
+# copy generic params for probe and ballistic probe
+paramsNom_P = copy.deepcopy(paramsNom_O)
+paramsNom_PBC = copy.deepcopy(paramsNom_O)
+
+# =============================================================================
+# Orbiter Setup
+# =============================================================================
+# vehicle
+paramsNom_O.BC = 130
+paramsNom_O.A = paramsNom_O.m / (paramsNom_O.BC * paramsNom_O.CD)
+paramsNom_O.CL = paramsNom_O.CD * paramsNom_O.LD
+paramsNom_O.Rn = np.sqrt(paramsNom_O.A / np.pi) / 2
 
 # search brackets for Brent's Method
 paramsNom_O.sig1 = 0
@@ -262,30 +378,67 @@ paramsNom_O.sig2 = 180
 paramsNom_O.ts1 = 100
 paramsNom_O.ts2 = 300
 
-# other settings and constants
-paramsNom_O.rtol = 1e-10
-paramsNom_O.atol = 1e-10
-paramsNom_O.errtol1 = 0
-paramsNom_O.errtol2 = 0
-paramsNom_O.dtGdn = 1 # s
-paramsNom_O.hmin = 10
-paramsNom_O.hmax = paramsNom_O.p.halt + 1e-7
-paramsNom_O.tf = 6000
+# target state
 paramsNom_O.raStar = (250 + paramsNom_O.p.rad) * 1e3
 paramsNom_O.rpStar = (250 + paramsNom_O.p.rad) * 1e3
+
+# nominal simulation values
+t0 = 0
+sig0_O = 15
+sigd = 150
+ts = 158.043
+
+# =============================================================================
+# Ballistic Probe Setup
+# =============================================================================
+paramsNom_PBC.BC = 35
+paramsNom_PBC.LD = 0
+paramsNom_PBC.A = paramsNom_PBC.m / (paramsNom_PBC.BC * paramsNom_PBC.CD)
+paramsNom_PBC.CL = paramsNom_PBC.CD * paramsNom_PBC.LD
+paramsNom_PBC.Rn = np.sqrt(paramsNom_PBC.A / np.pi) / 2
+
+# =============================================================================
+# Lifting Probe Setup
+# =============================================================================
+# vehicle
+paramsNom_P.BC = 35
+paramsNom_P.A = paramsNom_P.m / (paramsNom_P.BC * paramsNom_P.CD)
+paramsNom_P.CL = paramsNom_P.CD * paramsNom_P.LD
+paramsNom_P.Rn = np.sqrt(paramsNom_P.A / np.pi) / 2
+
+# allow full range of bank angle magnitude:
+paramsNom_P.sig01 = 0
+paramsNom_P.sig02 = 180
+
+# target states and constraints
+paramsNom_P.sigf = 60 # fixed final constraint, chosen arbitrarily
+paramsNom_P.sf = 0 # always target 0 range-to-go
+paramsNom_P.rf = (10 + paramsNom_P.p.rad) * 1e3 # 10 km altitude
+paramsNom_P.vf = 0.43915970837556323 * 1e3 # from nominal trajectory
+# comput target e from target r and v values
+paramsNom_P.ef = paramsNom_P.p.mu * 1e9 / paramsNom_P.rf - paramsNom_P.vf**2 / 2
+
+# augment initial state to include range
+s0 = np.radians(12.518869860867815) # from nominal trajectory
+xx0vecAug = np.append(xx0vec, s0)
+
+# other sim params
+# sig0 = np.radians(20) # initial guess
+sig0_P = 114.19468541429625
+r0 = (paramsNom_P.alt + paramsNom_P.p.rad) * 1e3
+v0 = paramsNom_P.vmagWR * 1e3
+e0 = paramsNom_P.p.mu * 1e9 / r0 - v0**2 / 2
+
+
+
 
 # =============================================================================
 # Demonstrate dynamics for nominal scenario
 # =============================================================================
 mode = 1
-xxvec, tvecEval, raf, rpf, engf, raErr, DV,\
-        tsList, sigdList, tvecP1, tvecP2, xswitchvec = doFNPAG(mode,
-                                                               paramsNom_O,
-                                                               paramsNom_O, t0,
-                                                               xx0vec, sig0,
-                                                               sigd, ts,
-                                                               plotsOn = False,
-                                                               updatesOn = False)
+xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1, tvecP2,\
+    xswitchvec = doFNPAG(mode, paramsNom_O, paramsNom_O, t0, xx0vec, sig0_O,
+                         sigd, ts, plotsOn = False, updatesOn = False)
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -299,18 +452,20 @@ ax.set_xlabel('planet-relative velocity, km/s')
 ax.set_ylabel('spherical altitude, km')
 ax.set_title('Orbiter trajectories')
 
-# =============================================================================
-# Test updateFNPEG
-# =============================================================================
-sig0 = np.radians(20)
-paramsNom_O.sigf = np.radians(60)
-paramsNom_O.sig01 = 0
-paramsNom_O.sig02 = 180
-paramsNom_O.ef = paramsNom_O.p.mu * 1e9 / 125e3 - 2e3**2 / 2
-s0 = 0
-xx0vecAug = np.append(xx0vec, s0)
-paramsNom_O.sf = np.radians(5.5)
-sig0 = updateFNPEG(xx0vecAug, 0, sig0, 0, paramsNom_O)
+xxvec, tvecEval, sfErr, hfErr, vfErr, evec, sigvec,\
+    sig0List = doFNPEG(paramsNom_P, paramsNom_P, t0, xx0vecAug, sig0_P, e0,
+                       updatesOn = False, plotsOn = False)
+
+fig2 = plt.figure()
+ax2 = fig2.add_subplot(111)
+ax2.plot(xxvec[3,:]/1e3, xxvec[0,:]/1e3 - paramsNom_P.p.rad, 'k', linewidth = 4,
+        label = 'nominal trajectory')
+ax2.grid()
+ax2.set_xlabel('planet-relative velocity, km/s')
+ax2.set_ylabel('spherical altitude, km')
+ax2.set_title('Probe trajectories')
+
+sys.exit('stopped before Monte Carlo loop for debugging')
 
 # =============================================================================
 # Orbiter Dispersions Setup
@@ -394,7 +549,7 @@ for i in range(Nmc):
     # run FNPAG simulation
     xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1,\
         tvecP2, xswwitchvec = doFNPAG(mode, paramsTrue_O, paramsNom_O, t0,
-                              xx0vec, sig0, sigd, ts)
+                              xx0vec, sig0_O, sigd, ts)
     # xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1,\
     #     tvecP2, xswwitchvec = doFNPAG(mode, paramsTrue_O, paramsTrue_O, t0,
     #                           xx0vec, sig0, sigd, ts)
