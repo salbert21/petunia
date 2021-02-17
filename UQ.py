@@ -46,6 +46,12 @@ def getEproblem(filename, alpha, pfact):
     # h = h[:200]
     # ##
     
+    # ### DEBUGGING ###
+    # print('Debugging: only do KLE up to 80 km')
+    # densTot = densTot[200:800]
+    # h = h[200:800]
+    # ### DEBUGGING ###
+    
     ## Get centered density about SAMPLE mean
     densSampMean = np.mean(densTot, axis=1)
     densCentered = densTot - densSampMean[:,None]

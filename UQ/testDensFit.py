@@ -40,8 +40,10 @@ densdata = np.load(filename)
 densTot = densdata['densTot']
 h = densdata['h']
 densMean = densdata['densMean']
-densCentered = densTot - densMean[:,None]
-
+# densCentered = densTot - densMean[:,None]
+# densCentered = np.exp(densTot)
+# densCentered = np.log(densTot)
+densCentered = densTot/densMean[:,None] - 1
 
 # =============================================================================
 # Loop through altitudes of interest
