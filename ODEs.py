@@ -101,13 +101,14 @@ def sphericalEntryEOMsAug(t, yy, sig0, e0, params):
     
     # compute current bank angle
     sig = sig0 + (e - e0) / (ef - e0) * (sigf - sig0)
+    sig = np.radians(sig)
     
     # compute lift and drag accelerations
     D = rho * v**2 / (2 * BC)
     L = L_D * D
     
     # EOMs
-    dydt = np.empty(6)
+    dydt = np.empty(7)
     dydt[:] = np.NaN
     
     dydt[0] = v * np.sin(gam)
@@ -134,7 +135,7 @@ def sphericalEntryEOMsAug(t, yy, sig0, e0, params):
                                       - np.sin(lat))\
                      + OmP**2 * r / np.cos(gam) * np.sin(hda)\
                          * np.sin(lat) * np.cos(lat))
-    dydt[6] = -v * np.cos(gam) * radP / (r * np.sqrt(mu/radP))
+    dydt[6] =  - v * np.cos(gam) / r
     
     return dydt
 

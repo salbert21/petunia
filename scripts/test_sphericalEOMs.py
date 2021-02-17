@@ -6,7 +6,7 @@ Created on Tue Feb  9 13:19:06 2021
 """
 from conversions import LLAEHV2RV, RV2LLAEHV, Vinf2VN, getApses, getApsesSphPR, sph2cart, cart2sph, VN2Vinf
 from sim import Params
-from guidance import updateFNPAG, dynFNPAGPhase1, dynFNPAGPhase1Sph, dynFNPAGPhase2, dynFNPAGPhase2Sph
+from guidance import updateFNPAG, dynFNPAGPhase1, dynFNPAGPhase1Sph, dynFNPAGPhase2, dynFNPAGPhase2Sph, dynFNPEGSph
 import ODEs
 import planetaryconstants as constants
 
@@ -27,7 +27,8 @@ mpl.rcParams.update({'font.size': 15})
 ### CREATE params INPUT CLASS FOR NOMINAL VALUES
 paramsNom = Params()
 paramsNom.p = constants.MARS
-# paramsNom.p.J2 = 0 # OVERRIDE - assume spherical planet for apples-to-apples comparison
+paramsNom.p.J2 = 0 # OVERRIDE - assume spherical planet for apples-to-apples comparison
+paramsNom.p.om = 0
 paramsNom.returnTimeVectors = True
 
 ### INPUT ATM TABLE - GET ATM TABLE FROM GRAM DATA FILE
@@ -81,6 +82,8 @@ sigd = 150
 ts = 160
 ts1 = 137.9
 ts2 = 140
+
+ts = 0
 
 paramsNom.rtol = 1e-10
 paramsNom.atol = 1e-10
@@ -158,15 +161,50 @@ vmag = np.linalg.norm(xxvecs2[3:,:], axis = 0) / 1e3
 ax.plot(vmag, h, label = 'spherical EOMs')
 ax.legend()
 
+# spherical aug
+xx0vec3 = np.append(xx0vec2, 0)
+tic3 = time.time()
+e0 = 0
+paramsNom.ef = 100
+paramsNom.sigf = sigd
+xxvecs3 = dynFNPEGSph(xx0vec3, 0, sigd, e0, paramsNom)
+toc3 = time.time()
+raf, rpf = getApsesSphPR(xxvecs3[:,-1], paramsNom)
+print(raf/1e3 - paramsNom.p.rad)
+
+h = np.linalg.norm(xxvecs3[:3,:], axis = 0) / 1e3
+vmag = np.linalg.norm(xxvecs3[3:,:], axis = 0) / 1e3
+
+ax.plot(vmag, h, label = 'spherical EOMs Aug')
+ax.legend()
+
+
+
 
 print('cartesian EOMs took {0:.5f} s'.format(toc1-tic1))
 print('spherical EOMs took {0:.3f} s'.format(toc2-tic2))
+print('augmented spherical EOMs took {0:.3f} s'.format(toc3-tic3))
 
 print('NOTE: J2 = {0:.3e}, planetary rotation rate Om = {1:.3e}'\
       .format(paramsNom.p.J2, paramsNom.p.om))
 
 
+lon0 = xxvecs3[1,0]
+lonf = xxvecs3[1,-1]
+lat0 = xxvecs3[2,0]
+latf = xxvecs3[2,-1]
+dlon = abs(lonf - lon0)
 
+dsig = np.arccos(np.sin(lat0) * np.sin(latf)\
+                 + np.cos(lat0) * np.cos(latf) * np.cos(dlon))
+drange = paramsNom.p.rad * dsig
+
+print(-dsig)
+print(xxvecs3[6,-1])
+
+# NOTE: if there is any nonplanar motion, dsig will not match the computed
+#   range xxvecs[6,-1]. dsig is the great circle arc, whereas the computed
+#   range is the surface projection of the actual trajectory.
 
 
 

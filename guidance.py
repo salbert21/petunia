@@ -249,7 +249,7 @@ def updateFNPAG(xxvec, t, ts, sig0, sigd, phase, mode, params,
     
     
     
-def dynamicsFNPEGSph(xx0vec, t, sig0, e0, params, returnTime = False):
+def dynFNPEGSph(xx0vec, t, sig0, e0, params, returnTime = False):
     '''
     Dynamics function for FNPEG. Propagates entry dynamics, including s, until
         final energy is reached using FNPEG bank angle profile
