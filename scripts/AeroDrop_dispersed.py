@@ -10,7 +10,7 @@ AeroDrop_dispersed.py:
 
 from conversions import getApsesSphPR
 from sim import Params
-from guidance import updateFNPAG
+from guidance import updateFNPAG, updateFNPEG
 import ODEs
 import planetaryconstants as constants
 from atm import getMarsGRAMDensTableAll
@@ -298,6 +298,19 @@ ax.legend()
 ax.set_xlabel('planet-relative velocity, km/s')
 ax.set_ylabel('spherical altitude, km')
 ax.set_title('Orbiter trajectories')
+
+# =============================================================================
+# Test updateFNPEG
+# =============================================================================
+sig0 = np.radians(20)
+paramsNom_O.sigf = np.radians(60)
+paramsNom_O.sig01 = 0
+paramsNom_O.sig02 = 180
+paramsNom_O.ef = paramsNom_O.p.mu * 1e9 / 125e3 - 2e3**2 / 2
+s0 = 0
+xx0vecAug = np.append(xx0vec, s0)
+paramsNom_O.sf = np.radians(5.5)
+sig0 = updateFNPEG(xx0vecAug, 0, sig0, 0, paramsNom_O)
 
 # =============================================================================
 # Orbiter Dispersions Setup

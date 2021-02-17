@@ -29,7 +29,7 @@ def engEvent(t, yy, params):
     v = yy[3]
     
     # compute e
-    e = 1/r - v**2/2
+    e = params.p.mu * 1e9 / r - v**2 / 2
     
     return e - params.ef
 
@@ -100,7 +100,50 @@ def getErrorSph(xx0vec, t, ts, sig0, sigd, phase, errFun, params):
     ra, rp = getApsesSphPR(xxvec[:,-1], params)
     
     return errFun(ra, rp, params)
+
+def getRangeError(xx0vec, t, sig0, e0, params):
+    '''
+    computes range error for FNPEG
+    '''
+    
+    xxvec = dynFNPEGSph(xx0vec, t, sig0, e0, params)
+    
+    return 1/2 * (xxvec[6,-1] - params.sf)**2
+
+
+
+def updateFNPEG(xxvec, t, sig0, e0, params):
+    '''
+    Guidance upate for FNPEG, used in predictor-corrector.
+    Computes sig0 by minimizing squared range error using Golden Section.
+    INPUTS:
+        xxvec: current spherical state, m, m/s, rad
+        t: current time, s
+        sig0: initial bank angle (independent variable)
+        e0: initial energy-parameter
+        params
+    OUTPUTS:
+        sig0: updated initial bank angle
+    '''
+    
+    # upate error function with current values
+    getErr = lambda sig0: getRangeError(xxvec, t, sig0, e0, params)
+    
+    if params.errtol1 > 0:
+        # if error already below tolerance, don't update parameter
+        if abs(getErr(sig0)) < params.errtol1:
+            return sig0
         
+    res = minimize_scalar(getErr, bracket = (params.ts1, params.ts2),
+                          method = 'Brent')
+    
+    sig0 = res.x
+    converged = res.success
+    
+    if not converged:
+        sys.exit('Failed to converge during FNPEG guidance update')
+    
+    return sig0
 
 
 
