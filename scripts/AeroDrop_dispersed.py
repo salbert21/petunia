@@ -630,7 +630,7 @@ print('Range traversed: {:.3f} rad\n'.format(dsig))
 # set number of MC runs
 Nmc = 2
 
-# copy, DO NOT ASSIGN, paramsTrue_O for dispersions. leave paramsNom_O alone.
+# copy, DO NOT ASSIGN, paramsTrue for dispersions. leave paramsNom alone.
 paramsTrue_O = copy.deepcopy(paramsNom_O)
 
 # load full 5000-case Monte Carlo atmsophere dataset from MarsGRAM-2010
@@ -675,6 +675,49 @@ L_DList_O = []
 gam0List = []
 v0List = []
 
+# =============================================================================
+# Lifting Probe Dispersions Setup
+# =============================================================================
+paramsTrue_P = copy.deepcopy(paramsNom_P)
+
+# define vehicle dispersions
+BCMean_P = paramsNom_P.BC
+BCLB_P = 0.95 * paramsNom_P.BC
+BCRng_P = 0.1 * paramsNom_P.BC
+
+L_DMean_P = paramsNom_P.LD
+L_DLB_P = 0.95 * paramsNom_P.LD
+L_DRng_P = 0.1 * paramsNom_P.LD
+
+# initialize lists for actual dispersed parameters and results
+xxvecList_P = []
+tvecList_P = []
+sig0ListList = []
+sigvecList = []
+
+sfErrList_P = []
+hfErrList_P = []
+vfErrList_P = []
+
+BCList_P = []
+L_DList_P = []
+
+# =============================================================================
+# Passive Probe Dispersions Setup
+# =============================================================================
+paramsTrue_PBC = copy.deepcopy(paramsNom_PBC)
+
+# vehicle dispersions same as lifting probe
+
+# initialize lists
+xxvecList_PBC = []
+tvecList_PBC = []
+
+sfErrList_PBC = []
+hfErrList_PBC = []
+vfErrList_PBC = []
+
+
 # output filename
 outname = '../results/AeroDrop_dispersed_' + str(Nmc) + '_' + datestring
 
@@ -685,21 +728,38 @@ for i in range(Nmc):
     # initialize random variables
     BC_O = uniform.rvs(size = 1, loc = BCLB_O, scale = BCRng_O)[0]
     L_D_O = uniform.rvs(size = 1, loc = L_DLB_O, scale = L_DRng_O)[0]
+    BC_P = uniform.rvs(size = 1, loc = BCLB_P, scale = BCRng_P)[0]
+    L_D_P = uniform.rvs(size = 1, loc = L_DLB_P, scale = L_DRng_P)[0]
     gam0 = norm.rvs(size = 1, loc = gam0Mean, scale = gam0STD)[0]
     v0 = norm.rvs(size = 1, loc = v0Mean, scale = v0STD)[0]
     
+    # orbiter true params
     paramsTrue_O.BC = BC_O
     paramsTrue_O.LD = L_D_O
     xx0vec[3] = v0
     xx0vec[4] = gam0
     
+    # lifting probe true params
+    paramsTrue_P.BC = BC_P
+    paramsTrue_P.LD = L_D_P
+    xx0vecAug = np.append(xx0vec, s0)
+    
+    # passive probe true params
+    paramsTrue_PBC.BC = BC_P
+    paramsTrue_PBC.LD = L_D_P
+    xx0vecAug_PBC = np.append(xx0vec, s0_PBC)
+    
     # get GRAM atm profile
     paramsTrue_O.atmdat = np.array([h,densAll[:,i]])
     paramsTrue_O.atmdat = paramsTrue_O.atmdat[:,paramsTrue_O.atmdat[0,:].argsort()]
+    paramsTrue_P.atmdat = paramsTrue_O.atmdat
+    paramsTrue_PBC.atmdat = paramsTrue_O.atmdat
     
     # append inputs to lists (skip GRAM profiles, can always get those later)
     BCList_O.append(BC_O)
     L_DList_O.append(L_D_O)
+    BCList_P.append(BC_P)
+    L_DList_P.append(L_D_P)
     gam0List.append(gam0)
     v0List.append(v0)
     
@@ -707,9 +767,6 @@ for i in range(Nmc):
     xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1,\
         tvecP2, xswwitchvec = doFNPAG(mode, paramsTrue_O, paramsNom_O, t0,
                               xx0vec, sig0_O, sigd, ts)
-    # xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1,\
-    #     tvecP2, xswwitchvec = doFNPAG(mode, paramsTrue_O, paramsTrue_O, t0,
-    #                           xx0vec, sig0, sigd, ts)
     
     # append outputs to lists
     xxvecList_O.append(xxvec)
@@ -724,16 +781,51 @@ for i in range(Nmc):
     rpfList_O.append(rpf)
     engfList_O.append(engf)
     
+    # run FNPEG simulation
+    xxvec, tvecEval, sfErr, hfErr, vfErr, evec, sigvec,\
+        sig0List = doFNPEG(paramsTrue_P, paramsNom_P, t0, xx0vecAug,
+                           sig0_P, e0)
+    
+    # append outputs to lists
+    xxvecList_P.append(xxvec)
+    tvecList_P.append(tvecEval)
+    sig0ListList.append(sig0List)
+    sigvecList.append(sigvec)
+    sfErrList_P.append(sfErr)
+    hfErrList_P.append(hfErr)
+    vfErrList_P.append(vfErr)
+    
+    # run passive probe simulation
+    xxvec, tvecEval, sfErr, hfErr,\
+        vfErr = doBallisticProbe(paramsTrue_PBC, t0, xx0vecAug_PBC)
+    xxvecList_PBC.append(xxvec)
+    tvecList_PBC.append(tvecEval)
+    sfErrList_PBC.append(sfErr)
+    hfErrList_PBC.append(hfErr)
+    vfErrList_PBC.append(vfErr)
+    
+    
+    
     # save data to file for analysis
     print('saving file...')
     xxvecArr_O = np.empty(i+1, object)
     xxvecArr_O[:] = xxvecList_O
     tvecArr_O = np.empty(i+1, object)
-    tvecArr_O[:] = tvecArr_O
+    tvecArr_O[:] = tvecList_O
     sigdvecArr_O = np.empty(i+1, object)
     sigdvecArr_O[:] = sigdvecList_O
     tsvecArr_O = np.empty(i+1, object) 
     tsvecArr_O[:] = tsvecList_O
+    xxvecArr_P = np.empty(i+1, object)
+    xxvecArr_P[:] = xxvecList_P
+    tvecArr_P = np.empty(i+1, object)
+    tvecArr_P[:] = tvecList_P
+    sigvecArr = np.empty(i+1, object)
+    sigvecArr = sigvecList
+    xxvecArr_PBC = np.empty(i+1, object)
+    xxvecArr_PBC[:] = xxvecList_PBC
+    tvecArr_PBC = np.empty(i+1, object)
+    tvecArr_PBC[:] = tvecList_PBC
     np.savez(outname,
              xxvecArr_O = xxvecArr_O,
              tvecArr_O = tvecArr_O,
@@ -749,7 +841,19 @@ for i in range(Nmc):
              sigdfList_O = sigdfList_O,
              rafList_O = rafList_O,
              rpfList_O = rpfList_O,
-             engfList_O = engfList_O)
+             engfList_O = engfList_O,
+             xxvecArr_P = xxvecArr_P,
+             tvecArr_P = tvecArr_P,
+             sigvecArr = sigvecArr,
+             sig0ListList = sig0ListList,
+             sfErrList_P = sfErrList_P,
+             hfErrList_P = hfErrList_P,
+             vfErrList_P = vfErrList_P,
+             xxvecArr_PBC = xxvecArr_PBC,
+             tvecArr_PBC = tvecArr_PBC,
+             sfErrList_PBC = sfErrList_PBC,
+             hfErrList_PBC = hfErrList_PBC,
+             vfErrList_PBC = vfErrList_PBC)
     
     toc = time.time()
     print('\nRun {0:d} complete, {1:.2f} s elapsed'.format(i+1, toc-tic))
