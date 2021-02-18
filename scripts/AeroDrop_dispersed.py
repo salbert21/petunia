@@ -466,17 +466,20 @@ paramsNom_P.sig02 = 180
 paramsNom_P.sigf = 60 # fixed final constraint, chosen arbitrarily
 paramsNom_P.sf = 0 # always target 0 range-to-go
 paramsNom_P.rf = (15 + paramsNom_P.p.rad) * 1e3 # 10 km altitude
-paramsNom_P.vf = 353.09785084111587 # from nominal trajectory
+paramsNom_P.vf = 300 # from nominal trajectory
 # comput target e from target r and v values
 paramsNom_P.ef = paramsNom_P.p.mu * 1e9 / paramsNom_P.rf - paramsNom_P.vf**2 / 2
+# paramsNom_P.ef = 2e7
 
 # augment initial state to include range
-s0 = 0.21635403165302095 # from nominal trajectory
+s0 = 0.20628354331374213 # from nominal trajectory
+# s0 = 0
 xx0vecAug = np.append(xx0vec, s0)
 
 # other sim params
 # sig0 = np.radians(20) # initial guess
-sig0_P = 118.52940036607743
+# sig0_P = 118.52940036607743
+sig0_P = 139.31511427799256
 r0 = (paramsNom_P.alt + paramsNom_P.p.rad) * 1e3
 v0 = paramsNom_P.vmagWR * 1e3
 e0 = paramsNom_P.p.mu * 1e9 / r0 - v0**2 / 2
@@ -491,22 +494,23 @@ paramsNom_PBC.CL = paramsNom_PBC.CD * paramsNom_PBC.LD
 # change minimum altitude to equal target altitude of lifting probe
 paramsNom_PBC.hmin = paramsNom_P.rf/1e3 - paramsNom_P.p.rad
 
-
-
-
+# separate target params for velocity and range
+paramsNom_PBC.vf = 353.09785084111587
+s0_PBC = 0.21635403165302095
+xx0vecAug_PBC = np.append(xx0vec, s0_PBC)
 
 # =============================================================================
 # Demonstrate dynamics for nominal scenarios
 # =============================================================================
 mode = 1
-xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1, tvecP2,\
+xxvec1, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1, tvecP2,\
     xswitchvec = doFNPAG(mode, paramsNom_O, paramsNom_O, t0, xx0vec, sig0_O,
                          sigd, ts, plotsOn = False, updatesOn = False,
                          verbose = False)
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
-ax.plot(xxvec[3,:]/1e3, xxvec[0,:]/1e3 - paramsNom_O.p.rad, 'k', linewidth = 4,
+ax.plot(xxvec1[3,:]/1e3, xxvec1[0,:]/1e3 - paramsNom_O.p.rad, 'k', linewidth = 4,
         label = 'nominal trajectory')
 ax.plot(xswitchvec[3]/1e3, xswitchvec[0]/1e3 - paramsNom_O.p.rad, 'ko',
         markersize = 10)
@@ -516,13 +520,13 @@ ax.set_xlabel('planet-relative velocity, km/s')
 ax.set_ylabel('spherical altitude, km')
 ax.set_title('Orbiter trajectories')
 
-xxvec, tvecEval, sfErr, hfErr, vfErr, evec, sigvec,\
+xxvec2, tvecEval, sfErr, hfErr, vfErr, evec, sigvec,\
     sig0List = doFNPEG(paramsNom_P, paramsNom_P, t0, xx0vecAug, sig0_P, e0,
                        plotsOn = False, updatesOn = False, verbose = False)
 
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(111)
-ax2.plot(xxvec[3,:]/1e3, xxvec[0,:]/1e3 - paramsNom_P.p.rad, 'k', linewidth = 4,
+ax2.plot(xxvec2[3,:]/1e3, xxvec2[0,:]/1e3 - paramsNom_P.p.rad, 'k', linewidth = 4,
         label = 'nominal trajectory')
 ax2.grid()
 ax2.legend()
@@ -530,12 +534,12 @@ ax2.set_xlabel('planet-relative velocity, km/s')
 ax2.set_ylabel('spherical altitude, km')
 ax2.set_title('Lifting probe trajectories')
 
-xxvec, tvecEval, sfErr, hfErr, vfErr = doBallisticProbe(paramsNom_PBC, t0,
-                                                        xx0vecAug,
+xxvec3, tvecEval, sfErr, hfErr, vfErr = doBallisticProbe(paramsNom_PBC, t0,
+                                                        xx0vecAug_PBC,
                                                         plotsOn = False)
 fig3 = plt.figure()
 ax3 = fig3.add_subplot(111)
-ax3.plot(xxvec[3,:]/1e3, xxvec[0,:]/1e3 - paramsNom_P.p.rad, 'k', linewidth = 4,
+ax3.plot(xxvec3[3,:]/1e3, xxvec3[0,:]/1e3 - paramsNom_P.p.rad, 'k', linewidth = 4,
         label = 'nominal trajectory')
 ax3.grid()
 ax3.legend()
@@ -544,11 +548,11 @@ ax3.set_ylabel('spherical altitude, km')
 ax3.set_title('Ballistic probe trajectories')
 
 # =============================================================================
-# Compute target FNPEG params from ballistic probe (comment out)
+# Compute target FNPEG params from nominal FNPEG run (comment out during MC)
 # =============================================================================
 print('\nCOMPUTING NOMINAL PARAMETERS...')
-r = xxvec[0,:]
-vmag = xxvec[3,:] / 1e3
+r = xxvec2[0,:]
+vmag = xxvec2[3,:] / 1e3
 
 h = (r - paramsNom_PBC.p.rad * 1e3) / 1e3
 
@@ -565,25 +569,60 @@ Mvec = vmag * 1e3 / ass
 Qinc = 1/2 * rho * (vmag*1e3)**2
 
 # range
-lon0 = xxvec[1,0]
-lonf = xxvec[1,-1]
-lat0 = xxvec[2,0]
-latf = xxvec[2,-1]
+lon0 = xxvec2[1,0]
+lonf = xxvec2[1,-1]
+lat0 = xxvec2[2,0]
+latf = xxvec2[2,-1]
 dlon = abs(lonf - lon0)
 
 dsig = np.arccos(np.sin(lat0) * np.sin(latf)\
                  + np.cos(lat0) * np.cos(latf) * np.cos(dlon))
     
 # print
-print('Probe final values:')
+print('Lifting Probe final values:')
 print('Final altitude: {:.3f} km'.format(h[-1]))
 print('Final velocity {:.3f} m/s'.format(vmag[-1]*1e3))
 print('Final Mach number: {:.3f}'.format(Mvec[-1]))
 print('Final dynamic pressure: {:.3f} Pa'.format(Qinc[-1]))
 print('Range traversed: {:.3f} rad\n'.format(dsig))
 
+# =============================================================================
+# Compute target passive probe params from nominal run (comment out during MC)
+# =============================================================================
+r = xxvec3[0,:]
+vmag = xxvec3[3,:] / 1e3
 
-sys.exit('stopped before Monte Carlo loop for debugging')
+h = (r - paramsNom_PBC.p.rad * 1e3) / 1e3
+
+# get density and speed of sound at each altitude step
+rho = []
+assfun = interp.interp1d(paramsNom_PBC.p.sound[0,:], paramsNom_PBC.p.sound[1,:])
+ass = assfun(h)
+for hi in h:
+    rho.append(getRho_from_table(paramsNom_PBC.atmdat, hi))
+rho = np.asarray(rho)
+
+# compute mach number and dynamic pressure at each step
+Mvec = vmag * 1e3 / ass
+Qinc = 1/2 * rho * (vmag*1e3)**2
+
+# range
+lon0 = xxvec3[1,0]
+lonf = xxvec3[1,-1]
+lat0 = xxvec3[2,0]
+latf = xxvec3[2,-1]
+dlon = abs(lonf - lon0)
+
+dsig = np.arccos(np.sin(lat0) * np.sin(latf)\
+                 + np.cos(lat0) * np.cos(latf) * np.cos(dlon))
+    
+# print
+print('\nPassive Probe final values:')
+print('Final altitude: {:.3f} km'.format(h[-1]))
+print('Final velocity {:.3f} m/s'.format(vmag[-1]*1e3))
+print('Final Mach number: {:.3f}'.format(Mvec[-1]))
+print('Final dynamic pressure: {:.3f} Pa'.format(Qinc[-1]))
+print('Range traversed: {:.3f} rad\n'.format(dsig))
 
 # =============================================================================
 # Orbiter Dispersions Setup
