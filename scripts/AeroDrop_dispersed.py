@@ -4,6 +4,9 @@ Created on Mon Feb  8 15:00:25 2021
 
 AeroDrop_dispersed.py:
     Simulates orbiter and probe using FNP(A/E)G guidance under dispersions.
+    
+    NOTE: the way this is set up now, NPC has perfect knowledge of dispersed
+    state, including at entry, but has only nominal values for BC, L/D, and atm
 
 @author: Samuel Albert
 """
@@ -628,7 +631,7 @@ print('Range traversed: {:.3f} rad\n'.format(dsig))
 # Orbiter Dispersions Setup
 # =============================================================================
 # set number of MC runs
-Nmc = 2
+Nmc = 1
 
 # copy, DO NOT ASSIGN, paramsTrue for dispersions. leave paramsNom alone.
 paramsTrue_O = copy.deepcopy(paramsNom_O)
@@ -784,7 +787,7 @@ for i in range(Nmc):
     # run FNPEG simulation
     xxvec, tvecEval, sfErr, hfErr, vfErr, evec, sigvec,\
         sig0List = doFNPEG(paramsTrue_P, paramsNom_P, t0, xx0vecAug,
-                           sig0_P, e0)
+                           sig0_P, e0, updatesOn = False)
     
     # append outputs to lists
     xxvecList_P.append(xxvec)
