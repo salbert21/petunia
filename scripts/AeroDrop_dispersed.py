@@ -439,7 +439,7 @@ paramsNom_O.Rn = np.sqrt(paramsNom_O.A / np.pi) / 2
 # search brackets for Brent's Method
 paramsNom_O.sig1 = 0
 paramsNom_O.sig2 = 180
-paramsNom_O.ts1 = 100
+paramsNom_O.ts1 = 1
 paramsNom_O.ts2 = 300
 
 # target state
@@ -631,7 +631,7 @@ print('Range traversed: {:.3f} rad\n'.format(dsig))
 # Orbiter Dispersions Setup
 # =============================================================================
 # set number of MC runs
-Nmc = 1
+Nmc = 15
 
 # copy, DO NOT ASSIGN, paramsTrue for dispersions. leave paramsNom alone.
 paramsTrue_O = copy.deepcopy(paramsNom_O)
@@ -769,7 +769,7 @@ for i in range(Nmc):
     # run FNPAG simulation
     xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1,\
         tvecP2, xswwitchvec = doFNPAG(mode, paramsTrue_O, paramsNom_O, t0,
-                              xx0vec, sig0_O, sigd, ts)
+                              xx0vec, sig0_O, sigd, ts, verbose = False)
     
     # append outputs to lists
     xxvecList_O.append(xxvec)
@@ -787,7 +787,7 @@ for i in range(Nmc):
     # run FNPEG simulation
     xxvec, tvecEval, sfErr, hfErr, vfErr, evec, sigvec,\
         sig0List = doFNPEG(paramsTrue_P, paramsNom_P, t0, xx0vecAug,
-                           sig0_P, e0, updatesOn = False)
+                           sig0_P, e0, verbose = False)
     
     # append outputs to lists
     xxvecList_P.append(xxvec)

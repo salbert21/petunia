@@ -194,21 +194,12 @@ def updateFNPAG(xxvec, t, ts, sig0, sigd, phase, mode, params,
             if mode == 1 and abs(getErr(ts)) < params.errtol1:
                 return ts
         
-        
-        # ts1 = ts - 5
-        # ts2 = ts + 5
-        
-        # # make sure signs of f(a) and f(b) are different for Brent's Method
-        # while mode == 1 and np.sign(getErr(ts1)) == np.sign(getErr(ts2)):
-        #     ts1 -= 1
-        #     ts2 += 1
-        #     print(ts1)
-        
-        # print(getErr(ts1))
-        # print(getErr(ts2))
-        
         if mode == 1:
             # Brent's Method:
+            # make sure signs of f(a) and f(b) are different
+            while np.sign(getErr(params.ts1)) == np.sign(getErr(params.ts2)):
+                params.ts2 += 30
+            
             tsi, res = brentq(getErr, params.ts1, params.ts2, full_output = True)
             converged = res.converged
             
