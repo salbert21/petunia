@@ -727,14 +727,21 @@ outname = '../results/AeroDrop_dispersed_' + str(Nmc) + '_' + datestring
 # =============================================================================
 #  Monte Carlo loop
 # =============================================================================
-for i in range(Nmc):
+# for i in range(Nmc):
+for i in [1]:
     # initialize random variables
-    BC_O = uniform.rvs(size = 1, loc = BCLB_O, scale = BCRng_O)[0]
-    L_D_O = uniform.rvs(size = 1, loc = L_DLB_O, scale = L_DRng_O)[0]
+    # BC_O = uniform.rvs(size = 1, loc = BCLB_O, scale = BCRng_O)[0]
+    # L_D_O = uniform.rvs(size = 1, loc = L_DLB_O, scale = L_DRng_O)[0]
     BC_P = uniform.rvs(size = 1, loc = BCLB_P, scale = BCRng_P)[0]
     L_D_P = uniform.rvs(size = 1, loc = L_DLB_P, scale = L_DRng_P)[0]
-    gam0 = norm.rvs(size = 1, loc = gam0Mean, scale = gam0STD)[0]
-    v0 = norm.rvs(size = 1, loc = v0Mean, scale = v0STD)[0]
+    # gam0 = norm.rvs(size = 1, loc = gam0Mean, scale = gam0STD)[0]
+    # v0 = norm.rvs(size = 1, loc = v0Mean, scale = v0STD)[0]
+    
+    # troubleshooting case 
+    BC_O = 136.0921346667126
+    L_D_O = 0.25112828026442374
+    gam0 = -0.21182413082903329
+    v0 = 6000.838257759264
     
     # orbiter true params
     paramsTrue_O.BC = BC_O
@@ -768,7 +775,7 @@ for i in range(Nmc):
     # run FNPAG simulation
     xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1,\
         tvecP2, xswwitchvec = doFNPAG(mode, paramsTrue_O, paramsNom_O, t0,
-                              xx0vec, sig0_O, sigd, ts, verbose = False)
+                              xx0vec, sig0_O, sigd, ts, verbose = True)
     
     # append outputs to lists
     xxvecList_O.append(xxvec)
