@@ -140,8 +140,6 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts,
         if updatesOn:
             sigd = updateFNPAG(xxvec[:,-1], t, ts, sig0, sigd, phase, mode,
                                paramsNom)
-            # paramsTrue.bank = sigd
-            # paramsNom.bank = sigd
             
         
         # make sure sigd is in [-180, 180] deg range
@@ -768,7 +766,7 @@ for i in range(Nmc):
     # run FNPAG simulation
     xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1,\
         tvecP2, xswwitchvec = doFNPAG(mode, paramsTrue_O, paramsNom_O, t0,
-                              xx0vec, sig0_O, sigd, ts, verbose = False)
+                              xx0vec, sig0_O, sigd, ts, verbose = True)
     
     # append outputs to lists
     xxvecList_O.append(xxvec)
@@ -786,7 +784,7 @@ for i in range(Nmc):
     # run FNPEG simulation
     xxvec, tvecEval, sfErr, hfErr, vfErr, evec, sigvec,\
         sig0List = doFNPEG(paramsTrue_P, paramsNom_P, t0, xx0vecAug,
-                           sig0_P, e0, verbose = False)
+                           sig0_P, e0, verbose = True)
     
     # append outputs to lists
     xxvecList_P.append(xxvec)
