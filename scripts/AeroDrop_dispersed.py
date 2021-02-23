@@ -448,7 +448,7 @@ paramsNom_O.rpStar = (250 + paramsNom_O.p.rad) * 1e3
 t0 = 0
 sig0_O = 15
 sigd = 150
-ts = 158.043
+ts = 158.04326383154165
 
 # =============================================================================
 # Lifting Probe Setup
@@ -629,7 +629,7 @@ print('Range traversed: {:.3f} rad\n'.format(dsig))
 # Orbiter Dispersions Setup
 # =============================================================================
 # set number of MC runs
-Nmc = 15
+Nmc = 1
 
 # copy, DO NOT ASSIGN, paramsTrue for dispersions. leave paramsNom alone.
 paramsTrue_O = copy.deepcopy(paramsNom_O)
