@@ -10,4 +10,144 @@ AeroDrop_dispersed_compile.py:
 
 
 import numpy as np
+import os
+from datetime import datetime
+
+# =============================================================================
+# Import raw data from each file and compile arrays
+# =============================================================================
+
+filenames = ['../results/DUMMY_AeroDrop_dispersed_3_0223153605.npz',
+             '../results/DUMMY_AeroDrop_dispersed_3_0223153843.npz']
+
+# initialize using first file
+for filename in filenames[0:1]:
+    data = np.load(filename, allow_pickle = True)
+    
+    xxvecArr_O = data['xxvecArr_O']
+    tvecArr_O = data['tvecArr_O']
+    sigdvecArr_O = data['sigdvecArr_O']
+    tsvecArr_O = data['tsvecArr_O']
+    BCList_O = data['BCList_O']
+    L_DList_O = data['L_DList_O']
+    gam0List = data['gam0List']
+    v0List = data['v0List']
+    raErrList_O = data['raErrList_O']
+    DVList_O = data['DVList_O']
+    tsfList_O = data['tsfList_O']
+    sigdfList_O = data['sigdfList_O']
+    rafList_O = data['rafList_O']
+    rpfList_O = data['rpfList_O']
+    engfList_O = data['engfList_O']
+    xxvecArr_P = data['xxvecArr_P']
+    tvecArr_P = data['tvecArr_P']
+    sigvecArr = data['sigvecArr']
+    sig0ListArr = data['sig0ListArr']
+    sfErrList_P = data['sfErrList_P']
+    hfErrList_P = data['hfErrList_P']
+    vfErrList_P = data['vfErrList_P']
+    xxvecArr_PBC = data['xxvecArr_PBC']
+    tvecArr_PBC = data['tvecArr_PBC']
+    sfErrList_PBC = data['sfErrList_PBC']
+    hfErrList_PBC = data['hfErrList_PBC']
+    vfErrList_PBC = data['vfErrList_PBC']
+    
+    del data
+    
+    
+# read in the rest of the files, appending to arrays/lists
+for filename in filenames[1:]:
+    data = np.load(filename, allow_pickle = True)
+    
+    xxvecArr_O = np.append(xxvecArr_O, data['xxvecArr_O'])
+    tvecArr_O = np.append(tvecArr_O, data['tvecArr_O'])
+    sigdvecArr_O = np.append(sigdvecArr_O, data['sigdvecArr_O'])
+    tsvecArr_O = np.append(tsvecArr_O, data['tsvecArr_O'])
+    BCList_O = np.append(BCList_O, data['BCList_O'])
+    L_DList_O = np.append(L_DList_O, data['L_DList_O'])
+    gam0List = np.append(gam0List, data['gam0List'])
+    v0List = np.append(v0List, data['v0List'])
+    raErrList_O = np.append(raErrList_O, data['raErrList_O'])
+    DVList_O = np.append(DVList_O, data['DVList_O'])
+    tsfList_O = np.append(tsfList_O, data['tsfList_O'])
+    sigdfList_O = np.append(sigdfList_O, data['sigdfList_O'])
+    rafList_O = np.append(rafList_O, data['rafList_O'])
+    rpfList_O = np.append(rpfList_O, data['rpfList_O'])
+    engfList_O = np.append(engfList_O, data['engfList_O'])
+    xxvecArr_P = np.append(xxvecArr_P, data['xxvecArr_P'])
+    tvecArr_P = np.append(tvecArr_P, data['tvecArr_P'])
+    sigvecArr = np.append(sigvecArr, data['sigvecArr'])
+    sig0ListArr = np.append(sig0ListArr, data['sig0ListArr'])
+    sfErrList_P = np.append(sfErrList_P, data['sfErrList_P'])
+    hfErrList_P = np.append(hfErrList_P, data['hfErrList_P'])
+    vfErrList_P = np.append(vfErrList_P, data['vfErrList_P'])
+    xxvecArr_PBC = np.append(xxvecArr_PBC, data['xxvecArr_PBC'])
+    tvecArr_PBC = np.append(tvecArr_PBC, data['tvecArr_PBC'])
+    sfErrList_PBC = np.append(sfErrList_PBC, data['sfErrList_PBC'])
+    hfErrList_PBC = np.append(hfErrList_PBC, data['hfErrList_PBC'])
+    vfErrList_PBC = np.append(vfErrList_PBC, data['vfErrList_PBC'])
+    
+    del data
+    
+    
+
+# =============================================================================
+# Save compiled data into a single file
+# =============================================================================
+N = BCList_O.shape[0]
+datestring = datetime.now().strftime('%m%d%H%M%S')
+outname = '../results/AeroDrop_dispersed_' + str(N) + '_' + datestring
+np.savez(outname,
+            xxvecArr_O = xxvecArr_O,
+            tvecArr_O = tvecArr_O,
+            sigdvecArr_O = sigdvecArr_O,
+            tsvecArr_O = tsvecArr_O,
+            BCList_O = BCList_O,
+            L_DList_O = L_DList_O,
+            gam0List = gam0List,
+            v0List = v0List,
+            raErrList_O = raErrList_O,
+            DVList_O = DVList_O,
+            tsfList_O = tsfList_O,
+            sigdfList_O = sigdfList_O,
+            rafList_O = rafList_O,
+            rpfList_O = rpfList_O,
+            engfList_O = engfList_O,
+            xxvecArr_P = xxvecArr_P,
+            tvecArr_P = tvecArr_P,
+            sigvecArr = sigvecArr,
+            sig0ListArr = sig0ListArr,
+            sfErrList_P = sfErrList_P,
+            hfErrList_P = hfErrList_P,
+            vfErrList_P = vfErrList_P,
+            xxvecArr_PBC = xxvecArr_PBC,
+            tvecArr_PBC = tvecArr_PBC,
+            sfErrList_PBC = sfErrList_PBC,
+            hfErrList_PBC = hfErrList_PBC,
+            vfErrList_PBC = vfErrList_PBC)
+
+
+# =============================================================================
+# Rename and move files to avoid resuse
+# =============================================================================
+for filename in filenames:
+    os.rename(filename, '../results/compiled/COMPILED_' + filename[11:])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
