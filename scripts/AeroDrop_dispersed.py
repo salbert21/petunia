@@ -36,6 +36,27 @@ mpl.rcParams["figure.autolayout"] = True
 mpl.rcParams.update({'font.size': 15})
 
 # =============================================================================
+# SETTINGS
+# =============================================================================
+# number of Monte Carlo runs
+Nmc = 3
+
+# updates on during nominal profiles?
+updatesNominal = False
+
+# verbose during nominal profiles?
+verboseNominal = False
+
+# udpates on during Monte Carlo trials?
+updatesMC = True
+
+# verbose during Monte Carlo trials?
+verboseMC = True
+
+# dummy data file?
+dummy = False
+
+# =============================================================================
 # Main FNPAG Function
 # =============================================================================
 def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts,
@@ -506,8 +527,8 @@ xx0vecAug_PBC = np.append(xx0vec, s0_PBC)
 mode = 1
 xxvec1, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1, tvecP2,\
     xswitchvec = doFNPAG(mode, paramsNom_O, paramsNom_O, t0, xx0vec, sig0_O,
-                         sigd, ts, plotsOn = False, updatesOn = False,
-                         verbose = False)
+                         sigd, ts, plotsOn = False, updatesOn = updatesNominal,
+                         verbose = verboseNominal)
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
@@ -523,7 +544,8 @@ ax.set_title('Orbiter trajectories')
 
 xxvec2, tvecEval, sfErr, hfErr, vfErr, evec, sigvec,\
     sig0List = doFNPEG(paramsNom_P, paramsNom_P, t0, xx0vecAug, sig0_P, e0,
-                       plotsOn = False, updatesOn = False, verbose = False)
+                       plotsOn = False, updatesOn = updatesNominal,
+                       verbose = verboseNominal)
 
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(111)
@@ -628,9 +650,6 @@ print('Range traversed: {:.3f} rad\n'.format(dsig))
 # =============================================================================
 # Orbiter Dispersions Setup
 # =============================================================================
-# set number of MC runs
-Nmc = 1
-
 # copy, DO NOT ASSIGN, paramsTrue for dispersions. leave paramsNom alone.
 paramsTrue_O = copy.deepcopy(paramsNom_O)
 
@@ -720,7 +739,11 @@ vfErrList_PBC = []
 
 
 # output filename
-outname = '../results/AeroDrop_dispersed_' + str(Nmc) + '_' + datestring
+if dummy:
+    outname = '../results/DUMMY_AeroDrop_dispersed_'\
+        + str(Nmc) + '_' + datestring
+else:
+    outname = '../results/AeroDrop_dispersed_' + str(Nmc) + '_' + datestring
 
 # =============================================================================
 #  Monte Carlo loop
@@ -766,7 +789,8 @@ for i in range(Nmc):
     # run FNPAG simulation
     xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1,\
         tvecP2, xswwitchvec = doFNPAG(mode, paramsTrue_O, paramsNom_O, t0,
-                              xx0vec, sig0_O, sigd, ts, verbose = True)
+                              xx0vec, sig0_O, sigd, ts, updatesOn = updatesMC,
+                              verbose = verboseMC)
     
     # append outputs to lists
     xxvecList_O.append(xxvec)
@@ -784,7 +808,8 @@ for i in range(Nmc):
     # run FNPEG simulation
     xxvec, tvecEval, sfErr, hfErr, vfErr, evec, sigvec,\
         sig0List = doFNPEG(paramsTrue_P, paramsNom_P, t0, xx0vecAug,
-                           sig0_P, e0, verbose = True)
+                           sig0_P, e0, updatesOn = updatesMC,
+                           verbose = verboseMC)
     
     # append outputs to lists
     xxvecList_P.append(xxvec)
