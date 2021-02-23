@@ -140,16 +140,14 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts,
         if updatesOn:
             sigd = updateFNPAG(xxvec[:,-1], t, ts, sig0, sigd, phase, mode,
                                paramsNom)
-            # paramsTrue.bank = sigd
-            # paramsNom.bank = sigd
             
         
         # make sure sigd is in [-180, 180] deg range
         sigd = (sigd + 180) % (360) - 180
         
-        if verbose:
-            print('PHASE 2: updating guidance at time {0:.3f}'\
-                  '    sigd = {1:.3f} deg'.format(t, sigd))
+        # if verbose:
+        #     print('PHASE 2: updating guidance at time {0:.3f}'\
+        #           '    sigd = {1:.3f} deg'.format(t, sigd))
         sigdList.append(sigd)
         
         # propagate until next guidance update or final state
@@ -728,7 +726,7 @@ outname = '../results/AeroDrop_dispersed_' + str(Nmc) + '_' + datestring
 #  Monte Carlo loop
 # =============================================================================
 # for i in range(Nmc):
-for i in range(2):
+for i in [1]:
     # initialize random variables
     # BC_O = uniform.rvs(size = 1, loc = BCLB_O, scale = BCRng_O)[0]
     # L_D_O = uniform.rvs(size = 1, loc = L_DLB_O, scale = L_DRng_O)[0]

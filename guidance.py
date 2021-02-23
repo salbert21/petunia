@@ -196,12 +196,18 @@ def updateFNPAG(xxvec, t, ts, sig0, sigd, phase, mode, params,
         
         if mode == 1:
             # Brent's Method:
-            # make sure signs of f(a) and f(b) are different
-            while np.sign(getErr(params.ts1)) == np.sign(getErr(params.ts2)):
-                params.ts2 += 30
+            # # make sure signs of f(a) and f(b) are different
+            # while np.sign(getErr(params.ts1)) == np.sign(getErr(params.ts2)):
+            #     params.ts2 += 30
             
-            tsi, res = brentq(getErr, params.ts1, params.ts2, full_output = True)
-            converged = res.converged
+            # if signs of f(a) and f(b) are the same, do not update tsi
+            if np.sign(getErr(params.ts1)) == np.sign(getErr(params.ts2)):
+                tsi = ts
+                converged = True
+                print('Warning: f(a) != f(b), not updating tsi in FNPAG P1')
+            else:
+                tsi, res = brentq(getErr, params.ts1, params.ts2, full_output = True)
+                converged = res.converged
             
             # # scipy automatic root-finding method:
             # sol = root_scalar(getErr, x0 = ts, x1 = ts+1)
