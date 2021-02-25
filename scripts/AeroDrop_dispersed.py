@@ -16,12 +16,13 @@ from sim import Params
 from guidance import updateFNPAG, updateFNPEG, engEvent
 import ODEs
 import planetaryconstants as constants
-from atm import getMarsGRAMDensTableAll, getRho_from_table
+from atm import getRho_from_table
 
 import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.stats import norm, uniform
 import scipy.interpolate as interp
+from random import randint
 from datetime import datetime
 import sys
 import matplotlib as mpl
@@ -39,7 +40,7 @@ mpl.rcParams.update({'font.size': 15})
 # SETTINGS
 # =============================================================================
 # number of Monte Carlo runs
-Nmc = 3
+Nmc = 1
 
 # updates on during nominal profiles?
 updatesNominal = False
@@ -48,13 +49,13 @@ updatesNominal = False
 verboseNominal = False
 
 # udpates on during Monte Carlo trials?
-updatesMC = True
+updatesMC = False
 
 # verbose during Monte Carlo trials?
-verboseMC = True
+verboseMC = False
 
 # dummy data file?
-dummy = False
+dummy = True
 
 # =============================================================================
 # Main FNPAG Function
@@ -654,8 +655,15 @@ print('Range traversed: {:.3f} rad\n'.format(dsig))
 paramsTrue_O = copy.deepcopy(paramsNom_O)
 
 # load full 5000-case Monte Carlo atmsophere dataset from MarsGRAM-2010
-filename = '../data/Mars_0.1_5000.txt'
-densAll, densMean, h = getMarsGRAMDensTableAll(filename, Nmc)
+filename = '../data/Mars_0.1_50000.npz'
+data = np.load(filename)
+densAll = data['densTot']
+h = data['h']
+NATM = densAll.shape[1]
+atmindices = [randint(0, NATM) for p in range(Nmc)] # all Nmc atm indices
+del data
+# filename = '../data/Mars_0.1_5000.txt'
+# densAll, densMean, h = getMarsGRAMDensTableAll(filename, Nmc)
 
 # define dispersions for other parameters
 BCMean_O = paramsNom_O.BC
@@ -694,6 +702,8 @@ BCList_O = []
 L_DList_O = []
 gam0List = []
 v0List = []
+
+atmindList = [] # atm indices for only trials that actually get run
 
 # =============================================================================
 # Lifting Probe Dispersions Setup
@@ -748,7 +758,8 @@ else:
 # =============================================================================
 #  Monte Carlo loop
 # =============================================================================
-for i in range(Nmc):
+# for i in range(Nmc):
+for i in atmindices:
     # initialize random variables
     BC_O = uniform.rvs(size = 1, loc = BCLB_O, scale = BCRng_O)[0]
     L_D_O = uniform.rvs(size = 1, loc = L_DLB_O, scale = L_DRng_O)[0]
@@ -785,6 +796,7 @@ for i in range(Nmc):
     L_DList_P.append(L_D_P)
     gam0List.append(gam0)
     v0List.append(v0)
+    atmindList.append(i)
     
     # run FNPAG simulation
     xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1,\
@@ -880,7 +892,8 @@ for i in range(Nmc):
                 tvecArr_PBC = tvecArr_PBC,
                 sfErrList_PBC = sfErrList_PBC,
                 hfErrList_PBC = hfErrList_PBC,
-                vfErrList_PBC = vfErrList_PBC)
+                vfErrList_PBC = vfErrList_PBC,
+                atmindList = atmindList)
     
     toc = time.time()
     print('\nRun {0:d} complete, {1:.2f} s elapsed'.format(i+1, toc-tic))
