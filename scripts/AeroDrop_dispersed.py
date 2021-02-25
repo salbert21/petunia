@@ -40,7 +40,7 @@ mpl.rcParams.update({'font.size': 15})
 # SETTINGS
 # =============================================================================
 # number of Monte Carlo runs
-Nmc = 1
+Nmc = 101
 
 # updates on during nominal profiles?
 updatesNominal = False
@@ -49,13 +49,13 @@ updatesNominal = False
 verboseNominal = False
 
 # udpates on during Monte Carlo trials?
-updatesMC = False
+updatesMC = True
 
 # verbose during Monte Carlo trials?
 verboseMC = False
 
 # dummy data file?
-dummy = True
+dummy = False
 
 # =============================================================================
 # Main FNPAG Function
