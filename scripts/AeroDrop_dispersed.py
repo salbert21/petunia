@@ -759,6 +759,7 @@ else:
 #  Monte Carlo loop
 # =============================================================================
 # for i in range(Nmc):
+runi = 1
 for i in atmindices:
     # initialize random variables
     BC_O = uniform.rvs(size = 1, loc = BCLB_O, scale = BCRng_O)[0]
@@ -896,7 +897,8 @@ for i in atmindices:
                 atmindList = atmindList)
     
     toc = time.time()
-    print('\nRun {0:d} complete, {1:.2f} s elapsed'.format(i+1, toc-tic))
+    print('\nRun {0:d} complete, {1:.2f} s elapsed'.format(runi, toc-tic))
+    runi += 1
 
 
 
