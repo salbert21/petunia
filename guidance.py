@@ -200,11 +200,16 @@ def updateFNPAG(xxvec, t, ts, sig0, sigd, phase, mode, params,
             # while np.sign(getErr(params.ts1)) == np.sign(getErr(params.ts2)):
             #     params.ts2 += 30
             
-            # if signs of f(a) and f(b) are the same, do not update tsi
-            if np.sign(getErr(params.ts1)) == np.sign(getErr(params.ts2)):
+            # if f(a) and f(b) are both positive, do not update tsi
+            if np.sign(getErr(params.ts1)) > 0:
                 tsi = ts
                 converged = True
-                print('Warning: f(a) != f(b), not updating tsi in FNPAG P1')
+                print('Warning: f(a) > 0, not updating tsi in FNPAG P1')
+            # if f(a) and f(b) are both negative, make switching time = ts2
+            elif np.sign(getErr(params.ts2)) < 0:
+                tsi = params.ts2
+                converged = True
+                print('Warning: f(b) < 0, set tsi = ts2 in FNAPG P1')
             else:
                 tsi, res = brentq(getErr, params.ts1, params.ts2, full_output = True)
                 converged = res.converged

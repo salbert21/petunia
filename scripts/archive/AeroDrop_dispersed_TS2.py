@@ -40,7 +40,7 @@ mpl.rcParams.update({'font.size': 15})
 # SETTINGS
 # =============================================================================
 # number of Monte Carlo runs
-Nmc = 101
+Nmc = 1
 
 # updates on during nominal profiles?
 updatesNominal = False
@@ -52,10 +52,10 @@ verboseNominal = False
 updatesMC = True
 
 # verbose during Monte Carlo trials?
-verboseMC = False
+verboseMC = True
 
 # dummy data file?
-dummy = False
+dummy = True
 
 # =============================================================================
 # Main FNPAG Function
@@ -107,6 +107,7 @@ def doFNPAG(mode, paramsTrue, paramsNom, t0, xx0vec, sig0, sigd, ts,
     
     for ind, t in enumerate(tvec):
         # update guidance
+        # if updatesOn and abs(ts - t) > 3:
         if updatesOn:
             ts = updateFNPAG(xx0veci, t, ts, sig0, sigd, phase, mode,
                              paramsNom, sphericalEOMs = True)
@@ -762,12 +763,18 @@ else:
 runi = 1
 for i in atmindices:
     # initialize random variables
-    BC_O = uniform.rvs(size = 1, loc = BCLB_O, scale = BCRng_O)[0]
-    L_D_O = uniform.rvs(size = 1, loc = L_DLB_O, scale = L_DRng_O)[0]
+    # BC_O = uniform.rvs(size = 1, loc = BCLB_O, scale = BCRng_O)[0]
+    # L_D_O = uniform.rvs(size = 1, loc = L_DLB_O, scale = L_DRng_O)[0]
     BC_P = uniform.rvs(size = 1, loc = BCLB_P, scale = BCRng_P)[0]
     L_D_P = uniform.rvs(size = 1, loc = L_DLB_P, scale = L_DRng_P)[0]
-    gam0 = norm.rvs(size = 1, loc = gam0Mean, scale = gam0STD)[0]
-    v0 = norm.rvs(size = 1, loc = v0Mean, scale = v0STD)[0]
+    # gam0 = norm.rvs(size = 1, loc = gam0Mean, scale = gam0STD)[0]
+    # v0 = norm.rvs(size = 1, loc = v0Mean, scale = v0STD)[0]
+    
+    BC_O = 125.20379393
+    L_D_O = 0.23906142
+    gam0 = -0.21174607
+    v0 = 6000.23830295
+    i = 1681
     
     # orbiter true params
     paramsTrue_O.BC = BC_O
@@ -801,7 +808,7 @@ for i in atmindices:
     
     # run FNPAG simulation
     xxvec, tvecEval, raf, rpf, engf, raErr, DV, tsList, sigdList, tvecP1,\
-        tvecP2, xswwitchvec = doFNPAG(mode, paramsTrue_O, paramsNom_O, t0,
+        tvecP2, xswwitchvec = doFNPAG(mode, paramsTrue_O, paramsTrue_O, t0,
                               xx0vec, sig0_O, sigd, ts, updatesOn = updatesMC,
                               verbose = verboseMC)
     
@@ -818,83 +825,83 @@ for i in atmindices:
     rpfList_O.append(rpf)
     engfList_O.append(engf)
     
-    # run FNPEG simulation
-    xxvec, tvecEval, sfErr, hfErr, vfErr, evec, sigvec,\
-        sig0List = doFNPEG(paramsTrue_P, paramsNom_P, t0, xx0vecAug,
-                           sig0_P, e0, updatesOn = updatesMC,
-                           verbose = verboseMC)
+    # # run FNPEG simulation
+    # xxvec, tvecEval, sfErr, hfErr, vfErr, evec, sigvec,\
+    #     sig0List = doFNPEG(paramsTrue_P, paramsNom_P, t0, xx0vecAug,
+    #                        sig0_P, e0, updatesOn = updatesMC,
+    #                        verbose = verboseMC)
     
-    # append outputs to lists
-    xxvecList_P.append(xxvec)
-    tvecList_P.append(tvecEval)
-    sig0ListList.append(sig0List)
-    sigvecList.append(sigvec)
-    sfErrList_P.append(sfErr)
-    hfErrList_P.append(hfErr)
-    vfErrList_P.append(vfErr)
+    # # append outputs to lists
+    # xxvecList_P.append(xxvec)
+    # tvecList_P.append(tvecEval)
+    # sig0ListList.append(sig0List)
+    # sigvecList.append(sigvec)
+    # sfErrList_P.append(sfErr)
+    # hfErrList_P.append(hfErr)
+    # vfErrList_P.append(vfErr)
     
-    # run passive probe simulation
-    xxvec, tvecEval, sfErr, hfErr,\
-        vfErr = doBallisticProbe(paramsTrue_PBC, t0, xx0vecAug_PBC)
-    xxvecList_PBC.append(xxvec)
-    tvecList_PBC.append(tvecEval)
-    sfErrList_PBC.append(sfErr)
-    hfErrList_PBC.append(hfErr)
-    vfErrList_PBC.append(vfErr)
+    # # run passive probe simulation
+    # xxvec, tvecEval, sfErr, hfErr,\
+    #     vfErr = doBallisticProbe(paramsTrue_PBC, t0, xx0vecAug_PBC)
+    # xxvecList_PBC.append(xxvec)
+    # tvecList_PBC.append(tvecEval)
+    # sfErrList_PBC.append(sfErr)
+    # hfErrList_PBC.append(hfErr)
+    # vfErrList_PBC.append(vfErr)
     
     
     
-    # save data to file for analysis
-    print('saving file...')
-    xxvecArr_O = np.empty(i+1, object)
-    xxvecArr_O[:] = xxvecList_O
-    tvecArr_O = np.empty(i+1, object)
-    tvecArr_O[:] = tvecList_O
-    sigdvecArr_O = np.empty(i+1, object)
-    sigdvecArr_O[:] = sigdvecList_O
-    tsvecArr_O = np.empty(i+1, object) 
-    tsvecArr_O[:] = tsvecList_O
-    xxvecArr_P = np.empty(i+1, object)
-    xxvecArr_P[:] = xxvecList_P
-    tvecArr_P = np.empty(i+1, object)
-    tvecArr_P[:] = tvecList_P
-    sigvecArr = np.empty(i+1, object)
-    sigvecArr[:] = sigvecList
-    sig0ListArr = np.empty(i+1, object)
-    sig0ListArr[:] = sig0ListList
-    xxvecArr_PBC = np.empty(i+1, object)
-    xxvecArr_PBC[:] = xxvecList_PBC
-    tvecArr_PBC = np.empty(i+1, object)
-    tvecArr_PBC[:] = tvecList_PBC
-    np.savez(outname,
-                xxvecArr_O = xxvecArr_O,
-                tvecArr_O = tvecArr_O,
-                sigdvecArr_O = sigdvecArr_O,
-                tsvecArr_O = tsvecArr_O,
-                BCList_O = BCList_O,
-                L_DList_O = L_DList_O,
-                gam0List = gam0List,
-                v0List = v0List,
-                raErrList_O = raErrList_O,
-                DVList_O = DVList_O,
-                tsfList_O = tsfList_O,
-                sigdfList_O = sigdfList_O,
-                rafList_O = rafList_O,
-                rpfList_O = rpfList_O,
-                engfList_O = engfList_O,
-                xxvecArr_P = xxvecArr_P,
-                tvecArr_P = tvecArr_P,
-                sigvecArr = sigvecArr,
-                sig0ListArr = sig0ListArr,
-                sfErrList_P = sfErrList_P,
-                hfErrList_P = hfErrList_P,
-                vfErrList_P = vfErrList_P,
-                xxvecArr_PBC = xxvecArr_PBC,
-                tvecArr_PBC = tvecArr_PBC,
-                sfErrList_PBC = sfErrList_PBC,
-                hfErrList_PBC = hfErrList_PBC,
-                vfErrList_PBC = vfErrList_PBC,
-                atmindList = atmindList)
+    # # save data to file for analysis
+    # print('saving file...')
+    # xxvecArr_O = np.empty(i+1, object)
+    # xxvecArr_O[:] = xxvecList_O
+    # tvecArr_O = np.empty(i+1, object)
+    # tvecArr_O[:] = tvecList_O
+    # sigdvecArr_O = np.empty(i+1, object)
+    # sigdvecArr_O[:] = sigdvecList_O
+    # tsvecArr_O = np.empty(i+1, object) 
+    # tsvecArr_O[:] = tsvecList_O
+    # xxvecArr_P = np.empty(i+1, object)
+    # xxvecArr_P[:] = xxvecList_P
+    # tvecArr_P = np.empty(i+1, object)
+    # tvecArr_P[:] = tvecList_P
+    # sigvecArr = np.empty(i+1, object)
+    # sigvecArr[:] = sigvecList
+    # sig0ListArr = np.empty(i+1, object)
+    # sig0ListArr[:] = sig0ListList
+    # xxvecArr_PBC = np.empty(i+1, object)
+    # xxvecArr_PBC[:] = xxvecList_PBC
+    # tvecArr_PBC = np.empty(i+1, object)
+    # tvecArr_PBC[:] = tvecList_PBC
+    # np.savez(outname,
+    #             xxvecArr_O = xxvecArr_O,
+    #             tvecArr_O = tvecArr_O,
+    #             sigdvecArr_O = sigdvecArr_O,
+    #             tsvecArr_O = tsvecArr_O,
+    #             BCList_O = BCList_O,
+    #             L_DList_O = L_DList_O,
+    #             gam0List = gam0List,
+    #             v0List = v0List,
+    #             raErrList_O = raErrList_O,
+    #             DVList_O = DVList_O,
+    #             tsfList_O = tsfList_O,
+    #             sigdfList_O = sigdfList_O,
+    #             rafList_O = rafList_O,
+    #             rpfList_O = rpfList_O,
+    #             engfList_O = engfList_O,
+    #             xxvecArr_P = xxvecArr_P,
+    #             tvecArr_P = tvecArr_P,
+    #             sigvecArr = sigvecArr,
+    #             sig0ListArr = sig0ListArr,
+    #             sfErrList_P = sfErrList_P,
+    #             hfErrList_P = hfErrList_P,
+    #             vfErrList_P = vfErrList_P,
+    #             xxvecArr_PBC = xxvecArr_PBC,
+    #             tvecArr_PBC = tvecArr_PBC,
+    #             sfErrList_PBC = sfErrList_PBC,
+    #             hfErrList_PBC = hfErrList_PBC,
+    #             vfErrList_PBC = vfErrList_PBC,
+    #             atmindList = atmindList)
     
     toc = time.time()
     print('\nRun {0:d} complete, {1:.2f} s elapsed, atmID: {2:d}'\
