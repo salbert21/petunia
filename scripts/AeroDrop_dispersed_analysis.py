@@ -31,7 +31,7 @@ params.p = constants.MARS
 # =============================================================================
 # Load data
 # =============================================================================
-filename = '../results/AeroDrop_dispersed_101_0225105910.npz'
+filename = '../results/AeroDrop_dispersed_7_0225162013.npz'
 data = np.load(filename, allow_pickle = True)
 
 xxvecArr_O = data['xxvecArr_O']
@@ -61,7 +61,7 @@ tvecArr_PBC = data['tvecArr_PBC']
 sfErrList_PBC = data['sfErrList_PBC']
 hfErrList_PBC = data['hfErrList_PBC']
 vfErrList_PBC = data['vfErrList_PBC']
-atmindList = data['atmindList']
+# atmindList = data['atmindList']
 
 del data
 

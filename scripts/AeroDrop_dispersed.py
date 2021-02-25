@@ -470,7 +470,7 @@ paramsNom_O.rpStar = (250 + paramsNom_O.p.rad) * 1e3
 t0 = 0
 sig0_O = 0
 sigd = 150
-ts = 158.04326383154165
+ts = 152.64287589323638
 
 # =============================================================================
 # Lifting Probe Setup
@@ -846,25 +846,25 @@ for i in atmindices:
     
     # save data to file for analysis
     print('saving file...')
-    xxvecArr_O = np.empty(i+1, object)
+    xxvecArr_O = np.empty(runi, object)
     xxvecArr_O[:] = xxvecList_O
-    tvecArr_O = np.empty(i+1, object)
+    tvecArr_O = np.empty(runi, object)
     tvecArr_O[:] = tvecList_O
-    sigdvecArr_O = np.empty(i+1, object)
+    sigdvecArr_O = np.empty(runi, object)
     sigdvecArr_O[:] = sigdvecList_O
-    tsvecArr_O = np.empty(i+1, object) 
+    tsvecArr_O = np.empty(runi, object) 
     tsvecArr_O[:] = tsvecList_O
-    xxvecArr_P = np.empty(i+1, object)
+    xxvecArr_P = np.empty(runi, object)
     xxvecArr_P[:] = xxvecList_P
-    tvecArr_P = np.empty(i+1, object)
+    tvecArr_P = np.empty(runi, object)
     tvecArr_P[:] = tvecList_P
-    sigvecArr = np.empty(i+1, object)
+    sigvecArr = np.empty(runi, object)
     sigvecArr[:] = sigvecList
-    sig0ListArr = np.empty(i+1, object)
+    sig0ListArr = np.empty(runi, object)
     sig0ListArr[:] = sig0ListList
-    xxvecArr_PBC = np.empty(i+1, object)
+    xxvecArr_PBC = np.empty(runi, object)
     xxvecArr_PBC[:] = xxvecList_PBC
-    tvecArr_PBC = np.empty(i+1, object)
+    tvecArr_PBC = np.empty(runi, object)
     tvecArr_PBC[:] = tvecList_PBC
     np.savez(outname,
                 xxvecArr_O = xxvecArr_O,

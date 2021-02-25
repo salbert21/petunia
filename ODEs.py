@@ -146,7 +146,6 @@ def sphericalEntryEOMs(t, yy, sig, params):
         planet. Defined as in FNPAG (Lu et. al).
         ASSUMPTIONS:
             - constant bank angle
-            - exponential atmosphere
             - rotating planet
             - ellipsoidal planet (J2)
     params requirements:
