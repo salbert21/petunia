@@ -17,13 +17,12 @@ from datetime import datetime
 # Import raw data from each file and compile arrays
 # =============================================================================
 
-filenames = ['../results/AeroDrop_dispersed_101_0225125859.npz',
-             '../results/AeroDrop_dispersed_101_0225125902.npz',
-             '../results/AeroDrop_dispersed_101_0225125906.npz',
-             '../results/AeroDrop_dispersed_101_0225130451.npz',
-             '../results/AeroDrop_dispersed_101_0225130454.npz',
-             '../results/AeroDrop_dispersed_101_0225130457.npz',
-             '../results/AeroDrop_dispersed_101_0225131202.npz']
+filenames = ['../results/AeroDrop_dispersed_101_0225162633.npz',
+             '../results/AeroDrop_dispersed_101_0225162641.npz',
+             '../results/AeroDrop_dispersed_101_0225162648.npz',
+             '../results/AeroDrop_dispersed_101_0225162657.npz',
+             '../results/AeroDrop_dispersed_101_0225162704.npz',
+             '../results/AeroDrop_dispersed_101_0225162713.npz']
 
 # initialize using first file
 for filename in filenames[0:1]:
@@ -56,6 +55,7 @@ for filename in filenames[0:1]:
     sfErrList_PBC = data['sfErrList_PBC']
     hfErrList_PBC = data['hfErrList_PBC']
     vfErrList_PBC = data['vfErrList_PBC']
+    atmindList = data['atmindList']
     
     del data
     
@@ -91,6 +91,7 @@ for filename in filenames[1:]:
     sfErrList_PBC = np.append(sfErrList_PBC, data['sfErrList_PBC'])
     hfErrList_PBC = np.append(hfErrList_PBC, data['hfErrList_PBC'])
     vfErrList_PBC = np.append(vfErrList_PBC, data['vfErrList_PBC'])
+    atmindList = np.append(atmindList, data['atmindList'])
     
     del data
     
@@ -129,7 +130,8 @@ np.savez(outname,
             tvecArr_PBC = tvecArr_PBC,
             sfErrList_PBC = sfErrList_PBC,
             hfErrList_PBC = hfErrList_PBC,
-            vfErrList_PBC = vfErrList_PBC)
+            vfErrList_PBC = vfErrList_PBC,
+            atmindList = atmindList)
 
 
 # =============================================================================
