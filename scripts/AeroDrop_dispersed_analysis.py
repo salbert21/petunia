@@ -31,7 +31,7 @@ params.p = constants.MARS
 # =============================================================================
 # Load data
 # =============================================================================
-filename = '../results/AeroDrop_dispersed_72_0226102337.npz'
+filename = '../results/AeroDrop_dispersed_475_0302092117.npz'
 data = np.load(filename, allow_pickle = True)
 
 xxvecArr_O = data['xxvecArr_O']
@@ -66,15 +66,55 @@ atmindList = data['atmindList']
 del data
 
 
+
+# =============================================================================
+# Print statistics
+# =============================================================================
+print('\n\nORBITER STATISTICS:')
+print('\nTotal Delta-V Cost (m/s):')
+print(stats.describe(DVList_O))
+print('Standard deviation: {0:.5f} m/s'.format(stats.tstd(DVList_O)))
+
+print('\nApoapsis Radius Error (km):')
+print(stats.describe(raErrList_O/1e3))
+print('Standard deviation: {0:.5f} km'.format(stats.tstd(raErrList_O/1e3)))
+
+print('\n\nGUIDED PROBE STATISTICS:')
+print('\nRange Error (km):')
+print(stats.describe(params.p.rad * np.radians(sfErrList_P)))
+print('Standard deviation: {:0.5f} km'.\
+      format(stats.tstd(params.p.rad * np.radians(sfErrList_P))))
+
+print('\nAltitude Error (m):')
+print(stats.describe(hfErrList_P))
+print('Standard deviation: {0:.5f} m'.format(stats.tstd(hfErrList_P)))
+
+print('\nVelocity Error (m/s):')
+print(stats.describe(vfErrList_P))
+print('Standard deviation: {0:.5f} m/s'.format(stats.tstd(vfErrList_P)))
+
+print('\n\nPASSIVE PROBE STATISTICS:')
+print('\nRange Error (km):')
+print(stats.describe(params.p.rad * np.radians(sfErrList_PBC)))
+print('Standard deviation: {0:.5f} km'.\
+      format(stats.tstd(params.p.rad * np.radians(sfErrList_PBC))))
+
+print('\nVelocity Error (m/s):')
+print(stats.describe(vfErrList_PBC))
+print('Standard deviation: {0:.5f} m/s'.format(stats.tstd(vfErrList_PBC)))
+
+
+
 # =============================================================================
 # Plots
 # =============================================================================
-Nbin = 20
+Nbin = 'auto'
+rwidth = 1
 
 # Orbiter DV histogram
 fig1 = plt.figure()
 ax1 = fig1.add_subplot(111)
-ax1.hist(DVList_O, bins = Nbin)
+ax1.hist(DVList_O, bins = Nbin, rwidth = rwidth)
 ax1.grid()
 ax1.set_title('Total Delta-V Cost for Orbiter')
 ax1.set_xlabel('Total Delta-V Cost, m/s')
@@ -83,7 +123,7 @@ ax1.set_ylabel('Occurrences')
 # Orbiter apoapsis error histogram
 fig3 = plt.figure()
 ax3 = fig3.add_subplot(111)
-ax3.hist(raErrList_O/1e3, bins = Nbin)
+ax3.hist(raErrList_O/1e3, bins = Nbin, rwidth = rwidth)
 ax3.grid()
 ax3.set_title('Apoapsis Radius Error for Orbiter')
 ax3.set_xlabel('Apoapsis targeting error, km')
@@ -92,16 +132,16 @@ ax3.set_ylabel('Occurrnces')
 # Lifting probe range error histogram
 fig4 = plt.figure()
 ax4 = fig4.add_subplot(111)
-ax4.hist(params.p.rad * np.radians(sfErrList_P) * 1e3, bins = Nbin)
+ax4.hist(params.p.rad * np.radians(sfErrList_P), bins = Nbin, rwidth = rwidth)
 ax4.grid()
 ax4.set_title('Range Error for Guided Probe')
-ax4.set_xlabel('Range targeting error, m')
+ax4.set_xlabel('Range targeting error, km')
 ax4.set_ylabel('Occurrences')
 
 # Lifting probe altitude error histogram
 fig6 = plt.figure()
 ax6 = fig6.add_subplot(111)
-ax6.hist(hfErrList_P, bins = Nbin)
+ax6.hist(hfErrList_P, bins = Nbin, rwidth = rwidth)
 ax6.grid()
 ax6.set_title('Altitude Error for Guided Probe')
 ax6.set_xlabel('Altitude targeting error, m')
@@ -110,7 +150,7 @@ ax6.set_ylabel('Occurrences')
 # Lifting probe velocity error histogram
 fig7 = plt.figure()
 ax7 = fig7.add_subplot(111)
-ax7.hist(vfErrList_P, bins = Nbin)
+ax7.hist(vfErrList_P, bins = Nbin, rwidth = rwidth)
 ax7.grid()
 ax7.set_title('Velocity Error for Guided Probe')
 ax7.set_xlabel('Velocity targeting error, m/s')
@@ -119,10 +159,10 @@ ax7.set_ylabel('Occurrences')
 # Passive probe range error histogram
 fig8 = plt.figure()
 ax8 = fig8.add_subplot(111)
-ax8.hist(params.p.rad * np.radians(sfErrList_PBC) * 1e3, bins = Nbin)
+ax8.hist(params.p.rad * np.radians(sfErrList_PBC), bins = Nbin, rwidth = rwidth)
 ax8.grid()
 ax8.set_title('Range Error for Passive Probe')
-ax8.set_xlabel('Range targeting error, m')
+ax8.set_xlabel('Range targeting error, km')
 ax8.set_ylabel('Occurrences')
 
 # NOTE: don't need this one because passive probe terminates on altitude, so
@@ -139,7 +179,7 @@ ax8.set_ylabel('Occurrences')
 # Passive probe velocity error histogram
 fig10 = plt.figure()
 ax10 = fig10.add_subplot(111)
-ax10.hist(vfErrList_PBC, bins = Nbin)
+ax10.hist(vfErrList_PBC, bins = Nbin, rwidth = rwidth)
 ax10.grid()
 ax10.set_title('Velocity Error for Passive Probe')
 ax10.set_xlabel('Velocity targeting error, m/s')
