@@ -31,7 +31,7 @@ params.p = constants.MARS
 # =============================================================================
 # Load data
 # =============================================================================
-filename = '../results/AeroDrop_dispersed_475_0302092117.npz'
+filename = '../results/AeroDrop_dispersed_500_0302193435.npz'
 data = np.load(filename, allow_pickle = True)
 
 xxvecArr_O = data['xxvecArr_O']

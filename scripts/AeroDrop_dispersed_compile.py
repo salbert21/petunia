@@ -17,12 +17,12 @@ from datetime import datetime
 # Import raw data from each file and compile arrays
 # =============================================================================
 
-filenames = ['../results/AeroDrop_dispersed_72_0226102337.npz',
-             '../results/AeroDrop_dispersed_403_0302092046.npz']
-             # '../results/AeroDrop_dispersed_101_0226102714.npz',
-             # '../results/AeroDrop_dispersed_101_0226102719.npz',
-             # '../results/AeroDrop_dispersed_101_0226102723.npz',
-             # '../results/AeroDrop_dispersed_101_0226102730.npz']
+filenames = ['../results/AeroDrop_dispersed_5_0302092525.npz',
+             '../results/AeroDrop_dispersed_5_0302092528.npz',
+             '../results/AeroDrop_dispersed_5_0302092530.npz',
+             '../results/AeroDrop_dispersed_5_0302092532.npz',
+             '../results/AeroDrop_dispersed_5_0302092534.npz',
+             '../results/AeroDrop_dispersed_475_0302092117.npz']
 
 # initialize using first file
 for filename in filenames[0:1]:
