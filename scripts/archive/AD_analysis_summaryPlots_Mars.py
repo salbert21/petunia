@@ -34,7 +34,7 @@ QLstyle = 'dotted'
 ## Load file archive and get data
 filename = './../results/sweeps/Mars_6_20% low_0.25_180_0713014708.npz'
 data = np.load(filename, allow_pickle=True)
-params = data['params'][0] # array of 1
+# params = data['params'][0] # array of 1
 outsList = data['outsList']
 efpaList = data['efpaList']
 BCList = data['BCList']
@@ -83,7 +83,7 @@ ax1.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
 ## Load file archive and get data
 filename = './../results/sweeps/Mars_6_20% high_0.25_180_0713023126.npz'
 data = np.load(filename, allow_pickle=True)
-params = data['params'][0] # array of 1
+# params = data['params'][0] # array of 1
 outsList = data['outsList']
 efpaList = data['efpaList']
 BCList = data['BCList']
@@ -132,7 +132,7 @@ ax1.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
 ## Load file archive and get data
 filename = './../results/sweeps/Mars_6_nom_0.25_180_0713020834.npz'
 data = np.load(filename, allow_pickle=True)
-params = data['params'][0] # array of 1
+# params = data['params'][0] # array of 1
 outsList = data['outsList']
 efpaList = data['efpaList']
 BCList = data['BCList']
@@ -236,7 +236,7 @@ fig.legend(handles=[land_proxy, space_proxy, haf_proxy,
 ## Load file archive and get data
 filename = './../results/sweeps/Mars_6_20% low_0_0_0713010516.npz'
 data = np.load(filename, allow_pickle=True)
-params = data['params'][0] # array of 1
+# params = data['params'][0] # array of 1
 outsList = data['outsList']
 efpaList = data['efpaList']
 BCList = data['BCList']
@@ -279,7 +279,7 @@ ax2.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
 ## Load file archive and get data
 filename = './../results/sweeps/Mars_6_20% high_0_0_0713015055.npz'
 data = np.load(filename, allow_pickle=True)
-params = data['params'][0] # array of 1
+# params = data['params'][0] # array of 1
 outsList = data['outsList']
 efpaList = data['efpaList']
 BCList = data['BCList']
@@ -326,7 +326,7 @@ ax2.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
 ## Load file archive and get data
 filename = './../results/sweeps/Mars_6_nom_0_0_0713012902.npz'
 data = np.load(filename, allow_pickle=True)
-params = data['params'][0] # array of 1
+# params = data['params'][0] # array of 1
 outsList = data['outsList']
 efpaList = data['efpaList']
 BCList = data['BCList']
@@ -402,7 +402,7 @@ ax2.clabel(cp, inline = True, colors = QLcol, fontsize = 9, fmt = '%1.0f')
 ## Load file archive and get data
 filename = './../results/sweeps/Mars_6_20% low_0.25_0_0713020505.npz'
 data = np.load(filename, allow_pickle=True)
-params = data['params'][0] # array of 1
+# params = data['params'][0] # array of 1
 outsList = data['outsList']
 efpaList = data['efpaList']
 BCList = data['BCList']
@@ -445,7 +445,7 @@ ax3.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
 ## Load file archive and get data
 filename = './../results/sweeps/Mars_6_20% high_0.25_0_0713024452.npz'
 data = np.load(filename, allow_pickle=True)
-params = data['params'][0] # array of 1
+# params = data['params'][0] # array of 1
 outsList = data['outsList']
 efpaList = data['efpaList']
 BCList = data['BCList']
@@ -493,7 +493,7 @@ ax3.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
 ## Load file archive and get data
 filename = './../results/sweeps/Mars_6_nom_0.25_0_0713022425.npz'
 data = np.load(filename, allow_pickle=True)
-params = data['params'][0] # array of 1
+# params = data['params'][0] # array of 1
 outsList = data['outsList']
 efpaList = data['efpaList']
 BCList = data['BCList']

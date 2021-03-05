@@ -26,184 +26,184 @@ gstyle = 'dotted'
 qstyle = 'dashdot'
 QLstyle = 'dotted'
 
-# # =============================================================================
-# # First file: full-lift-down
-# # =============================================================================
+# =============================================================================
+# First file: full-lift-down
+# =============================================================================
 
-# ### Start with uncertainty bars on landline and spaceline
-# ## Load file archive and get data
-# filename = './../results/sweeps/Earth_11_20% low_0.25_180_0709192205.npz'
-# data = np.load(filename, allow_pickle=True)
-# params = data['params'][0] # array of 1
-# outsList = data['outsList']
-# efpaList = data['efpaList']
-# BCList = data['BCList']
+### Start with uncertainty bars on landline and spaceline
+## Load file archive and get data
+filename = './../results/sweeps/Earth_11_20% low_0.25_180_0709192205.npz'
+data = np.load(filename, allow_pickle=True)
+params = data['params'][0] # array of 1
+outsList = data['outsList']
+efpaList = data['efpaList']
+BCList = data['BCList']
 
-# ## Create mesh grid for contour plots, reshape result arrays
-# BCgrid, EFPAgrid = np.meshgrid(BCList, efpaList)
-# fpafgrid = np.reshape([out.fpaf for out in outsList], BCgrid.shape)
-# engfgrid = np.reshape([out.engf for out in outsList], BCgrid.shape)
+## Create mesh grid for contour plots, reshape result arrays
+BCgrid, EFPAgrid = np.meshgrid(BCList, efpaList)
+fpafgrid = np.reshape([out.fpaf for out in outsList], BCgrid.shape)
+engfgrid = np.reshape([out.engf for out in outsList], BCgrid.shape)
 
-# # find line between landing and aerocapture
-# landline_BC_low = BCList
-# landline_EFPA_low = []
-# for rind in range(fpafgrid.shape[1]):
-#     ind = next(ind for ind, val in enumerate(fpafgrid[:,rind])\
-#                if val < 0)
-#     landline_EFPA_low.append(efpaList[ind])
+# find line between landing and aerocapture
+landline_BC_low = BCList
+landline_EFPA_low = []
+for rind in range(fpafgrid.shape[1]):
+    ind = next(ind for ind, val in enumerate(fpafgrid[:,rind])\
+                if val < 0)
+    landline_EFPA_low.append(efpaList[ind])
     
-# # find line between aerocapture and escape
-# spaceline_BC_low = []
-# spaceline_EFPA_low = []
-# for rind in range(engfgrid.shape[1]):
-#     ind = [ind for ind, val in enumerate(engfgrid[:,rind]) if val < 0]
-#     if len(ind) == 0:
-#         break
-#     else:
-#         spaceline_BC_low.append(BCList[rind])
-#         spaceline_EFPA_low.append(efpaList[ind[0]])
+# find line between aerocapture and escape
+spaceline_BC_low = []
+spaceline_EFPA_low = []
+for rind in range(engfgrid.shape[1]):
+    ind = [ind for ind, val in enumerate(engfgrid[:,rind]) if val < 0]
+    if len(ind) == 0:
+        break
+    else:
+        spaceline_BC_low.append(BCList[rind])
+        spaceline_EFPA_low.append(efpaList[ind[0]])
         
-# ## Make countour plots
-# # fig = plt.figure(figsize = (6, 8.5))
-# # ax = fig.add_subplot(311)
+## Make countour plots
+# fig = plt.figure(figsize = (6, 8.5))
+# ax = fig.add_subplot(311)
 
 fig, (ax2, ax3) = plt.subplots(2, 1, sharex = True, sharey = True)
-# fig.set_size_inches(12, 12)
+fig.set_size_inches(12, 12)
 
-# ax1.grid()
-# ax1.set_title('full-lift-down', fontsize = 10)
+ax1.grid()
+ax1.set_title('full-lift-down', fontsize = 10)
 
-# # plot landline
-# ax1.plot(landline_EFPA_low, landline_BC_low, color = landcol,
-#         linewidth = 1, alpha = 0.3)
-# # plot spaceline
-# ax1.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
-#         linewidth = 1, alpha = 0.3)
+# plot landline
+ax1.plot(landline_EFPA_low, landline_BC_low, color = landcol,
+        linewidth = 1, alpha = 0.3)
+# plot spaceline
+ax1.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
+        linewidth = 1, alpha = 0.3)
 
-# ## Load file archive and get data
-# filename = './../results/sweeps/Earth_11_20% high_0.25_180_0709184117.npz'
-# data = np.load(filename, allow_pickle=True)
-# params = data['params'][0] # array of 1
-# outsList = data['outsList']
-# efpaList = data['efpaList']
-# BCList = data['BCList']
+## Load file archive and get data
+filename = './../results/sweeps/Earth_11_20% high_0.25_180_0709184117.npz'
+data = np.load(filename, allow_pickle=True)
+params = data['params'][0] # array of 1
+outsList = data['outsList']
+efpaList = data['efpaList']
+BCList = data['BCList']
 
-# ## Create mesh grid for contour plots, reshape result arrays
-# BCgrid, EFPAgrid = np.meshgrid(BCList, efpaList)
-# fpafgrid = np.reshape([out.fpaf for out in outsList], BCgrid.shape)
-# engfgrid = np.reshape([out.engf for out in outsList], BCgrid.shape)
+## Create mesh grid for contour plots, reshape result arrays
+BCgrid, EFPAgrid = np.meshgrid(BCList, efpaList)
+fpafgrid = np.reshape([out.fpaf for out in outsList], BCgrid.shape)
+engfgrid = np.reshape([out.engf for out in outsList], BCgrid.shape)
 
-# # find line between landing and aerocapture
-# landline_BC_high = BCList
-# landline_EFPA_high = []
-# for rind in range(fpafgrid.shape[1]):
-#     ind = next(ind for ind, val in enumerate(fpafgrid[:,rind])\
-#                if val < 0)
-#     landline_EFPA_high.append(efpaList[ind])
+# find line between landing and aerocapture
+landline_BC_high = BCList
+landline_EFPA_high = []
+for rind in range(fpafgrid.shape[1]):
+    ind = next(ind for ind, val in enumerate(fpafgrid[:,rind])\
+                if val < 0)
+    landline_EFPA_high.append(efpaList[ind])
     
-# # find line between aerocapture and escape
-# spaceline_BC_high = []
-# spaceline_EFPA_high = []
-# for rind in range(engfgrid.shape[1]):
-#     ind = [ind for ind, val in enumerate(engfgrid[:,rind]) if val < 0]
-#     if len(ind) == 0:
-#         break
-#     else:
-#         spaceline_BC_high.append(BCList[rind])
-#         spaceline_EFPA_high.append(efpaList[ind[0]])
+# find line between aerocapture and escape
+spaceline_BC_high = []
+spaceline_EFPA_high = []
+for rind in range(engfgrid.shape[1]):
+    ind = [ind for ind, val in enumerate(engfgrid[:,rind]) if val < 0]
+    if len(ind) == 0:
+        break
+    else:
+        spaceline_BC_high.append(BCList[rind])
+        spaceline_EFPA_high.append(efpaList[ind[0]])
         
-# ## Make countour plots
+## Make countour plots
 
-# # plot landline
-# ax1.plot(landline_EFPA_high, landline_BC_high, color = landcol,
-#         linewidth = 1, alpha = 0.3)
-# # plot spaceline
-# ax1.plot(spaceline_EFPA_high, spaceline_BC_high, color = spacecol,
-#         linewidth = 1, alpha = 0.3)
+# plot landline
+ax1.plot(landline_EFPA_high, landline_BC_high, color = landcol,
+        linewidth = 1, alpha = 0.3)
+# plot spaceline
+ax1.plot(spaceline_EFPA_high, spaceline_BC_high, color = spacecol,
+        linewidth = 1, alpha = 0.3)
 
-# # fill in uncertainty regions
-# ax1.fill_betweenx(landline_BC_low, landline_EFPA_low, landline_EFPA_high,
-#                 facecolor = landcol, alpha = 0.3)
-# ax1.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
-#                  facecolor = spacecol, alpha = 0.3)
+# fill in uncertainty regions
+ax1.fill_betweenx(landline_BC_low, landline_EFPA_low, landline_EFPA_high,
+                facecolor = landcol, alpha = 0.3)
+ax1.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
+                  facecolor = spacecol, alpha = 0.3)
 
-# ### Now nominal atmosphere
+### Now nominal atmosphere
 
-# ## Load file archive and get data
-# filename = './../results/sweeps/Earth_11_nom_0.25_180_0709182147.npz'
-# data = np.load(filename, allow_pickle=True)
-# params = data['params'][0] # array of 1
-# outsList = data['outsList']
-# efpaList = data['efpaList']
-# BCList = data['BCList']
+## Load file archive and get data
+filename = './../results/sweeps/Earth_11_nom_0.25_180_0709182147.npz'
+data = np.load(filename, allow_pickle=True)
+params = data['params'][0] # array of 1
+outsList = data['outsList']
+efpaList = data['efpaList']
+BCList = data['BCList']
 
-# ## Create mesh grid for contour plots, reshape result arrays
-# BCgrid, EFPAgrid = np.meshgrid(BCList, efpaList)
+## Create mesh grid for contour plots, reshape result arrays
+BCgrid, EFPAgrid = np.meshgrid(BCList, efpaList)
 
-# ggrid = np.reshape([out.gpeak for out in outsList], BCgrid.shape)
-# hafgrid = np.reshape([out.haf for out in outsList], BCgrid.shape)
-# qgrid = np.reshape([out.qpeak for out in outsList], BCgrid.shape)
-# QLgrid = np.reshape([out.Qload for out in outsList], BCgrid.shape)
-# fpafgrid = np.reshape([out.fpaf for out in outsList], BCgrid.shape)
-# engfgrid = np.reshape([out.engf for out in outsList], BCgrid.shape)
+ggrid = np.reshape([out.gpeak for out in outsList], BCgrid.shape)
+hafgrid = np.reshape([out.haf for out in outsList], BCgrid.shape)
+qgrid = np.reshape([out.qpeak for out in outsList], BCgrid.shape)
+QLgrid = np.reshape([out.Qload for out in outsList], BCgrid.shape)
+fpafgrid = np.reshape([out.fpaf for out in outsList], BCgrid.shape)
+engfgrid = np.reshape([out.engf for out in outsList], BCgrid.shape)
 
-# ##  Data pruning
-# hafgrid[hafgrid < 0] = np.inf # set haf to inf for hyperbolic cases
-# hafgrid[fpafgrid < 0] = np.nan # ignore haf values for landed cases
+##  Data pruning
+hafgrid[hafgrid < 0] = np.inf # set haf to inf for hyperbolic cases
+hafgrid[fpafgrid < 0] = np.nan # ignore haf values for landed cases
 
-# # find line between landing and aerocapture
-# landline_BC = BCList
-# landline_EFPA = []
-# for rind in range(fpafgrid.shape[1]):
-#     ind = next(ind for ind, val in enumerate(fpafgrid[:,rind])\
-#                if val < 0)
-#     landline_EFPA.append(efpaList[ind])
+# find line between landing and aerocapture
+landline_BC = BCList
+landline_EFPA = []
+for rind in range(fpafgrid.shape[1]):
+    ind = next(ind for ind, val in enumerate(fpafgrid[:,rind])\
+                if val < 0)
+    landline_EFPA.append(efpaList[ind])
     
-# # find line between aerocapture and escape
-# spaceline_BC = []
-# spaceline_EFPA = []
-# for rind in range(engfgrid.shape[1]):
-#     ind = [ind for ind, val in enumerate(engfgrid[:,rind]) if val < 0]
-#     if len(ind) == 0:
-#         break
-#     else:
-#         spaceline_BC.append(BCList[rind])
-#         spaceline_EFPA.append(efpaList[ind[0]])
+# find line between aerocapture and escape
+spaceline_BC = []
+spaceline_EFPA = []
+for rind in range(engfgrid.shape[1]):
+    ind = [ind for ind, val in enumerate(engfgrid[:,rind]) if val < 0]
+    if len(ind) == 0:
+        break
+    else:
+        spaceline_BC.append(BCList[rind])
+        spaceline_EFPA.append(efpaList[ind[0]])
 
 
 
-# # plot landline
-# ax1.plot(landline_EFPA, landline_BC, color = landcol, linewidth = 3,
-#         label = 'cutoff b/w orbiters & probes')
-# # plot spaceline
-# ax1.plot(spaceline_EFPA, spaceline_BC, color = spacecol, linewidth = 3,
-#         label = 'cutoff b/w aerocapture & escape')
+# plot landline
+ax1.plot(landline_EFPA, landline_BC, color = landcol, linewidth = 3,
+        label = 'cutoff b/w orbiters & probes')
+# plot spaceline
+ax1.plot(spaceline_EFPA, spaceline_BC, color = spacecol, linewidth = 3,
+        label = 'cutoff b/w aerocapture & escape')
 
-# # contours:
-# haflevels = [25e3, 1e5, 3e5]
-# cp = ax1.contour(EFPAgrid.T, BCgrid.T, hafgrid.T, haflevels,
-#                 colors = hafcol, linestyles = hafstyle)
-# ax1.clabel(cp, inline = True, colors = hafcol, fontsize = 9, fmt = '%1.0f')
+# contours:
+haflevels = [25e3, 1e5, 3e5]
+cp = ax1.contour(EFPAgrid.T, BCgrid.T, hafgrid.T, haflevels,
+                colors = hafcol, linestyles = hafstyle)
+ax1.clabel(cp, inline = True, colors = hafcol, fontsize = 9, fmt = '%1.0f')
 
-# glevels = [25, 35, 40, 45]
-# cp = ax1.contour(EFPAgrid.T, BCgrid.T, ggrid.T, glevels,
-#                 colors = gcol, linestyles = gstyle)
-# ax1.clabel(cp, inline = True, colors = gcol, fontsize = 9, fmt = '%1.0f')
+glevels = [25, 35, 40, 45]
+cp = ax1.contour(EFPAgrid.T, BCgrid.T, ggrid.T, glevels,
+                colors = gcol, linestyles = gstyle)
+ax1.clabel(cp, inline = True, colors = gcol, fontsize = 9, fmt = '%1.0f')
 
-# qlevels = [50, 150, 250, 350]
-# cp = ax1.contour(EFPAgrid.T, BCgrid.T, qgrid.T, qlevels,
-#                 colors = qcol, linestyles = qstyle)
-# ax1.clabel(cp, inline = True, colors = qcol, fontsize = 9, fmt = '%1.0f')
+qlevels = [50, 150, 250, 350]
+cp = ax1.contour(EFPAgrid.T, BCgrid.T, qgrid.T, qlevels,
+                colors = qcol, linestyles = qstyle)
+ax1.clabel(cp, inline = True, colors = qcol, fontsize = 9, fmt = '%1.0f')
 
-# QLlevels = [5e3, 10e3, 15e3]
-# cp = ax1.contour(EFPAgrid.T, BCgrid.T, QLgrid.T, QLlevels,
-#                 colors = QLcol, linestyles = QLstyle)
-# ax1.clabel(cp, inline = True, colors = QLcol, fontsize = 9, fmt = '%1.0f')
+QLlevels = [5e3, 10e3, 15e3]
+cp = ax1.contour(EFPAgrid.T, BCgrid.T, QLgrid.T, QLlevels,
+                colors = QLcol, linestyles = QLstyle)
+ax1.clabel(cp, inline = True, colors = QLcol, fontsize = 9, fmt = '%1.0f')
 
-# # ## shrink plot to make room for legend
-# # box = ax1.get_position()
-# # ax1.set_position([box.x0, box.y0 ,
-# #                  box.width, box.height * 0.9])
+# ## shrink plot to make room for legend
+# box = ax1.get_position()
+# ax1.set_position([box.x0, box.y0 ,
+#                  box.width, box.height * 0.9])
 
 
 
