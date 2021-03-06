@@ -12,7 +12,7 @@ import numpy as np
 import ODEs
 from scipy.integrate import solve_ivp
 from atm import getMCdens
-import constants
+import planetaryconstants as constants
 
 class params:
     def __init__(self, dMode):

@@ -12,7 +12,7 @@ import time
 import ODEs
 from sim import simRun
 from atm import getMCdens
-import constants
+import planetaryconstants as constants
 
 class params:
     def __init__(self, dMode):

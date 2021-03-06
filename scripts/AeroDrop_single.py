@@ -10,7 +10,7 @@ import time
 import matplotlib.pyplot as plt
 import sys
 
-import constants
+import planetaryconstants as constants
 import ODEs
 from sim import Params, Outs, mainAD
 
