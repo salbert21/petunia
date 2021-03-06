@@ -158,7 +158,7 @@ def mainAD(params, tspan, events, outs):
                                                   params.bank, params,
                                                   returnForces=True)
     # compute g-load at each time
-    gload = (np.linalg.norm(FLvec_N + FDvec_N - Fgvec_N, axis=0) / params.m)\
+    gload = (np.linalg.norm(FLvec_N + FDvec_N, axis=0) / params.m)\
         / (constants.G0 / 1e3) # divide g0 by 1000 to get it in km/s^2 units
         
     gpeak = gload.max()
