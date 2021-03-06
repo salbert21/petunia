@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import sys
 
-import constants
+import planetaryconstants as constants
 import ODEs
 from sim import Params, Outs, mainAD
 
