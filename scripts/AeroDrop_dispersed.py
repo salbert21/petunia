@@ -40,7 +40,7 @@ mpl.rcParams.update({'font.size': 15})
 # SETTINGS
 # =============================================================================
 # number of Monte Carlo runs
-Nmc = 5
+Nmc = 0
 
 # updates on during nominal profiles?
 updatesNominal = False
@@ -488,7 +488,7 @@ paramsNom_P.sig02 = 180
 # target states and constraints
 paramsNom_P.sigf = 60 # fixed final constraint, chosen arbitrarily
 paramsNom_P.sf = 0 # always target 0 range-to-go
-paramsNom_P.rf = (15 + paramsNom_P.p.rad) * 1e3 # 10 km altitude
+paramsNom_P.rf = (15 + paramsNom_P.p.rad) * 1e3 # 15 km altitude
 paramsNom_P.vf = 300 # from nominal trajectory
 # comput target e from target r and v values
 paramsNom_P.ef = paramsNom_P.p.mu * 1e9 / paramsNom_P.rf - paramsNom_P.vf**2 / 2
@@ -637,7 +637,7 @@ lat0 = xxvec3[2,0]
 latf = xxvec3[2,-1]
 dlon = abs(lonf - lon0)
 
-dsig = np.arccos(np.sin(lat0) * np.sin(latf)\
+dsig2 = np.arccos(np.sin(lat0) * np.sin(latf)\
                  + np.cos(lat0) * np.cos(latf) * np.cos(dlon))
     
 # print
@@ -646,7 +646,7 @@ print('Final altitude: {:.3f} km'.format(h[-1]))
 print('Final velocity {:.3f} m/s'.format(vmag[-1]*1e3))
 print('Final Mach number: {:.3f}'.format(Mvec[-1]))
 print('Final dynamic pressure: {:.3f} Pa'.format(Qinc[-1]))
-print('Range traversed: {:.3f} rad\n'.format(dsig))
+print('Range traversed: {:.3f} rad\n'.format(dsig2))
 
 # =============================================================================
 # Orbiter Dispersions Setup
