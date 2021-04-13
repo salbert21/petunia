@@ -26,6 +26,34 @@ def norm(v):
     '''
     return np.sqrt(v[0]**2 + v[1]**2 + v[2]**2)
 
+def TBP(t, yy, params):
+    '''
+    two-body problem Keplerian EOMs.
+    INPUTS:
+        t: time (not used)
+        yy: state vector, [position; velocity] in INERTIAL CARTESIAN frame
+        params: contains params.p.mu
+    OUTPUTS:
+        dydt: state derivatives
+    '''
+    x = yy[0]
+    y = yy[1]
+    z = yy[2]
+    
+    mu_r3 = params.p.mu / np.sqrt(x**2 + y**2 + z**2)**3
+    
+    dydt = np.empty(6)
+    dydt[:] = np.NaN
+    dydt[0] = yy[3]
+    dydt[1] = yy[4]
+    dydt[2] = yy[5]
+    dydt[3] = - mu_r3 * x
+    dydt[4] = - mu_r3 * y
+    dydt[5] = - mu_r3 * z
+    
+    return dydt
+    
+
 def sphericalEntryEOMsAug(t, yy, sig0, e0, params):
     '''
     Like sphericalEntryEOMs from ASEN 6015, but dimensional and with GRAM dens.
