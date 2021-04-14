@@ -59,12 +59,30 @@ def marvelProbe(params):
     # split probe into 4 separate probes
     rDir = x0vecCenter / np.linalg.norm(x0vecCenter)
     vDir = v0vecCenter / np.linalg.norm(v0vecCenter)
+    hDir = np.cross(rDir, vDir)
+    hDir = hDir / np.linalg.norm(hDir)
     
-    v0vecDown = v0vecCenter - params.DV * rDir
-    v0vecUp = v0vecCenter + params.DV * rDir
+    thDir = np.cross(hDir, rDir)
+    thDir = thDir / np.linalg.norm(thDir)
     
-    v0vecLeft = v0vecCenter - params.DV * vDir
-    v0vecRight = v0vecCenter + params.DV * vDir
+    phi = np.radians(0)
+    eta = np.radians(0)
+    
+    aDir = np.cos(phi) * thDir + np.sin(phi) * hDir
+    bDir = -aDir
+    cDir = np.cos(eta) * hDir - np.sin(eta) * thDir
+    dDir = -cDir
+    
+    
+    # pdb.set_trace()
+    
+    # print(np.degrees(np.arccos(np.dot(-rDir, vDir))))
+    
+    v0vecDown = v0vecCenter + params.DV * aDir
+    v0vecUp = v0vecCenter + params.DV * bDir
+    
+    v0vecLeft = v0vecCenter + params.DV * cDir
+    v0vecRight = v0vecCenter + params.DV * dDir
     
     
     xx0vecDown = np.hstack([x0vecCenter, v0vecDown])
@@ -72,13 +90,15 @@ def marvelProbe(params):
     xx0vecLeft = np.hstack([x0vecCenter, v0vecLeft])
     xx0vecRight = np.hstack([x0vecCenter, v0vecRight])
     
+    # pdb.set_trace()
+    
     # propagate each probe forward until atm interface
     eventEI = lambda t, y: ODEs.above_max_alt(t, y, params)
     eventEI.terminal = True
     
     paramsDown = copy.deepcopy(params)
     solDown = solve_ivp(lambda t, y: ODEs.TBP(t, y, params),
-                        (0, params.tback), xx0vecDown, rtol = params.rtol,
+                        (0, 10 * params.tback), xx0vecDown, rtol = params.rtol,
                         atol = params.atol, events = (eventEI))
     paramsDown.x0 = solDown.y[:3,-1]
     paramsDown.v0 = solDown.y[3:,-1]
@@ -86,7 +106,7 @@ def marvelProbe(params):
     
     paramsUp = copy.deepcopy(params)
     solUp = solve_ivp(lambda t, y: ODEs.TBP(t, y, params),
-                        (0, params.tback), xx0vecUp, rtol = params.rtol,
+                        (0, 10 * params.tback), xx0vecUp, rtol = params.rtol,
                         atol = params.atol, events = (eventEI))
     paramsUp.x0 = solUp.y[:3,-1]
     paramsUp.v0 = solUp.y[3:,-1]
@@ -94,7 +114,7 @@ def marvelProbe(params):
     
     paramsLeft = copy.deepcopy(params)
     solLeft = solve_ivp(lambda t, y: ODEs.TBP(t, y, params),
-                        (0, params.tback), xx0vecLeft, rtol = params.rtol,
+                        (0, 10 * params.tback), xx0vecLeft, rtol = params.rtol,
                         atol = params.atol, events = (eventEI))
     paramsLeft.x0 = solLeft.y[:3,-1]
     paramsLeft.v0 = solLeft.y[3:,-1]
@@ -102,7 +122,7 @@ def marvelProbe(params):
     
     paramsRight = copy.deepcopy(params)
     solRight = solve_ivp(lambda t, y: ODEs.TBP(t, y, params),
-                        (0, params.tback), xx0vecRight, rtol = params.rtol,
+                        (0, 10 * params.tback), xx0vecRight, rtol = params.rtol,
                         atol = params.atol, events = (eventEI))
     paramsRight.x0 = solRight.y[:3,-1]
     paramsRight.v0 = solRight.y[3:,-1]
@@ -120,6 +140,10 @@ def marvelProbe(params):
     outsLeft = mainAD(paramsLeft, params.tspan, params.events, outsLeft)
     outsRight = mainAD(paramsRight, params.tspan, params.events, outsRight)
     
+    # pdb.set_trace()
+    
+    print(outsLeft.lon0)
+    print(outsLeft.lat0)
     
     
     
@@ -163,7 +187,7 @@ params.vmagWR = 6
 
 ### SET SEPARATION DELTA-V AND TIMING
 params.DV = 1e-3 # km/s
-params.tback = 60*60 # s
+params.tback = 1 * 60*60 # s
 
 ### TIME VECTOR AND EXIT CONDITIONS
 params.tspan = (params.tback, 30000)
@@ -176,6 +200,7 @@ event1 = lambda t, y: ODEs.below_min_alt(t, y, params)
 event1.terminal = True
 event2 = lambda t, y: ODEs.above_max_alt(t, y, params)
 event2.terminal = True
+event2.direction = 1
 events = (event1, event2)
 params.events = events
 
@@ -188,18 +213,73 @@ params.atol = 1e-11
 # =============================================================================
 # Call main MARVEL probe function
 # =============================================================================
-outsDown, outsUp, outsLeft, outsRight = marvelProbe(params)
+# outsDown, outsUp, outsLeft, outsRight = marvelProbe(params)
+
+
+# =============================================================================
+# Plots
+# =============================================================================
+fig = plt.figure()
+ax = fig.add_subplot(111)
+
+# fig2 = plt.figure()
+# ax2 = fig2.add_subplot(111)
+
+# ax.plot(outsUp.lonf, outsUp.latf, 'o', color = 'C0', label = 'Up')
+# ax.plot(outsDown.lonf, outsDown.latf, 'o', color = 'C1', label = 'Down')
+# ax.plot(outsLeft.lonf, outsLeft.latf, 'o', color = 'C2', label = 'Left')
+# ax.plot(outsRight.lonf, outsRight.latf, 'o', color = 'C3', label = 'Right')
+
+
+
+# print('\napproximate up-down distance:')
+# print(np.linalg.norm(outsDown.rvec_Nf - outsUp.rvec_Nf))
+
+# print('approximate left-right distance:')
+# print(np.linalg.norm(outsLeft.rvec_Nf - outsRight.rvec_Nf))
+
+
+DVList = [1, 2, 3, 4, 5, 6]
+tbackList = [0.5, 1, 1.5, 2, 2.5, 3]
+# tbackList = [2, 4, 6, 8, 10]
+# tbackList = [3]
+
+# for i, DV in enumerate(DVList):
+#     params.DV = DV * 1e-3
+
+for i, tback in enumerate(tbackList):
+    params.tback = tback * 3600
+    
+    outsDown, outsUp, outsLeft, outsRight = marvelProbe(params)
+    
+    ax.plot(outsUp.lonf, outsUp.latf, 'o', color = 'C0', label = 'Up')
+    ax.plot(outsDown.lonf, outsDown.latf, 'o', color = 'C1', label = 'Down')
+    ax.plot(outsLeft.lonf, outsLeft.latf, 'o', color = 'C2', label = 'Left')
+    ax.plot(outsRight.lonf, outsRight.latf, 'o', color = 'C3', label = 'Right')
+    
+    # h = np.linalg.norm(outsLeft.rvec_N, axis = 0) - params.p.rad #/1e3
+    # v = np.linalg.norm(outsLeft.vvec_N, axis = 0)
+    # ax2.plot(v, h)
+    
+    if i == 0:
+        ax.legend()
+        
+print('\napproximate up-down distance:')
+print(np.linalg.norm(outsDown.rvec_Nf - outsUp.rvec_Nf))
+
+print('approximate left-right distance:')
+print(np.linalg.norm(outsLeft.rvec_Nf - outsRight.rvec_Nf))
 
 
 
 
 
+ax.set_xlabel('longitude, deg')
+ax.set_ylabel('latitude, deg')
+# ax.legend()
+ax.grid()
+ax.axis('equal')
 
 
-
-
-
-
-
-
+# ax2.grid()
 

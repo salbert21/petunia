@@ -356,7 +356,50 @@ def getAzimuth(lon1, lat1, lon2, lat2):
     Az = np.arctan2(x,y)
     
     return Az
+
+def greatCircleDist(lon1, lat1, lon2, lat2, params):
+    '''
+    Computes the great-circle distance between two points in km
+    '''
     
+    dlon = abs(lon2 - lon1)
+    dsig = np.arccos(np.sin(lat1) * np.sin(lat2)\
+                     + np.cos(lat1) * np.cos(lat2) * np.cos(dlon))
+    d = dsig * params.p.rad
+    
+    return d
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
     
     

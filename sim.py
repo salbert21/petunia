@@ -34,7 +34,9 @@ def simRun(params, tspan, events, **options):
                     # 1e-10 maintains about 5 sig figs of accuracy
     if 'verbose' in options:
         if options['verbose']:
-            print('BC: %.2f, EFPA_WR: %.2f' % (params.BC, params.efpaWR))
+            # print('BC: %.2f, EFPA_WR: %.2f' % (params.BC, params.efpaWR))
+            print('EFPA_WR: {0:.2f} deg, vmag_WR: {1:.3f} m/s'\
+                  .format(params.efpaWR, params.vmagWR*1e3))
             print(sol.message)
     
     if not sol.success:
