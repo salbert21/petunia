@@ -6,23 +6,20 @@ Created on Tue Apr 13 12:08:55 2021
 
 @author: Samuel Albert
 """
+
+from scipy.integrate import solve_ivp
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+import numpy as np
+import copy
+import sys
 import pdb
 
-import numpy as np
-import time
-import matplotlib.pyplot as plt
-import sys
-import scipy.interpolate as interp
-from scipy.integrate import solve_ivp
-import copy
-
+from conversions import LLAEHV2RV, Vinf2VN, greatCircleDistDeg
 import planetaryconstants as constants
-from conversions import LLAEHV2RV, Vinf2VN
 import ODEs
 from sim import Params, Outs, mainAD
-from atm import getRho_from_table
 
-tic = time.time()
 plt.close('all')
 
 # =============================================================================
@@ -73,11 +70,6 @@ def marvelProbe(params):
     cDir = np.cos(eta) * hDir - np.sin(eta) * thDir
     dDir = -cDir
     
-    
-    # pdb.set_trace()
-    
-    # print(np.degrees(np.arccos(np.dot(-rDir, vDir))))
-    
     v0vecDown = v0vecCenter + params.DV * aDir
     v0vecUp = v0vecCenter + params.DV * bDir
     
@@ -89,8 +81,6 @@ def marvelProbe(params):
     xx0vecUp = np.hstack([x0vecCenter, v0vecUp])
     xx0vecLeft = np.hstack([x0vecCenter, v0vecLeft])
     xx0vecRight = np.hstack([x0vecCenter, v0vecRight])
-    
-    # pdb.set_trace()
     
     # propagate each probe forward until atm interface
     eventEI = lambda t, y: ODEs.above_max_alt(t, y, params)
@@ -135,23 +125,47 @@ def marvelProbe(params):
     outsLeft = Outs()
     outsRight = Outs()
     
-    outsDown = mainAD(paramsDown, params.tspan, params.events, outsDown)
-    outsUp = mainAD(paramsUp, params.tspan, params.events, outsUp)
-    outsLeft = mainAD(paramsLeft, params.tspan, params.events, outsLeft)
-    outsRight = mainAD(paramsRight, params.tspan, params.events, outsRight)
-    
-    # pdb.set_trace()
-    
-    print(outsLeft.lon0)
-    print(outsLeft.lat0)
-    
+    outsDown = mainAD(paramsDown, params.tspan, params.events, outsDown,
+                      verbose = False)
+    outsUp = mainAD(paramsUp, params.tspan, params.events, outsUp,
+                    verbose = False)
+    outsLeft = mainAD(paramsLeft, params.tspan, params.events, outsLeft,
+                      verbose = False)
+    outsRight = mainAD(paramsRight, params.tspan, params.events, outsRight,
+                       verbose = False)
     
     
+    # make sure that all probes enter atm at least 1 km away from orbiter
+    dista = greatCircleDistDeg(params.lon, params.lat,
+                               outsDown.lon0, outsDown.lat0, params)
+    distb = greatCircleDistDeg(params.lon, params.lat,
+                               outsUp.lon0, outsUp.lat0, params)
+    distc = greatCircleDistDeg(params.lon, params.lat,
+                               outsLeft.lon0, outsLeft.lat0, params)
+    distd = greatCircleDistDeg(params.lon, params.lat,
+                               outsRight.lon0, outsRight.lat0, params)
     
-    return outsDown, outsUp, outsLeft, outsRight
-
-
-
+    if min(dista, distb, distc, distd) < 1:
+        sys.exit('a probe entered the atmosphere within {0:.3f} km of the'\
+                 ' orbtier'.format(min(dista, distb, distc, distd)))
+    
+    # find minimum distance between two landing locations
+    distAB = greatCircleDistDeg(outsDown.lonf, outsDown.latf,
+                                outsUp.lonf, outsUp.latf, params)
+    distAC = greatCircleDistDeg(outsDown.lonf, outsDown.latf,
+                                outsLeft.lonf, outsLeft.latf, params)
+    distAD = greatCircleDistDeg(outsDown.lonf, outsDown.latf,
+                                outsRight.lonf, outsRight.latf, params)
+    distBC = greatCircleDistDeg(outsUp.lonf, outsUp.latf,
+                                outsLeft.lonf, outsLeft.latf, params)
+    distBD = greatCircleDistDeg(outsUp.lonf, outsUp.latf,
+                                outsRight.lonf, outsRight.latf, params)
+    distCD = greatCircleDistDeg(outsLeft.lonf, outsLeft.latf,
+                                outsRight.lonf, outsRight.latf, params)
+    minDist = min(distAB, distAC, distAD, distBC, distBD, distCD)
+    maxDist = max(distAB, distAC, distAD, distBC, distBD, distCD)
+    
+    return outsDown, outsUp, outsLeft, outsRight, (minDist, maxDist)
 
 
 # =============================================================================
@@ -185,12 +199,12 @@ params.efpaWR = -12
 params.hdaWR = 0
 params.vmagWR = 6
 
-### SET SEPARATION DELTA-V AND TIMING
-params.DV = 1e-3 # km/s
-params.tback = 1 * 60*60 # s
+### SET DEFAULT SEPARATION DELTA-V AND TIMING
+DVnom = 1e-3 # km/s
+tbacknom = 1 * 60*60 # s
 
 ### TIME VECTOR AND EXIT CONDITIONS
-params.tspan = (params.tback, 30000)
+params.tspan = (tbacknom, 30000)
 
 # EXIT CONDITIONS:
 params.hmin = 10
@@ -209,77 +223,98 @@ params.rtol = 1e-11
 params.atol = 1e-11
 
 
-
 # =============================================================================
-# Call main MARVEL probe function
+# Vary Separation Delta-V
 # =============================================================================
-# outsDown, outsUp, outsLeft, outsRight = marvelProbe(params)
-
-
-# =============================================================================
-# Plots
-# =============================================================================
-fig = plt.figure()
-ax = fig.add_subplot(111)
-
-# fig2 = plt.figure()
-# ax2 = fig2.add_subplot(111)
-
-# ax.plot(outsUp.lonf, outsUp.latf, 'o', color = 'C0', label = 'Up')
-# ax.plot(outsDown.lonf, outsDown.latf, 'o', color = 'C1', label = 'Down')
-# ax.plot(outsLeft.lonf, outsLeft.latf, 'o', color = 'C2', label = 'Left')
-# ax.plot(outsRight.lonf, outsRight.latf, 'o', color = 'C3', label = 'Right')
-
-
-
-# print('\napproximate up-down distance:')
-# print(np.linalg.norm(outsDown.rvec_Nf - outsUp.rvec_Nf))
-
-# print('approximate left-right distance:')
-# print(np.linalg.norm(outsLeft.rvec_Nf - outsRight.rvec_Nf))
-
+print('\n\nVARYING SEPARATION DELTA-V:')
+fig1 = plt.figure()
+ax1 = fig1.add_subplot(111)
+ax1.set_xlabel('longitude, deg')
+ax1.set_ylabel('latitude, deg')
+ax1.set_title('Landing locations for varying $\Delta$V, separation at'\
+              ' E-{0:.0f} minutes'.format(tbacknom/60))
+ax1.grid()
+cmap = mpl.cm.get_cmap('viridis')
 
 DVList = [1, 2, 3, 4, 5, 6]
-tbackList = [0.5, 1, 1.5, 2, 2.5, 3]
-# tbackList = [2, 4, 6, 8, 10]
-# tbackList = [3]
 
-# for i, DV in enumerate(DVList):
-#     params.DV = DV * 1e-3
+cList = np.linspace(1, 0, len(DVList))
+cList = cmap(cList)
+legendElements = [None] * len(cList)
+
+for i, DV in enumerate(DVList):
+    params.DV = DV / 1e3
+    params.tback = tbacknom
+    
+    outsDown, outsUp, outsLeft, outsRight, dists = marvelProbe(params)
+    
+    ax1.plot(outsUp.lonf, outsUp.latf, 'o', color = cList[i])
+    ax1.plot(outsDown.lonf, outsDown.latf, 'o', color = cList[i])
+    ax1.plot(outsLeft.lonf, outsLeft.latf, 's', color = cList[i])
+    ax1.plot(outsRight.lonf, outsRight.latf, 's', color = cList[i])
+    
+    legendElements[i] = mpl.patches.Patch(facecolor = cList[i],
+                                          label = r'$\Delta$V = {0:.0f} m/s'\
+                                              .format(DV))
+    
+    print('\nDV = {0:.2f} m/s, separation at E-{1:.0f} minutes:'\
+          .format(params.DV*1e3, params.tback/60))
+    print('Separation (min, max) of ({0:.3f}, {1:.3f}) km'\
+          .format(dists[0], dists[1]))
+
+cirEl = mpl.lines.Line2D([0], [0], marker = 'o', color = 'w',
+                         label = '+/- along-track $\Delta$V', markersize = 10,
+                         markerfacecolor = 'k')
+legendElements.append(cirEl)
+sqEl = mpl.lines.Line2D([0], [0], marker = 's', color = 'w',
+                         label = '+/- cross-track $\Delta$V', markersize = 10,
+                         markerfacecolor = 'k')
+legendElements.append(sqEl)
+ax1.legend(handles = legendElements)
+
+# =============================================================================
+# Vary Separation Timing
+# =============================================================================
+print('\n\nVARYING SEPARATION TIMING:')
+fig2 = plt.figure()
+ax2 = fig2.add_subplot(111)
+ax2.set_xlabel('longitude, deg')
+ax2.set_ylabel('latitude, deg')
+ax2.set_title('Landing locations for varying separation time, $\Delta$V = '\
+              ' {0:.0f} m/s'.format(DVnom*1e3))
+ax2.grid()
+
+tbackList = [0.5, 1, 1.5, 2, 2.5, 3]
+
+cList = np.linspace(1, 0, len(tbackList))
+cList = cmap(cList)
+legendElements = [None] * len(cList)
 
 for i, tback in enumerate(tbackList):
-    params.tback = tback * 3600
+    params.DV = DVnom
+    params.tback = tback * 60 * 60
     
-    outsDown, outsUp, outsLeft, outsRight = marvelProbe(params)
+    outsDown, outsUp, outsLeft, outsRight, dists = marvelProbe(params)
     
-    ax.plot(outsUp.lonf, outsUp.latf, 'o', color = 'C0', label = 'Up')
-    ax.plot(outsDown.lonf, outsDown.latf, 'o', color = 'C1', label = 'Down')
-    ax.plot(outsLeft.lonf, outsLeft.latf, 'o', color = 'C2', label = 'Left')
-    ax.plot(outsRight.lonf, outsRight.latf, 'o', color = 'C3', label = 'Right')
+    ax2.plot(outsUp.lonf, outsUp.latf, 'o', color = cList[i])
+    ax2.plot(outsDown.lonf, outsDown.latf, 'o', color = cList[i])
+    ax2.plot(outsLeft.lonf, outsLeft.latf, 's', color = cList[i])
+    ax2.plot(outsRight.lonf, outsRight.latf, 's', color = cList[i])
     
-    # h = np.linalg.norm(outsLeft.rvec_N, axis = 0) - params.p.rad #/1e3
-    # v = np.linalg.norm(outsLeft.vvec_N, axis = 0)
-    # ax2.plot(v, h)
+    legendElements[i] = mpl.patches.Patch(facecolor = cList[i],
+                                          label = 'E-{0:.0f} min.'\
+                                              .format(tback * 60))
     
-    if i == 0:
-        ax.legend()
-        
-print('\napproximate up-down distance:')
-print(np.linalg.norm(outsDown.rvec_Nf - outsUp.rvec_Nf))
+    print('\nDV = {0:.2f} m/s, separation at E-{1:.0f} minutes:'\
+          .format(params.DV*1e3, params.tback/60))
+    print('Separation (min, max) of ({0:.3f}, {1:.3f}) km'\
+          .format(dists[0], dists[1]))
 
-print('approximate left-right distance:')
-print(np.linalg.norm(outsLeft.rvec_Nf - outsRight.rvec_Nf))
-
-
+legendElements.append(cirEl)
+legendElements.append(sqEl)
+ax2.legend(handles = legendElements)
 
 
 
-ax.set_xlabel('longitude, deg')
-ax.set_ylabel('latitude, deg')
-# ax.legend()
-ax.grid()
-ax.axis('equal')
 
-
-# ax2.grid()
 
