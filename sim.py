@@ -50,7 +50,7 @@ def simRun(params, tspan, events, **options):
     
     return sol
 
-def mainAD(params, tspan, events, outs):
+def mainAD(params, tspan, events, outs, verbose = True):
     ### GET DERIVED VEHICLE PARAMETERS
     # get A from CD and BC
     params.A = params.m / (params.BC * params.CD)
@@ -98,7 +98,7 @@ def mainAD(params, tspan, events, outs):
         sys.exit('input type not recognized')
     
     ### CALL SIMRUN
-    sol = simRun(params, tspan, events, verbose=True)
+    sol = simRun(params, tspan, events, verbose = verbose)
     rvec_N = sol.y[0:3,:]
     vvec_N = sol.y[3:6,:] 
     
