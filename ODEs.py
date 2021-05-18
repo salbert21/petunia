@@ -266,7 +266,8 @@ def sphericalEntryEOMs(t, yy, sig, params):
     
     return dydt
 
-def dynamics(t, yy, sig, params, **options):
+def dynamics(t, yy, sig, params, returnForces = False,
+             returnAccelerations = False):
     '''
     ODEs for full dynamics acting on the vehicle
     assume:
@@ -358,12 +359,10 @@ def dynamics(t, yy, sig, params, **options):
     dydt[2] = dz
     dydt[3:6] = (agvec_N + aLvec_N + aDvec_N)
     
-    if 'returnForces' in options:
-        if options['returnForces']:
-            return agvec_N * params.m, aLvec_N, aDvec_N
-    elif 'returnAccelerations' in options:
-        if options['returnAccelerations']:
-            return agvec_N, aLvec_N, aDvec_N
+    if returnForces:
+        return agvec_N * params.m, aLvec_N, aDvec_N
+    elif returnAccelerations:
+        return agvec_N, aLvec_N, aDvec_N
     else:
         return dydt
 

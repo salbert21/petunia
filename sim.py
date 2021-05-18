@@ -150,20 +150,20 @@ def mainAD(params, tspan, events, outs, verbose = True):
     
     ## Compute max g, add to output
     # run through dynamics again to get forces output
-    Fgvec_N = np.empty((3, len(sol.t)))
-    Fgvec_N[:] = np.NaN
-    FLvec_N = np.empty((3, len(sol.t)))
-    FLvec_N[:] = np.NaN
-    FDvec_N = np.empty((3, len(sol.t)))
-    FDvec_N[:] = np.NaN
+    agvec_N = np.empty((3, len(sol.t)))
+    agvec_N[:] = np.NaN
+    aLvec_N = np.empty((3, len(sol.t)))
+    aLvec_N[:] = np.NaN
+    aDvec_N = np.empty((3, len(sol.t)))
+    aDvec_N[:] = np.NaN
     
     for i, (ti, xi, vi) in enumerate(zip(sol.t, rvec_N.T, vvec_N.T)):
         yyi = np.block([xi, vi])
-        Fgvec_N[:,i], FLvec_N[:,i], FDvec_N[:,i] = ODEs.dynamics(ti, yyi,
+        agvec_N[:,i], aLvec_N[:,i], aDvec_N[:,i] = ODEs.dynamics(ti, yyi,
                                                   params.bank, params,
-                                                  returnForces=True)
+                                                  returnAccelerations = True)
     # compute g-load at each time
-    gload = (np.linalg.norm(FLvec_N + FDvec_N, axis=0) / params.m)\
+    gload = np.linalg.norm(aLvec_N + aDvec_N, axis=0)\
         / (constants.G0 / 1e3) # divide g0 by 1000 to get it in km/s^2 units
         
     gpeak = gload.max()
