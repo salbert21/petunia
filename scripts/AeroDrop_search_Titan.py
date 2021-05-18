@@ -31,95 +31,71 @@ params.returnTimeVectors = False
 # params.atmMod = 'nom'
 # params.LD = 0.25
 # params.bank = 0 # deg
-# efpaList = np.arange(-28.5, -34.8, -0.1) #-0.02)
-# BCList = np.arange(10, 200, 2.5)
 # modestr = 'lift-up, nominal atmosphere'
 # ###
 
-# ### Lift-up, 20% high atmosphere
-# params.atmMod = '20% high'
+# ### Lift-up, 3sigHigh atmosphere
+# params.atmMod = '3sigHigh'
 # params.LD = 0.25
 # params.bank = 0 # deg
-# efpaList = np.arange(-28.5, -34.8, -0.1) #-0.02)
-# BCList = np.arange(10, 200, 2.5)
-# modestr = 'Lift-up, 20% high atmosphere'
+# modestr = 'Lift-up, 3sigHigh atmosphere'
 # ###
 
-# ### Lift-up, 20% low atmosphere
-# params.atmMod = '20% low'
+# ### Lift-up, 3sigLow atmosphere
+# params.atmMod = '3sigLow'
 # params.LD = 0.25
 # params.bank = 0 # deg
-# efpaList = np.arange(-28.5, -34.8, -0.1) #-0.02)
-# BCList = np.arange(10, 200, 2.5)
-# modestr = 'Lift-up, 20% low atmosphere'
+# modestr = 'Lift-up, 3sigLow atmosphere'
 # ###
 
 # ### Lift-down, nominal atmosphere
 # params.atmMod = 'nom'
 # params.LD = 0.25
 # params.bank = 180 # deg
-# efpaList = np.arange(-24.9, -31, -0.1) #-0.02)
-# BCList = np.arange(10, 200, 2.5)
 # modestr = 'Lift-down, nominal atmosphere'
 # ###
 
-# ### Lift-down, 20% high atmosphere
-# params.atmMod = '20% high'
+# ### Lift-down, 3sigHigh atmosphere
+# params.atmMod = '3sigHigh'
 # params.LD = 0.25
 # params.bank = 180 # deg
-# efpaList = np.arange(-24.9, -31, -0.1) #-0.02)
-# BCList = np.arange(10, 200, 2.5)
-# modestr = 'Lift-down, 20% high atmosphere'
+# modestr = 'Lift-down, 3sigHigh atmosphere'
 # ###
 
-# ### Lift-down, 20% low atmosphere
-# params.atmMod = '20% low'
+# ### Lift-down, 3sigLow atmosphere
+# params.atmMod = '3sigLow'
 # params.LD = 0.25
 # params.bank = 180 # deg
-# efpaList = np.arange(-24.9, -31, -0.1) #-0.02)
-# BCList = np.arange(10, 200, 2.5)
-# modestr = 'Lift-down, 20% low atmosphere'
+# modestr = 'Lift-down, 3sigLow atmosphere'
 # ###
 
-### Ballistic, nominal atmosphere
-params.atmMod = 'nom'
+# ### Ballistic, nominal atmosphere
+# params.atmMod = 'nom'
+# params.LD = 0
+# params.bank = 0
+# modestr = 'Ballistic, nominal atmosphere'
+# ###
+
+### Ballistic, 3sigHigh atmosphere
+params.atmMod = '3sigHigh'
 params.LD = 0
 params.bank = 0
-efpaList = np.arange(-26.4, -32.4, -0.1) #-0.02)
-BCList = np.arange(10, 200, 2.5)
-modestr = 'Ballistic, nominal atmosphere'
+modestr = 'Ballistic, 3sigHigh atmosphere'
 ###
 
-# ### Ballistic, 20% high atmosphere
-# params.atmMod = '20% high'
+# ### Ballistic, 3sigLow atmosphere
+# params.atmMod = '3sigLow'
 # params.LD = 0
 # params.bank = 0
-# efpaList = np.arange(-26.4, -32.4, -0.1) #-0.02)
-# BCList = np.arange(10, 200, 2.5)
-# modestr = 'Ballistic, 20% high atmosphere'
+# modestr = 'Ballistic, 3sigLow atmosphere'
 # ###
 
-# ### Ballistic, 20% low atmosphere
-# params.atmMod = '20% low'
-# params.LD = 0
-# params.bank = 0
-# efpaList = np.arange(-26.4, -32.4, -0.1) #-0.02)
-# BCList = np.arange(10, 200, 2.5)
-# modestr = 'Ballistic, 20% low atmosphere'
-# ###
-
-#### EDIT - make all efpa ranges the same ####
+#### EDIT - make all BC and efpa ranges the same ####
+BCList = np.arange(10, 200, 2.5)
 efpaList = np.arange(-24.9, -34.8, -0.1)
 
 # =============================================================================
 # =============================================================================
-
-
-# ### CREATE params INPUT CLASS
-# params = Params()
-# params.p = constants.TITAN
-# params.returnTimeVectors = False
-# params.atmMod = 'nom'
 
 ### INPUT ATM TABLE - GET ATM TABLE FROM EARTHGRAM DATA FILE
 params.dMode = 'table'
@@ -135,6 +111,12 @@ elif params.atmMod == '20% high':
     params.atmdat[1,:] = 1.2 * params.atmdat[1,:]
 elif params.atmMod == '20% low':
     params.atmdat[1,:] = 0.8 * params.atmdat[1,:]
+elif params.atmMod == '3sigHigh':
+    params.atmdat[1,:] = params.atmdat[1,:] + 3\
+        * (atmdata['DENSHI'] - atmdata['DENSAV'])
+elif params.atmMod == '3sigLow':
+    params.atmdat[1,:] = params.atmdat[1,:] + 3\
+        * (atmdata['DENSLO'] - atmdata['DENSAV'])
 else:
     sys.exit('atmMod not recognized')
 
