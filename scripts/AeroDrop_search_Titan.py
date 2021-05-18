@@ -69,19 +69,19 @@ params.returnTimeVectors = False
 # modestr = 'Lift-down, 3sigLow atmosphere'
 # ###
 
-# ### Ballistic, nominal atmosphere
-# params.atmMod = 'nom'
-# params.LD = 0
-# params.bank = 0
-# modestr = 'Ballistic, nominal atmosphere'
-# ###
-
-### Ballistic, 3sigHigh atmosphere
-params.atmMod = '3sigHigh'
+### Ballistic, nominal atmosphere
+params.atmMod = 'nom'
 params.LD = 0
 params.bank = 0
-modestr = 'Ballistic, 3sigHigh atmosphere'
+modestr = 'Ballistic, nominal atmosphere'
 ###
+
+# ### Ballistic, 3sigHigh atmosphere
+# params.atmMod = '3sigHigh'
+# params.LD = 0
+# params.bank = 0
+# modestr = 'Ballistic, 3sigHigh atmosphere'
+# ###
 
 # ### Ballistic, 3sigLow atmosphere
 # params.atmMod = '3sigLow'
@@ -96,7 +96,6 @@ efpaList = np.arange(-24.9, -34.8, -0.1)
 
 # =============================================================================
 # =============================================================================
-
 ### INPUT ATM TABLE - GET ATM TABLE FROM EARTHGRAM DATA FILE
 params.dMode = 'table'
 filename = '../data/dens_Titan_nom.txt'
@@ -120,12 +119,6 @@ elif params.atmMod == '3sigLow':
 else:
     sys.exit('atmMod not recognized')
 
-### VEHICLE PARAMS (NOT CHANGED DURING GRID SEARCH)
-params.m = 2920 # kg, roughly MSL mass
-params.CD = params.m / (115 * np.pi * (4.5/2)**2) # roughly MSL CD
-
-# params.LD = 0.25
-
 ### WIND-RELATIVE INITIAL STATE (COMPONENTS NOT CHANGED DURING GRID SEARCH)
 params.inputType = 'wind-relative angles'
 params.lat = 22.0
@@ -134,8 +127,8 @@ params.alt = params.p.halt
 params.hdaWR = 0
 params.vmagWR = 6
 
-### CONTROL STATE
-# params.bank = 180 # deg
+### ASSUME Rn = 1 m
+params.Rn = 1
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition

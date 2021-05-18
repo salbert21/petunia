@@ -50,20 +50,7 @@ def simRun(params, tspan, events, **options):
     
     return sol
 
-def mainAD(params, tspan, events, outs, verbose = True):
-    # ### GET DERIVED VEHICLE PARAMETERS
-    # # get A from CD and BC
-    # params.A = params.m / (params.BC * params.CD)
-    
-    # # get Rn from A, assuming Rn/Rb = 1/2
-    # params.Rn = np.sqrt(params.A / np.pi) / 2
-    
-    ### ASSUME Rn = 1
-    params.Rn = 1
-    
-    # get CL from L/D and CD
-    params.CL = params.CD * params.LD
-    
+def mainAD(params, tspan, events, outs, verbose = True):        
     ### CONVERT GIVEN INPUT TO INERTIAL VECTORS (and other input types as well)
     # NOTE - no matter what the input type is, vectors should be in N frame
     if params.inputType == 'inertial vectors':
@@ -199,10 +186,6 @@ def mainAD(params, tspan, events, outs, verbose = True):
     outs.tspan = tspan
     
     # vehicle
-    outs.m = params.m
-    # outs.A = params.A
-    outs.CL = params.CL
-    outs.CD = params.CD
     outs.BC = params.BC
     outs.Rn = params.Rn
     outs.bank = params.bank
