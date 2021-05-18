@@ -294,7 +294,7 @@ def dynamics(t, yy, sig, params, **options):
     mu_r3 = params.p.mu / r**3
     
     ## Get gravitational force
-    Fgvec_N = - mu_r3 * params.m * xvec_N
+    agvec_N = - mu_r3 * xvec_N
     
     ## Get aerodynamics forces
     # TODO: carefully replace below with VN2Vinf function call
@@ -320,8 +320,10 @@ def dynamics(t, yy, sig, params, **options):
     
     vInfvec_N = NS @ vInfvec_S
     
-    Lmag = 1/2 * rho * (vInf*1e3)**2 * params.CL * params.A / 1e3
-    Dmag = 1/2 * rho * (vInf*1e3)**2 * params.CD * params.A / 1e3
+    # Lmag = 1/2 * rho * (vInf*1e3)**2 * params.CL * params.A / 1e3
+    # Dmag = 1/2 * rho * (vInf*1e3)**2 * params.CD * params.A / 1e3
+    Dmag = rho * (vInf*1e3)**2 / (2 * params.BC) / 1e3
+    Lmag = Dmag * params.LD
     
     
     hvec_N = cross(xvec_N, vInfvec_N)
@@ -347,18 +349,21 @@ def dynamics(t, yy, sig, params, **options):
               
     DvecU_N = - vInfvecU_N
     
-    FLvec_N = Lmag * LvecU_N
-    FDvec_N = Dmag * DvecU_N
+    aLvec_N = Lmag * LvecU_N
+    aDvec_N = Dmag * DvecU_N
 
     
     dydt[0] = dx
     dydt[1] = dy
     dydt[2] = dz
-    dydt[3:6] = (Fgvec_N + FLvec_N + FDvec_N) / params.m
+    dydt[3:6] = (agvec_N + aLvec_N + aDvec_N)
     
     if 'returnForces' in options:
         if options['returnForces']:
-            return Fgvec_N, FLvec_N, FDvec_N
+            return agvec_N * params.m, aLvec_N, aDvec_N
+    elif 'returnAccelerations' in options:
+        if options['returnAccelerations']:
+            return agvec_N, aLvec_N, aDvec_N
     else:
         return dydt
 
