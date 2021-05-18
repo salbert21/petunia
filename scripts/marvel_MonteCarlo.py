@@ -8,7 +8,9 @@ Created on Tue Apr 13 12:08:55 2021
 """
 
 from scipy.integrate import solve_ivp
+from scipy.stats import uniform
 import matplotlib.pyplot as plt
+from random import randint
 import matplotlib as mpl
 import numpy as np
 import copy
@@ -26,7 +28,7 @@ plt.rcParams.update({'font.size': 16})
 # =============================================================================
 # Main function
 # =============================================================================
-def marvelProbe(params, verbose = False):
+def marvelProbe(params, verbose = False, MC = False):
     '''
     main function for MARVEL probes.
     1) back-propagate probes for params.tback seconds
@@ -71,11 +73,11 @@ def marvelProbe(params, verbose = False):
     cDir = np.cos(eta) * hDir - np.sin(eta) * thDir
     dDir = -cDir
     
-    v0vecDown = v0vecCenter + params.DV * aDir
-    v0vecUp = v0vecCenter + params.DV * bDir
+    v0vecDown = v0vecCenter + params.DVDown * aDir
+    v0vecUp = v0vecCenter + params.DVUp * bDir
     
-    v0vecLeft = v0vecCenter + params.DV * cDir
-    v0vecRight = v0vecCenter + params.DV * dDir
+    v0vecLeft = v0vecCenter + params.DVLeft * cDir
+    v0vecRight = v0vecCenter + params.DVRight * dDir
     
     
     xx0vecDown = np.hstack([x0vecCenter, v0vecDown])
@@ -207,6 +209,7 @@ params.vmagWR = 6
 ### SET DEFAULT SEPARATION DELTA-V AND TIMING
 DVnom = 1e-4 # km/s
 tbacknom = 1 * 24 * 60 * 60 # s
+params.tback = tbacknom
 
 ### TIME VECTOR AND EXIT CONDITIONS
 params.tspan = (tbacknom, 5000000)
@@ -233,123 +236,131 @@ outsCenter = mainAD(params, params.tspan, params.events, outsCenter)
 
 
 # =============================================================================
-# Vary Separation Delta-V
+# Set up dispersion parameters
 # =============================================================================
-print('\n\nVARYING SEPARATION DELTA-V:\n')
+# Number of Monte Carlo trials
+Nmc = 15
+
+# Ballistic coefficient, U[0.95%, 1.05%]
+BCMean = params.BC
+BCLB = 0.95 * params.BC
+BCRng = 0.1 * params.BC
+
+# DV, U[90%, 110%]
+DVMean = DVnom
+DVLB = 0.9 * DVnom
+DVRng = 0.2 * DVnom
+
+# load full 5000-case Monte Carlo atmsophere dataset from MarsGRAM-2010
+filename = '../data/Mars_0.1_50000.npz'
+data = np.load(filename)
+densAll = data['densTot']
+h = data['h']
+NATM = densAll.shape[1]
+atmindices = [randint(0, NATM) for p in range(Nmc)] # all Nmc atm indices
+del data
+
+
+# initialize lists for actual dispersed parameters and results
+BCList = []
+DVDownList = []
+DVUpList = []
+DVLeftList = []
+DVRightList = []
+atmindList = []
+
+DownLocList = []
+UpLocList = []
+LeftLocList = []
+RightLocList = []
+
+MinDistList = []
+MaxDistList = []
+
+
+# =============================================================================
+# Monte Carlo Loop
+# =============================================================================
+print('\n\nRUNNING MONTE CARLO ANALYSIS...')
 fig1 = plt.figure()
 ax1 = fig1.add_subplot(111)
-img = plt.imread('../data/MarsSurfaceMarvel.png')
-ax1.imshow(img, aspect = 'equal', extent = [-71.24,
-                                            -53.84,
-                                            13.093,
-                                            22.696])
 ax1.set_xlabel('longitude, deg')
 ax1.set_ylabel('latitude, deg')
-ax1.set_title('Landing locations for varying $\Delta$V, separation at'\
-              ' E-{0:.0f} days'.format(tbacknom/86400))
 ax1.grid()
-cmap = mpl.cm.get_cmap('viridis')
 
-DVList = np.array([5, 10, 15, 20, 25, 30, 35, 40]) * 1e-2 # m/s
-# DVList = np.array([8, 9, 10, 11, 12]) * 1e-2
-# DVList = np.array([5, 10]) * 1e-2
+outname = './../results/marvel_MC_4.18.21.npz'
 
-cList = np.linspace(1, 0, len(DVList))
-cList = cmap(cList)
-legendElements = [None] * len(cList)
-
-for i, DV in enumerate(DVList):
-    params.DV = DV / 1e3
-    params.tback = tbacknom
+runi = 1
+for i in atmindices:
+    # initialize random variables
+    BC = uniform.rvs(size = 1, loc = BCLB, scale = BCRng)[0]
+    DVDown = uniform.rvs(size = 1, loc = DVLB, scale = DVRng)[0]
+    DVUp = uniform.rvs(size = 1, loc = DVLB, scale = DVRng)[0]
+    DVLeft = uniform.rvs(size = 1, loc = DVLB, scale = DVRng)[0]
+    DVRight = uniform.rvs(size = 1, loc = DVLB, scale = DVRng)[0]
     
+    params.DVDown = DVDown
+    params.DVUp = DVUp
+    params.DVLeft = DVLeft
+    params.DVRight = DVRight
+    
+    params.BC = BC
+    
+    params.atmdat = np.array([h,densAll[:,i]])
+    params.atmdat = params.atmdat[:,params.atmdat[0,:].argsort()]
+    
+    # simulate
     outsDown, outsUp, outsLeft, outsRight, dists = marvelProbe(params,
-                                                                verbose = False)
+                                                               verbose = False,
+                                                               MC = True)
     
-    ax1.plot(outsUp.lonf, outsUp.latf, 'o', color = cList[i], markersize = 12)
-    ax1.plot(outsDown.lonf, outsDown.latf, 'o', color = cList[i],
-              markersize = 12)
-    ax1.plot(outsLeft.lonf, outsLeft.latf, 's', color = cList[i],
-              markersize = 12)
-    ax1.plot(outsRight.lonf, outsRight.latf, 's', color = cList[i],
-              markersize = 12)
+    ax1.plot(outsUp.lonf, outsUp.latf, 'bo', alpha = 0.25, markersize = 12)
+    ax1.plot(outsDown.lonf, outsDown.latf, 'bo', alpha = 0.25, markersize = 12)
+    ax1.plot(outsLeft.lonf, outsLeft.latf, 'bs', alpha = 0.25, markersize = 12)
+    ax1.plot(outsRight.lonf, outsRight.latf, 'bs', alpha =0.25, markersize = 12)
     
-    legendElements[i] = mpl.patches.Patch(facecolor = cList[i],
-                                          label = r'$\Delta$V = {0:.3f} m/s'\
-                                              .format(DV))
+    # print statements
+    print('Trial {0:d}/{1:d}: min/max = {2:.3f} / {3:.3f} km'.format(runi,
+                                                                     Nmc,
+                                                                     dists[0],
+                                                                     dists[1]))
     
-    # print('Down-Center distance: {0:.3f} km'\
-    #       .format(np.linalg.norm(outsDown.rvec_N0 - outsCenter.rvec_N0)))
-    # print('Left-Center distance: {0:.3f} km'\
-    #       .format(np.linalg.norm(outsLeft.rvec_N0 - outsCenter.rvec_N0)))
-    print('DV = {0:.2f} m/s, separation at E-{1:.0f} minutes:'\
-      .format(params.DV*1e3, params.tback/60))
-    print('Separation (min, max) of ({0:.3f}, {1:.3f}) km\n'\
-          .format(dists[0], dists[1]))
+    # append to lists
+    BCList.append(BC)
+    DVDownList.append(DVDown)
+    DVUpList.append(DVUp)
+    DVLeftList.append(DVLeft)
+    DVRightList.append(DVRight)
+    atmindList.append(i)
+    
+    DownLocList.append((outsDown.lonf, outsDown.latf))
+    UpLocList.append((outsUp.lonf, outsUp.latf))
+    LeftLocList.append((outsLeft.lonf, outsLeft.latf))
+    RightLocList.append((outsRight.lonf, outsRight.latf))
+    
+    MinDistList.append(dists[0])
+    MaxDistList.append(dists[1])
+    
+    runi += 1
+    
+    if runi % 50 == 0:
+        np.savez(outname,
+                 BCList = BCList,
+                 DVDownList = DVDownList,
+                 DVUpList = DVUpList,
+                 DVLeftList = DVLeftList,
+                 DVRightList = DVRightList,
+                 atmindList = atmindList,
+                 DownLocList = DownLocList,
+                 UpLocList = UpLocList,
+                 LeftLocList = LeftLocList,
+                 RightLocList = RightLocList,
+                 MinDistList = MinDistList,
+                 MaxDistList = MaxDistList
+                 )
+    
 
-cirEl = mpl.lines.Line2D([0], [0], marker = 'o', color = 'w',
-                          label = '+/- along-track $\Delta$V', markersize = 12,
-                          markerfacecolor = 'k')
-legendElements.append(cirEl)
-sqEl = mpl.lines.Line2D([0], [0], marker = 's', color = 'w',
-                          label = '+/- cross-track $\Delta$V', markersize = 12,
-                          markerfacecolor = 'k')
-legendElements.append(sqEl)
-ax1.legend(handles = legendElements)
 
-# =============================================================================
-# Vary Separation Timing
-# =============================================================================
-print('\n\nVARYING SEPARATION TIMING:\n')
-fig2 = plt.figure()
-ax2 = fig2.add_subplot(111)
-ax2.imshow(img, aspect = 'equal', extent = [-71.24,
-                                            -53.84,
-                                            13.093,
-                                            22.696])
-ax2.set_xlabel('longitude, deg')
-ax2.set_ylabel('latitude, deg')
-ax2.set_title('Landing locations for varying separation time, $\Delta$V = '\
-              ' {0:.3f} m/s'.format(DVnom*1e3))
-ax2.grid()
-
-tbackList = np.array([0.25, 0.5, 1, 2, 3]) * 24 # hours
-# tbackList = np.array([1, 2]) * 24
-
-cList = np.linspace(1, 0, len(tbackList))
-cList = cmap(cList)
-legendElements = [None] * len(cList)
-
-for i, tback in enumerate(tbackList):
-    params.DV = DVnom
-    params.tback = tback * 60 * 60
-    
-    outsDown, outsUp, outsLeft, outsRight, dists = marvelProbe(params,
-                                                                verbose = False)
-    
-    ax2.plot(outsUp.lonf, outsUp.latf, 'o', color = cList[i], markersize = 12)
-    ax2.plot(outsDown.lonf, outsDown.latf, 'o', color = cList[i],
-              markersize = 12)
-    ax2.plot(outsLeft.lonf, outsLeft.latf, 's', color = cList[i],
-              markersize = 12)
-    ax2.plot(outsRight.lonf, outsRight.latf, 's', color = cList[i],
-              markersize = 12)
-    
-    legendElements[i] = mpl.patches.Patch(facecolor = cList[i],
-                                          label = 'E-{0:.2f} days'\
-                                              .format(tback/24))
-    
-    # print('Down-Center distance: {0:.3f} km'\
-    #   .format(np.linalg.norm(outsDown.rvec_N0 - outsCenter.rvec_N0)))
-    # print('Left-Center distance: {0:.3f} km'\
-    #       .format(np.linalg.norm(outsLeft.rvec_N0 - outsCenter.rvec_N0)))
-    print('DV = {0:.2f} m/s, separation at E-{1:.0f} minutes:'\
-          .format(params.DV*1e3, params.tback/60))
-    print('Separation (min, max) of ({0:.3f}, {1:.3f}) km\n'\
-          .format(dists[0], dists[1]))
-
-legendElements.append(cirEl)
-legendElements.append(sqEl)
-ax2.legend(handles = legendElements)
 
 
 
