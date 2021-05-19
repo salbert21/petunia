@@ -5,6 +5,7 @@ Created on Tue Jul  7 17:05:31 2020
 @author: Samuel Albert
 """
 
+import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
@@ -577,7 +578,18 @@ plt.subplots_adjust(left = 0.11,
                 hspace = 0.17)
 
 
+# =============================================================================
+# Save figure file
+# =============================================================================
+pickle.dump(fig, open('./../results/figs/Neptune_sweep.fig.pickle', 'wb'))
 
+
+# code to open figure and interact:
+# import pickle
+# figx = pickle.load(open('FigureObject.fig.pickle', 'rb'))
+
+# figx.show() # Show the figure, edit it, etc.!
+# data = figx.axes[0].lines[0].get_data()
 
 
 
