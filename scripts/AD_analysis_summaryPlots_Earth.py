@@ -234,7 +234,8 @@ fig.legend(handles=[land_proxy, space_proxy, haf_proxy,
 
 ### Start with uncertainty bars on landline and spaceline
 ## Load file archive and get data
-filename = './../results/sweeps/Earth_11_20% low_0_0_0709180245.npz'
+# filename = './../results/sweeps/Earth_11_20% low_0_0_0709180245.npz'
+filename = './../results/sweeps/Earth_11_3sigLow_0_0_0518214348.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -277,7 +278,8 @@ ax2.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
         linewidth = 1, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Earth_11_20% high_0_0_0709183314.npz'
+# filename = './../results/sweeps/Earth_11_20% high_0_0_0709183314.npz'
+filename = './../results/sweeps/Earth_11_3sigHigh_0_0_0518214232.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -324,7 +326,8 @@ ax2.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
                  facecolor = spacecol, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Earth_11_nom_0_0_0709181558.npz'
+# filename = './../results/sweeps/Earth_11_nom_0_0_0709181558.npz'
+filename = './../results/sweeps/Earth_11_nom_0_0_0518212958.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']

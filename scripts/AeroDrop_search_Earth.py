@@ -28,7 +28,9 @@ params.returnTimeVectors = False
 # =============================================================================
 #### Make all BC and efpa ranges the same ####
 BCList = np.arange(10, 200, 2.5)
-efpaList = np.arange(-4.4, -8.2, -0.02)
+efpaList = np.arange(-3.7, -7.4, -0.02)
+# efpaList = np.arange(-4.4, -8.2, -0.02) # for 12 km/s entry
+
 
 
 # ### Lift-up, nominal atmosphere
@@ -80,19 +82,19 @@ efpaList = np.arange(-4.4, -8.2, -0.02)
 # modestr = 'Ballistic, nominal atmosphere'
 # ###
 
-### Ballistic, 3sigHigh atmosphere
-params.atmMod = '3sigHigh'
-params.LD = 0
-params.bank = 0
-modestr = 'Ballistic, 3sigHigh atmosphere'
-###
-
-# ### Ballistic, 3sigLow atmosphere
-# params.atmMod = '3sigLow'
+# ### Ballistic, 3sigHigh atmosphere
+# params.atmMod = '3sigHigh'
 # params.LD = 0
 # params.bank = 0
-# modestr = 'Ballistic, 3sigLow atmosphere'
+# modestr = 'Ballistic, 3sigHigh atmosphere'
 # ###
+
+### Ballistic, 3sigLow atmosphere
+params.atmMod = '3sigLow'
+params.LD = 0
+params.bank = 0
+modestr = 'Ballistic, 3sigLow atmosphere'
+###
 
 # =============================================================================
 # =============================================================================
