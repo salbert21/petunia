@@ -20,15 +20,15 @@ plt.close('all')
 
 ### CREATE params INPUT CLASS
 params = Params()
-params.p = constants.MARS
+params.p = constants.NEPTUNE
 params.returnTimeVectors = False
 
 # =============================================================================
-# comment/uncomment the below blocks of code for desired scenario at Mars
+# comment/uncomment the below blocks of code for desired scenario at Neptune
 # =============================================================================
 #### Make all BC and efpa ranges the same ####
 BCList = np.arange(10, 200, 2.5)
-efpaList = np.arange(-8.4, -12.8, -0.02)
+efpaList = np.arange(-11.2, -14.6, -0.02)
 
 
 # ### Lift-up, nominal atmosphere
@@ -96,9 +96,9 @@ modestr = 'Ballistic, nominal atmosphere'
 
 # =============================================================================
 # =============================================================================
-### INPUT ATM TABLE - GET ATM TABLE FROM MARSGRAM DATA FILE
+### INPUT ATM TABLE - GET ATM TABLE FROM NEPTUNEGRAM DATA FILE
 params.dMode = 'table'
-filename = '../data/dens_Mars_nom.txt'
+filename = '../data/dens_Neptune_nom.txt'
 atmdata = np.genfromtxt(filename, names=True)
 atmdata.sort(order='Var_X') # put in ascending altitude order
 params.atmdat = np.array([atmdata['Var_X'], atmdata['DENSAV']])
@@ -121,22 +121,22 @@ else:
 
 ### WIND-RELATIVE INITIAL STATE (COMPONENTS NOT CHANGED DURING GRID SEARCH)
 params.inputType = 'wind-relative angles'
-params.lat = 18.38
-params.lon = 77.58
+params.lat = 22.0
+params.lon = 48.0
 params.alt = params.p.halt
 params.hdaWR = 0
-params.vmagWR = 6
+params.vmagWR = 27
 
 ### ASSUME Rn = 1 m
 params.Rn = 1
 
 ### TIME VECTOR AND EXIT CONDITIONS
 # should always stop on an exit condition
-tspan = (0,3000) # don't make too long or results get choppy!
+tspan = (0,30000) # don't make too long or results get choppy!
 
 # exit conditions:
-params.hmin = 20
-params.hmax = params.p.halt + 1e-7
+params.hmin = 125
+params.hmax = params.p.halt + 1e-7 + 10
 
 event1 = lambda t, y: ODEs.below_min_alt(t, y, params)
 event1.terminal = True

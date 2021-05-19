@@ -24,8 +24,12 @@ params.p = constants.TITAN
 params.returnTimeVectors = False
 
 # =============================================================================
-# comment/uncomment the below blocks of code for custom ranges at Titan
+# comment/uncomment the below blocks of code for desired scenario at Titan
 # =============================================================================
+#### Make all BC and efpa ranges the same ####
+BCList = np.arange(10, 200, 2.5)
+efpaList = np.arange(-24.9, -34.8, -0.1)
+
 
 # ### Lift-up, nominal atmosphere
 # params.atmMod = 'nom'
@@ -90,13 +94,9 @@ modestr = 'Ballistic, nominal atmosphere'
 # modestr = 'Ballistic, 3sigLow atmosphere'
 # ###
 
-#### EDIT - make all BC and efpa ranges the same ####
-BCList = np.arange(10, 200, 2.5)
-efpaList = np.arange(-24.9, -34.8, -0.1)
-
 # =============================================================================
 # =============================================================================
-### INPUT ATM TABLE - GET ATM TABLE FROM EARTHGRAM DATA FILE
+### INPUT ATM TABLE - GET ATM TABLE FROM TITANGRAM DATA FILE
 params.dMode = 'table'
 filename = '../data/dens_Titan_nom.txt'
 atmdata = np.genfromtxt(filename, names=True)
@@ -111,11 +111,11 @@ elif params.atmMod == '20% high':
 elif params.atmMod == '20% low':
     params.atmdat[1,:] = 0.8 * params.atmdat[1,:]
 elif params.atmMod == '3sigHigh':
-    params.atmdat[1,:] = params.atmdat[1,:] + 3\
-        * (atmdata['DENSHI'] - atmdata['DENSAV'])
+    params.atmdat[1,:] = params.atmdat[1,:] + \
+        3 * (atmdata['DENSHI'] - atmdata['DENSAV'])
 elif params.atmMod == '3sigLow':
-    params.atmdat[1,:] = params.atmdat[1,:] + 3\
-        * (atmdata['DENSLO'] - atmdata['DENSAV'])
+    params.atmdat[1,:] = params.atmdat[1,:] + \
+        3 * (atmdata['DENSLO'] - atmdata['DENSAV'])
 else:
     sys.exit('atmMod not recognized')
 
@@ -146,9 +146,7 @@ event2.terminal = True
 
 events = (event1, event2)
 
-# ### GRID SEARCH
-# efpaList = np.arange(-24, -35.5, -0.5) #-0.02)
-# BCList = np.arange(10, 200, 2.5)
+### GRID SEARCH
 outsList = []
 
 for params.efpaWR in efpaList:
