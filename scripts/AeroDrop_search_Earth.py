@@ -125,7 +125,7 @@ params.lat = 40
 params.lon = 100
 params.alt = params.p.halt
 params.hdaWR = 0
-params.vmagWR = 12
+params.vmagWR = 11
 
 ### ASSUME Rn = 1 m
 params.Rn = 1
