@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 
 from sim import Params, Outs
-import constants
+import planetaryconstants as constants
 
 plt.close('all')
 
@@ -33,7 +33,7 @@ QLstyle = 'dotted'
 
 ### Start with uncertainty bars on landline and spaceline
 ## Load file archive and get data
-filename = './../results/sweeps/Venus_11.5_20% low_0.25_180_0713221405.npz'
+filename = './../results/sweeps/Venus_11.5_3sigLow_0.25_180_0521155021.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -82,7 +82,7 @@ ax1.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
         linewidth = 1, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Venus_11.5_20% high_0.25_180_0713225625.npz'
+filename = './../results/sweeps/Venus_11.5_3sigHigh_0.25_180_0521155706.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -129,7 +129,7 @@ ax1.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
 ### Now nominal atmosphere
 
 ## Load file archive and get data
-filename = './../results/sweeps/Venus_11.5_nom_0.25_180_0713223850.npz'
+filename = './../results/sweeps/Venus_11.5_nom_0.25_180_0521153044.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -237,7 +237,7 @@ fig.legend(handles=[land_proxy, space_proxy, haf_proxy,
 
 ### Start with uncertainty bars on landline and spaceline
 ## Load file archive and get data
-filename = './../results/sweeps/Venus_11.5_20% low_0_0_0713213528.npz'
+filename = './../results/sweeps/Venus_11.5_3sigLow_0_0_0521153657.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -280,7 +280,7 @@ ax2.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
         linewidth = 1, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Venus_11.5_20% high_0_0_0713221502.npz'
+filename = './../results/sweeps/Venus_11.5_3sigHigh_0_0_0521154007.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -327,7 +327,7 @@ ax2.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
                  facecolor = spacecol, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Venus_11.5_nom_0_0_0713215537.npz'
+filename = './../results/sweeps/Venus_11.5_nom_0_0_0521151419.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -407,7 +407,7 @@ ax2.clabel(cp, inline = True, colors = QLcol, fontsize = 9, fmt = '%1.0f')
 
 ### Start with uncertainty bars on landline and spaceline
 ## Load file archive and get data
-filename = './../results/sweeps/Venus_11.5_20% low_0.25_0_0714205718.npz'
+filename = './../results/sweeps/Venus_11.5_3sigLow_0.25_0_0521152024.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -450,7 +450,7 @@ ax3.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
         linewidth = 1, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Venus_11.5_20% high_0.25_0_0714212819.npz'
+filename = './../results/sweeps/Venus_11.5_3sigHigh_0.25_0_0521151959.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -498,7 +498,7 @@ ax3.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
 
 
 ## Load file archive and get data
-filename = './../results/sweeps/Venus_11.5_nom_0.25_0_0714211527.npz'
+filename = './../results/sweeps/Venus_11.5_nom_0.25_0_0521144804.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
