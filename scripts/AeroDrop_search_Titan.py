@@ -28,15 +28,15 @@ params.returnTimeVectors = False
 # =============================================================================
 #### Make all BC and efpa ranges the same ####
 BCList = np.arange(10, 200, 2.5)
-efpaList = np.arange(-24.9, -34.8, -0.1)
+efpaList = np.arange(-24.9, -35.4, -0.1)
 
 
-# ### Lift-up, nominal atmosphere
-# params.atmMod = 'nom'
-# params.LD = 0.25
-# params.bank = 0 # deg
-# modestr = 'lift-up, nominal atmosphere'
-# ###
+### Lift-up, nominal atmosphere
+params.atmMod = 'nom'
+params.LD = 0.25
+params.bank = 0 # deg
+modestr = 'lift-up, nominal atmosphere'
+###
 
 # ### Lift-up, 3sigHigh atmosphere
 # params.atmMod = '3sigHigh'
@@ -73,12 +73,12 @@ efpaList = np.arange(-24.9, -34.8, -0.1)
 # modestr = 'Lift-down, 3sigLow atmosphere'
 # ###
 
-### Ballistic, nominal atmosphere
-params.atmMod = 'nom'
-params.LD = 0
-params.bank = 0
-modestr = 'Ballistic, nominal atmosphere'
-###
+# ### Ballistic, nominal atmosphere
+# params.atmMod = 'nom'
+# params.LD = 0
+# params.bank = 0
+# modestr = 'Ballistic, nominal atmosphere'
+# ###
 
 # ### Ballistic, 3sigHigh atmosphere
 # params.atmMod = '3sigHigh'

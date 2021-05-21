@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 
 from sim import Params, Outs
-import constants
+import planetaryconstants as constants
 
 plt.close('all')
 
@@ -33,7 +33,7 @@ QLstyle = 'dotted'
 
 ### Start with uncertainty bars on landline and spaceline
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_20% low_0.25_180_0716033446.npz'
+filename = './../results/sweeps/Titan_6_3sigLow_0.25_180_0520210236.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -82,7 +82,7 @@ ax1.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
         linewidth = 1, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_20% high_0.25_180_0716043107.npz'
+filename = './../results/sweeps/Titan_6_3sigHigh_0.25_180_0520210131.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -131,7 +131,7 @@ ax1.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
 ### Now nominal atmosphere
 
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_nom_0.25_180_0728181005.npz'
+filename = './../results/sweeps/Titan_6_nom_0.25_180_0520185844.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -235,7 +235,7 @@ fig.legend(handles=[land_proxy, space_proxy, haf_proxy,
 
 ### Start with uncertainty bars on landline and spaceline
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_20% low_0_0_0716041829.npz'
+filename = './../results/sweeps/Titan_6_3sigLow_0_0_0520204817.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -278,7 +278,7 @@ ax2.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
         linewidth = 1, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_20% high_0_0_0716045438.npz'
+filename = './../results/sweeps/Titan_6_3sigHigh_0_0_0520204248.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -325,7 +325,7 @@ ax2.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
                  facecolor = spacecol, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_nom_0_0_0728173635.npz'
+filename = './../results/sweeps/Titan_6_nom_0_0_0520184310.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -401,7 +401,8 @@ ax2.clabel(cp, inline = True, colors = QLcol, fontsize = 9, fmt = '%1.0f')
 
 ### Start with uncertainty bars on landline and spaceline
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_20% low_0.25_0_0716054235.npz'
+# CHANGE THIS ONE
+filename = './../results/sweeps/Titan_6_3sigLow_0.25_0_0521001729.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -418,7 +419,7 @@ landline_BC_low = BCList
 landline_EFPA_low = []
 for rind in range(fpafgrid.shape[1]):
     ind = next(ind for ind, val in enumerate(fpafgrid[:,rind])\
-               if val < 0)
+                if val < 0)
     landline_EFPA_low.append(efpaList[ind])
     
 # find line between aerocapture and escape
@@ -444,7 +445,7 @@ ax3.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
         linewidth = 1, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_20% high_0.25_0_0716062725.npz'
+filename = './../results/sweeps/Titan_6_3sigHigh_0.25_0_0520210107.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -492,7 +493,7 @@ ax3.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
 
 
 ## Load file archive and get data
-filename = './../results/sweeps/Titan_6_nom_0.25_0_0728180254.npz'
+filename = './../results/sweeps/Titan_6_nom_0.25_0_0520190342.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
