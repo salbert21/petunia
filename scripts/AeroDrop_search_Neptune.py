@@ -73,12 +73,12 @@ efpaList = np.arange(-11.2, -14.6, -0.02)
 # modestr = 'Lift-down, 3sigLow atmosphere'
 # ###
 
-### Ballistic, nominal atmosphere
-params.atmMod = 'nom'
-params.LD = 0
-params.bank = 0
-modestr = 'Ballistic, nominal atmosphere'
-###
+# ### Ballistic, nominal atmosphere
+# params.atmMod = 'nom'
+# params.LD = 0
+# params.bank = 0
+# modestr = 'Ballistic, nominal atmosphere'
+# ###
 
 # ### Ballistic, 3sigHigh atmosphere
 # params.atmMod = '3sigHigh'
@@ -87,12 +87,12 @@ modestr = 'Ballistic, nominal atmosphere'
 # modestr = 'Ballistic, 3sigHigh atmosphere'
 # ###
 
-# ### Ballistic, 3sigLow atmosphere
-# params.atmMod = '3sigLow'
-# params.LD = 0
-# params.bank = 0
-# modestr = 'Ballistic, 3sigLow atmosphere'
-# ###
+### Ballistic, 3sigLow atmosphere
+params.atmMod = '3sigLow'
+params.LD = 0
+params.bank = 0
+modestr = 'Ballistic, 3sigLow atmosphere'
+###
 
 # =============================================================================
 # =============================================================================

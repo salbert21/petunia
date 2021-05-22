@@ -33,7 +33,7 @@ QLstyle = 'dotted'
 
 ### Start with uncertainty bars on landline and spaceline
 ## Load file archive and get data
-filename = './../results/sweeps/Neptune_27_20% low_0.25_180_0720052245.npz'
+filename = './../results/sweeps/Neptune_27_3sigLow_0.25_180_0522005334.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -82,7 +82,7 @@ ax1.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
         linewidth = 1, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Neptune_27_20% high_0.25_180_0720071717.npz'
+filename = './../results/sweeps/Neptune_27_3sigHigh_0.25_180_0522010201.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -131,7 +131,7 @@ ax1.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
 ### Now nominal atmosphere
 
 ## Load file archive and get data
-filename = './../results/sweeps/Neptune_27_nom_0.25_180_0720062742.npz'
+filename = './../results/sweeps/Neptune_27_nom_0.25_180_0521220307.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -235,7 +235,7 @@ fig.legend(handles=[land_proxy, space_proxy, haf_proxy,
 
 ### Start with uncertainty bars on landline and spaceline
 ## Load file archive and get data
-filename = './../results/sweeps/Neptune_27_20% low_0_0_0720052600.npz'
+filename = './../results/sweeps/Neptune_27_3sigLow_0_0_0522010041.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -278,7 +278,7 @@ ax2.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
         linewidth = 1, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Neptune_27_20% high_0_0_0720071518.npz'
+filename = './../results/sweeps/Neptune_27_3sigHigh_0_0_0522010317.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -325,7 +325,7 @@ ax2.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
                  facecolor = spacecol, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Neptune_27_nom_0_0_0720062828.npz'
+filename = './../results/sweeps/Neptune_27_nom_0_0_0521220331.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -401,7 +401,7 @@ ax2.clabel(cp, inline = True, colors = QLcol, fontsize = 9, fmt = '%1.0f')
 
 ### Start with uncertainty bars on landline and spaceline
 ## Load file archive and get data
-filename = './../results/sweeps/Neptune_27_20% low_0.25_0_0720080534.npz'
+filename = './../results/sweeps/Neptune_27_3sigLow_0.25_0_0522022613.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -444,7 +444,7 @@ ax3.plot(spaceline_EFPA_low, spaceline_BC_low, color = spacecol,
         linewidth = 1, alpha = 0.3)
 
 ## Load file archive and get data
-filename = './../results/sweeps/Neptune_27_20% high_0.25_0_0720094323.npz'
+filename = './../results/sweeps/Neptune_27_3sigHigh_0.25_0_0522021021.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
@@ -492,7 +492,7 @@ ax3.fill_betweenx(spaceline_BC_low, spaceline_EFPA_low, spaceline_EFPA_high,
 
 
 ## Load file archive and get data
-filename = './../results/sweeps/Neptune_27_nom_0.25_0_0720085952.npz'
+filename = './../results/sweeps/Neptune_27_nom_0.25_0_0521230158.npz'
 data = np.load(filename, allow_pickle=True)
 # params = data['params'][0] # array of 1
 outsList = data['outsList']
