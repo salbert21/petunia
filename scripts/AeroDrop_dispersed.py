@@ -40,7 +40,7 @@ mpl.rcParams.update({'font.size': 15})
 # SETTINGS
 # =============================================================================
 # number of Monte Carlo runs
-Nmc = 0
+Nmc = 100
 
 # updates on during nominal profiles?
 updatesNominal = False
