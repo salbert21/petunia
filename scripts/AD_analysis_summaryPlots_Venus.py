@@ -71,7 +71,7 @@ for rind in range(engfgrid.shape[1]):
 # ax = fig.add_subplot(311)
 
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex = True, sharey = True)
-fig.set_size_inches(6, 9)
+fig.set_size_inches(6.5, 9)
 
 ax1.grid(alpha = gridalpha)
 ax1.set_title('full-lift-down', fontsize = 10)
@@ -221,7 +221,7 @@ haf_proxy = mlines.Line2D([], [], color = hafcol, linestyle = hafstyle,
 g_proxy = mlines.Line2D([], [], color = gcol, linestyle = gstyle,
                         label = 'peak g load, Earth g\'s')
 q_proxy = mlines.Line2D([], [], color = qcol, linestyle = qstyle,
-                        label = 'peak heat rate, '
+                        label = 'peak heat flux, '
                             '$\mathregular{W/cm^2}$')
 QL_proxy = mlines.Line2D([], [], color = QLcol, linestyle = QLstyle,
                          label = 'heat load, '

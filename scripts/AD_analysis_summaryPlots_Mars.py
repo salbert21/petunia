@@ -219,7 +219,7 @@ haf_proxy = mlines.Line2D([], [], color = hafcol, linestyle = hafstyle,
 g_proxy = mlines.Line2D([], [], color = gcol, linestyle = gstyle,
                         label = 'peak g load, Earth g\'s')
 q_proxy = mlines.Line2D([], [], color = qcol, linestyle = qstyle,
-                        label = 'peak heat rate, '
+                        label = 'peak heat flux, '
                             '$\mathregular{W/cm^2}$')
 QL_proxy = mlines.Line2D([], [], color = QLcol, linestyle = QLstyle,
                          label = 'heat load, '
@@ -397,6 +397,10 @@ cp = ax2.contour(EFPAgrid.T, BCgrid.T, QLgrid.T, QLlevels,
 ax2.clabel(cp, inline = True, colors = QLcol, fontsize = 9, fmt = '%1.0f')
 
 
+## Add star for example scenario value
+ax2.plot(-12, 35, color = 'C9', marker = '*', markersize = 17, alpha = 0.5)
+
+
 # =============================================================================
 # Third file: full-lift-up
 # =============================================================================
@@ -561,6 +565,9 @@ QLlevels = [1e3, 3e3, 5e3]
 cp = ax3.contour(EFPAgrid.T, BCgrid.T, QLgrid.T, QLlevels,
                 colors = QLcol, linestyles = QLstyle)
 ax3.clabel(cp, inline = True, colors = QLcol, fontsize = 9, fmt = '%1.0f')
+
+## Add star for example scenario value
+ax3.plot(-12, 130, color = 'C9', marker = 'D', markersize = 12, alpha = 0.5)
 
 
 # =============================================================================
