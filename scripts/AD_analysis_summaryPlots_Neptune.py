@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 
 from sim import Params, Outs
-import constants
+import planetaryconstants as constants
 
 plt.close('all')
 
@@ -26,6 +26,8 @@ hafstyle = 'dashed'
 gstyle = 'dotted'
 qstyle = 'dashdot'
 QLstyle = 'dotted'
+
+gridalpha = 0.4
 
 # =============================================================================
 # First file: full-lift-down
@@ -71,7 +73,7 @@ for rind in range(engfgrid.shape[1]):
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex = True, sharey = True)
 fig.set_size_inches(6, 9)
 
-ax1.grid()
+ax1.grid(alpha = gridalpha)
 ax1.set_title('full-lift-down', fontsize = 10)
 
 # plot landline
@@ -208,10 +210,10 @@ ax1.clabel(cp, inline = True, colors = QLcol, fontsize = 9, fmt = '%1.0f')
 
 land_proxy = mlines.Line2D([], [], color = landcol, linewidth = 3,
                            label = r'orbiters/probes cutoff, '
-                                r'$\mathregular{\pm20\%\ \rho}$')
+                                r'$\mathregular{\pm3\sigma\ \rho}$')
 space_proxy = mlines.Line2D([], [], color = spacecol, linewidth = 3,
                             label = r'orbiters/escape cutoff, '
-                                r'$\mathregular{\pm20\%\ \rho}$')
+                                r'$\mathregular{\pm3\sigma\ \rho}$')
 haf_proxy = mlines.Line2D([], [], color = hafcol, linestyle = hafstyle,
                           label = 'apoapsis altitude, km')
 g_proxy = mlines.Line2D([], [], color = gcol, linestyle = gstyle,
@@ -268,7 +270,7 @@ for rind in range(engfgrid.shape[1]):
         
 ## Make countour plots
 ax2.set_title('ballistic', fontsize = 10)
-ax2.grid()
+ax2.grid(alpha = gridalpha)
 
 # plot landline
 ax2.plot(landline_EFPA_low, landline_BC_low, color = landcol,
@@ -433,7 +435,7 @@ for rind in range(engfgrid.shape[1]):
         spaceline_EFPA_low.append(efpaList[ind[0]])
         
 ## Make countour plots
-ax3.grid()
+ax3.grid(alpha = gridalpha)
 ax3.set_title('full-lift-up', fontsize = 10)
 
 # plot landline
